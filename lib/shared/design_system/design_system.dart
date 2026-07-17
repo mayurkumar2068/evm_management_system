@@ -1,0 +1,32 @@
+/// Single import surface for the design system.
+library;
+
+export 'responsive/app_responsive.dart';
+export 'theme/app_theme.dart';
+export 'tokens/app_colors.dart';
+export 'tokens/app_gradients.dart';
+export 'tokens/app_icons.dart';
+export 'tokens/app_radius.dart';
+export 'tokens/app_spacing.dart';
+export 'tokens/app_text_styles.dart';
+export 'widgets/app_bottom_sheet.dart';
+export 'widgets/app_button.dart';
+export 'widgets/app_card.dart';
+export 'widgets/app_dialog.dart';
+export 'widgets/app_dropdown.dart';
+export 'widgets/app_empty_state.dart';
+export 'widgets/app_error_state.dart';
+export 'widgets/app_gradient_button.dart';
+export 'widgets/app_gradient_header.dart';
+export 'widgets/app_loader.dart';
+export 'widgets/app_scaffold.dart';
+export 'widgets/app_selection_sheet.dart';
+export 'widgets/app_search_field.dart';
+export 'widgets/app_section_header.dart';
+export 'widgets/app_square_icon_button.dart';
+export 'widgets/app_status_pill.dart';
+export 'widgets/app_snackbar.dart';
+export 'widgets/app_text_field.dart';
+export 'widgets/app_top_bar.dart';
+export 'widgets/brand_logo.dart';
+export 'widgets/tricolor_wave.dart';

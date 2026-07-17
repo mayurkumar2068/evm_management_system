@@ -1,0 +1,323 @@
+```scss
+// ---------------------------------------------------------------------------
+// ZERO GREEN OVERRIDES
+// Lavender + Indigo only
+// ---------------------------------------------------------------------------
+
+:host {
+  --page-primary: #7167e8;
+  --page-primary-dark: #5b52cf;
+  --page-primary-light: #958cf4;
+  --page-accent: #8c84ee;
+
+  display: block;
+  min-height: 100%;
+  color: var(--ec-text);
+}
+
+// Hero
+.ec-hero {
+  background:
+    linear-gradient(
+      135deg,
+      #9188f4 0%,
+      #786ee9 48%,
+      #665bd8 100%
+    ) !important;
+
+  box-shadow:
+    0 14px 34px rgba(102, 91, 216, 0.18) !important;
+}
+
+.ec-hero__strip {
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.72),
+      transparent
+    ) !important;
+}
+
+.ec-hero__icon {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+// Section labels
+.ec-section-label {
+  color: var(--ec-text-secondary) !important;
+}
+
+.ec-section-label::before {
+  background:
+    linear-gradient(
+      180deg,
+      #9d95f5 0%,
+      #756be3 100%
+    ) !important;
+
+  box-shadow:
+    0 3px 9px rgba(113, 103, 232, 0.18) !important;
+}
+
+// Loader
+.loader {
+  color: var(--ec-text-muted);
+}
+
+.loader mat-spinner {
+  --mdc-circular-progress-active-indicator-color:
+    var(--page-primary) !important;
+}
+
+// Upload section
+.uploads {
+  background: rgba(255, 255, 255, 0.94);
+
+  border:
+    1px solid var(--ec-border);
+
+  box-shadow:
+    var(--ec-shadow-sm);
+}
+
+.uploads__head {
+  color: var(--ec-text-secondary);
+}
+
+.uploads__count {
+  color: var(--page-primary-dark) !important;
+
+  background:
+    rgba(113, 103, 232, 0.08) !important;
+
+  border:
+    1px solid rgba(113, 103, 232, 0.12) !important;
+}
+
+// Thumbnail
+.thumb {
+  border-color: var(--ec-border) !important;
+  background: #ffffff !important;
+}
+
+.thumb__remove {
+  color: #ffffff !important;
+  background: rgba(37, 37, 52, 0.78) !important;
+}
+
+.thumb figcaption {
+  color: var(--ec-text-secondary);
+}
+
+// Add photo
+.add-tile {
+  color: var(--page-primary-dark) !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(113, 103, 232, 0.07),
+      rgba(149, 140, 244, 0.035)
+    ) !important;
+
+  border:
+    1px dashed rgba(113, 103, 232, 0.32) !important;
+}
+
+.add-tile mat-icon {
+  color: var(--page-primary) !important;
+}
+
+.add-tile:hover,
+.add-tile:focus-visible {
+  background:
+    rgba(113, 103, 232, 0.1) !important;
+
+  border-color:
+    rgba(113, 103, 232, 0.5) !important;
+}
+
+// Feedback Material field
+.feedback {
+  width: 100%;
+
+  --mdc-outlined-text-field-outline-color:
+    var(--ec-border);
+
+  --mdc-outlined-text-field-hover-outline-color:
+    #b7b2e8;
+
+  --mdc-outlined-text-field-focus-outline-color:
+    var(--page-primary);
+
+  --mdc-outlined-text-field-caret-color:
+    var(--page-primary);
+
+  --mdc-outlined-text-field-input-text-color:
+    var(--ec-text);
+
+  --mdc-outlined-text-field-input-text-placeholder-color:
+    var(--ec-text-muted);
+}
+
+// Sticky footer
+.footer {
+  background:
+    rgba(250, 250, 253, 0.92) !important;
+
+  border-top:
+    1px solid var(--ec-border) !important;
+
+  backdrop-filter:
+    blur(18px) saturate(120%);
+
+  -webkit-backdrop-filter:
+    blur(18px) saturate(120%);
+}
+
+.footer__hint {
+  color: var(--ec-text-muted) !important;
+}
+
+.footer__hint mat-icon {
+  color: var(--page-primary) !important;
+}
+
+// Submit
+.submit-btn {
+  --mdc-filled-button-container-color:
+    var(--page-primary);
+
+  --mdc-filled-button-label-text-color:
+    #ffffff;
+
+  color: #ffffff !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #857bf0 0%,
+      #7167e8 52%,
+      #6258d6 100%
+    ) !important;
+
+  box-shadow:
+    0 10px 24px rgba(113, 103, 232, 0.2) !important;
+}
+
+.submit-btn:not(:disabled):hover {
+  box-shadow:
+    0 12px 28px rgba(113, 103, 232, 0.26) !important;
+}
+
+.submit-btn:disabled {
+  color: #a2a1ad !important;
+  background: #ececf2 !important;
+  box-shadow: none !important;
+}
+
+// Submit spinner
+.submit-btn mat-spinner {
+  --mdc-circular-progress-active-indicator-color:
+    #ffffff !important;
+}
+
+// Confirmation overlay
+.confirm {
+  background:
+    rgba(28, 27, 45, 0.38) !important;
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.confirm__box {
+  background: #ffffff !important;
+
+  border:
+    1px solid rgba(232, 233, 241, 0.95) !important;
+
+  box-shadow:
+    0 24px 70px rgba(43, 42, 78, 0.18) !important;
+}
+
+.confirm__icon {
+  color: var(--page-primary) !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(113, 103, 232, 0.11),
+      rgba(149, 140, 244, 0.06)
+    ) !important;
+}
+
+.confirm__title {
+  color: var(--ec-text) !important;
+}
+
+.confirm__text {
+  color: var(--ec-text-secondary) !important;
+}
+
+.confirm__cancel {
+  --mdc-outlined-button-outline-color:
+    var(--ec-border);
+
+  --mdc-outlined-button-label-text-color:
+    var(--ec-text-secondary);
+
+  color: var(--ec-text-secondary) !important;
+}
+
+.confirm__ok {
+  --mdc-filled-button-container-color:
+    var(--page-primary);
+
+  --mdc-filled-button-label-text-color:
+    #ffffff;
+
+  color: #ffffff !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #857bf0,
+      #665bd8
+    ) !important;
+}
+
+// Preview
+.overlay {
+  background:
+    rgba(24, 23, 38, 0.94) !important;
+}
+
+.overlay__close {
+  color: #ffffff !important;
+
+  background:
+    rgba(255, 255, 255, 0.12) !important;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+// Material focus / ripple
+:host ::ng-deep .mat-mdc-button-persistent-ripple::before {
+  background-color:
+    var(--page-primary) !important;
+}
+
+:host ::ng-deep .mat-ripple-element {
+  background-color:
+    rgba(113, 103, 232, 0.14) !important;
+}
+
+:host ::ng-deep .mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color:
+    var(--page-primary) !important;
+}
+```

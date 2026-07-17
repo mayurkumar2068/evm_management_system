@@ -1,0 +1,109 @@
+<main class="page">
+  <header class="ec-hero">
+    <span class="ec-hero__strip"></span>
+    <div class="ec-hero__row">
+      <div class="ec-hero__icon">
+        <mat-icon>fact_check</mat-icon>
+      </div>
+      <div>
+        <h2 class="ec-hero__title">{{ 'chk.hero.title' | t }}</h2>
+        <p class="ec-hero__sub">{{ 'chk.hero.sub' | t }}</p>
+      </div>
+    </div>
+  </header>
+
+  <span class="ec-section-label">{{ 'chk.section.location' | t }}</span>
+  <app-location-card [rows]="location?.rows ?? []" />
+
+  <span class="ec-section-label">{{ 'chk.section.checklist' | t }}</span>
+
+  @if (authError(); as authErr) {
+    <p class="question-step__error question-step__error--auth">
+      <mat-icon>warning_amber</mat-icon>
+      {{ authErr }}
+    </p>
+  }
+
+  @if (loadingQuestions()) {
+    <div class="loader">
+      <mat-spinner diameter="30" strokeWidth="3" />
+      <span>{{ 'chk.loading' | t }}</span>
+    </div>
+  } @else if (currentQuestion()) {
+    <section class="question-step" [formGroup]="questionForm">
+      <div class="question-step__progress">{{ progressLabel() }}</div>
+
+      <app-checklist-item
+        [group]="questionForm"
+        [index]="currentIndex()"
+        [uploadDisabled]="false"
+        (enlarge)="openPreview($event)"
+      />
+
+      <mat-form-field appearance="outline" class="remark" subscriptSizing="dynamic">
+        <mat-label>{{ 'chk.remark.label' | t }}</mat-label>
+        <textarea
+          matInput
+          formControlName="remark"
+          rows="3"
+          maxlength="500"
+          [placeholder]="'chk.remark.placeholder' | t"
+        ></textarea>
+      </mat-form-field>
+
+      @if (saveError(); as err) {
+        <p class="question-step__error">
+          <mat-icon>error_outline</mat-icon>
+          {{ err }}
+        </p>
+      }
+    </section>
+  } @else {
+    <p class="question-step__empty">{{ 'chk.empty' | t }}</p>
+  }
+
+  <span class="ec-section-label">{{ 'chk.coords' | t }}</span>
+  <app-coordinates-card
+    [coordinates]="coordinates()"
+    [loading]="geoLoading()"
+    [error]="geoError()"
+    (retry)="fetchLocation()"
+  />
+</main>
+
+<footer class="footer footer--dual">
+  <button
+    mat-stroked-button
+    class="footer__prev"
+    type="button"
+    [disabled]="currentIndex() === 0 || saving() || loadingQuestions()"
+    (click)="goPrevious()"
+  >
+    {{ 'chk.previous' | t }}
+  </button>
+
+  <button
+    mat-flat-button
+    class="footer__next"
+    type="button"
+    [disabled]="!currentQuestion() || saving() || loadingQuestions()"
+    (click)="saveAndContinue()"
+  >
+    @if (saving()) {
+      <mat-spinner diameter="20" strokeWidth="2" />
+    } @else if (isLastQuestion()) {
+      <span>{{ 'chk.submit' | t }}</span>
+    } @else {
+      <span>{{ 'chk.next' | t }}</span>
+    }
+  </button>
+</footer>
+
+@if (preview(); as img) {
+  <div class="overlay" (click)="closePreview()">
+    <button type="button" class="overlay__close" [attr.aria-label]="'common.close' | t">
+      <mat-icon>close</mat-icon>
+    </button>
+    <img [src]="img" alt="preview" decoding="async" />
+  </div>
+}

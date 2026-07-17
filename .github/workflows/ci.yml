@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  FLUTTER_VERSION: "3.32.8"
+
+jobs:
+  analyze-and-test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Enforce coverage threshold (80%)
+        run: |
+          sudo apt-get update && sudo apt-get install -y lcov
+          PCT=$(lcov --summary coverage/lcov.info 2>/dev/null | grep -oP 'lines.*: \K[0-9.]+' | head -1)
+          echo "Line coverage: ${PCT}%"
+          awk "BEGIN { exit !(${PCT:-0} >= 80) }" || (echo "Coverage ${PCT}% is below 80%" && exit 1)
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info

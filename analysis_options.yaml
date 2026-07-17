@@ -1,0 +1,40 @@
+# Static analysis configuration for the EVM Management System.
+# Enforces Effective Dart and additional strictness for an enterprise codebase.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    invalid_annotation_target: ignore
+    todo: ignore
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    # Angular survey micro-app loaded via InAppWebView (not Dart code).
+    - "lib/survey/**"
+
+linter:
+  rules:
+    # Style
+    always_declare_return_types: true
+    avoid_print: true
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_locals: true
+    require_trailing_commas: true
+    sort_constructors_first: true
+    unawaited_futures: true
+    # Safety
+    avoid_dynamic_calls: true
+    cancel_subscriptions: true
+    close_sinks: true
+    only_throw_errors: true
+    throw_in_finally: true
+    use_build_context_synchronously: true
+    # Documentation / clarity
+    public_member_api_docs: false

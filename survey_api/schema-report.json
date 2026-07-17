@@ -1,0 +1,1446 @@
+{
+  "database": "MPSECIEMS",
+  "generatedAt": "2026-06-24T10:16:01.894Z",
+  "tables": {
+    "BLOCKS": {
+      "engine": "InnoDB",
+      "approxRows": 10,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "Districts": {
+      "engine": "InnoDB",
+      "approxRows": 10,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NAME",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NAME_EN",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "STATEID",
+          "type": "varchar(30)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "IEMS_SECSections": {
+      "engine": "InnoDB",
+      "approxRows": 1,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "bigint",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "auto_increment",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "SectionName",
+          "type": "varchar(500)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "isactive",
+          "type": "tinyint(1)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "CreatedDate",
+          "type": "datetime",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "IEMS_SECUsers": {
+      "engine": "InnoDB",
+      "approxRows": 1,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "bigint",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "auto_increment",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "section",
+          "type": "varchar(500)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "SO_Name",
+          "type": "varchar(500)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "userid",
+          "type": "varchar(500)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "password",
+          "type": "varchar(500)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "isactive",
+          "type": "tinyint(1)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "JP": {
+      "engine": "InnoDB",
+      "approxRows": 0,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "JP_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "JP_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "JP_WARDS": {
+      "engine": "InnoDB",
+      "approxRows": 0,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "JP_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "NNN": {
+      "engine": "InnoDB",
+      "approxRows": 3,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE",
+          "type": "varchar(3)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "NNN_TYPES": {
+      "engine": "InnoDB",
+      "approxRows": 3,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE",
+          "type": "varchar(3)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE_DESC",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE_DESC_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "PANCHAYATS": {
+      "engine": "InnoDB",
+      "approxRows": 10,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "JPWARD_NO",
+          "type": "int",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ZPWARD_NO",
+          "type": "int",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "JPWARD_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ZPWARD_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "PARTS": {
+      "engine": "InnoDB",
+      "approxRows": 4,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE",
+          "type": "varchar(3)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PART_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PART_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PART_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "UPSBUILDING_NO",
+          "type": "int",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "UPS_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "RAUX_PS": {
+      "engine": "InnoDB",
+      "approxRows": 0,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "AUX_NO",
+          "type": "char(1)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPS_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPSBUILDING_NO",
+          "type": "int",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "RPSBUILDINGS": {
+      "engine": "InnoDB",
+      "approxRows": 10,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPSBUILDING_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPSBUILDING_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPSBUILDING_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "RWARDS": {
+      "engine": "InnoDB",
+      "approxRows": 10,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "VILL_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPS_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "BLOCK_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "PANCHYT_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "VILL_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "RPSBUILDING_NO",
+          "type": "int",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "STATES": {
+      "engine": "InnoDB",
+      "approxRows": 1,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "STATE_CODE",
+          "type": "varchar(10)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "STATE_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "UPSBUILDINGS": {
+      "engine": "InnoDB",
+      "approxRows": 3,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE",
+          "type": "varchar(3)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "UPSBUILDING_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "UPSBUILDING_NAME",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "UPSBUILDING_NAME_EN",
+          "type": "varchar(100)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "UWARDS": {
+      "engine": "InnoDB",
+      "approxRows": 5,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_TYPE",
+          "type": "varchar(3)",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "NNN_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NAME",
+          "type": "varchar(256)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NAME_EN",
+          "type": "varchar(256)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "ZP": {
+      "engine": "InnoDB",
+      "approxRows": 0,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ZP_NAME",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ZP_NAME_EN",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    },
+    "ZP_WARDS": {
+      "engine": "InnoDB",
+      "approxRows": 0,
+      "comment": "",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "varchar(50)",
+          "nullable": false,
+          "key": "PRI",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "ZP_ID",
+          "type": "varchar(50)",
+          "nullable": true,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "DIST_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        },
+        {
+          "name": "WARD_NO",
+          "type": "int",
+          "nullable": false,
+          "key": "",
+          "extra": "",
+          "default": null,
+          "comment": ""
+        }
+      ],
+      "primaryKey": [
+        "ID"
+      ],
+      "foreignKeys": [],
+      "indexes": {
+        "PRIMARY": {
+          "unique": true,
+          "columns": [
+            "ID"
+          ]
+        }
+      }
+    }
+  }
+}

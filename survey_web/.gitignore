@@ -1,0 +1,8 @@
+# Angular survey micro-app
+/node_modules
+/dist
+/.angular
+/out-tsc
+npm-debug.log*
+yarn-error.log*
+.DS_Store

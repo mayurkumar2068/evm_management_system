@@ -1,0 +1,35 @@
+{
+    "name": "evm_management_system",
+    "short_name": "evm_management_system",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "EVM Management System is a mobile-based inventory and tracking solution developed for the Election Commission of India to manage Control Units and Ballot Units using Barcode/QR scanning, real-time stock monitoring, audit trails, offline synchronization, and reporting dashboards, ensuring secure and transparent EVM lifecycle management.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

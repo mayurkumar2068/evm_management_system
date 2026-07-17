@@ -1,0 +1,8 @@
+{
+  "/POElectionAPI": {
+    "target": "http://10.115.197.192",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

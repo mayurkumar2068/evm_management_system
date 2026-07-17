@@ -1,0 +1,67 @@
+<main class="page">
+  <!-- Hero banner -->
+  <header class="ec-hero">
+    <span class="ec-hero__strip"></span>
+    <div class="ec-hero__row">
+      <div class="ec-hero__icon">
+        <mat-icon>how_to_vote</mat-icon>
+      </div>
+      <div>
+        <h2 class="ec-hero__title">{{ 'loc.hero.title' | t }}</h2>
+        <p class="ec-hero__sub">{{ 'loc.hero.sub' | t }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Area type -->
+  <section class="ec-card block">
+    <span class="ec-section-label">{{ 'loc.areaType' | t }}</span>
+    <mat-button-toggle-group
+      class="area-toggle"
+      [value]="areaType()"
+      (change)="setArea($event.value)"
+      hideSingleSelectionIndicator
+    >
+      <mat-button-toggle value="urban">
+        <mat-icon>location_city</mat-icon>
+        {{ 'area.urban' | t }}
+      </mat-button-toggle>
+      <mat-button-toggle value="rural">
+        <mat-icon>agriculture</mat-icon>
+        {{ 'area.rural' | t }}
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <p class="ec-note">
+      <mat-icon>info</mat-icon>
+      {{ 'loc.note.afterSelect' | t }}
+    </p>
+  </section>
+
+  <!-- Cascading dropdowns -->
+  <section class="ec-card block">
+    <span class="ec-section-label">{{ 'loc.section.location' | t }}</span>
+    <app-cascade-select
+      [levels]="levels()"
+      (selectionChange)="onSelectionChange($event)"
+    />
+  </section>
+
+  @if (!canProceed()) {
+    <p class="ec-note ec-note--muted">
+      <mat-icon>touch_app</mat-icon>
+      {{ 'loc.note.enableNext' | t }}
+    </p>
+  }
+
+  <button
+    mat-flat-button
+    type="button"
+    class="next-btn"
+    [disabled]="!canProceed()"
+    (click)="next()"
+  >
+    {{ 'loc.next' | t }}
+    <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+  </button>
+</main>

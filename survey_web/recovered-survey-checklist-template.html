@@ -1,0 +1,145 @@
+<main class="page">
+  <!-- Hero banner -->
+  <header class="ec-hero">
+    <span class="ec-hero__strip"></span>
+    <div class="ec-hero__row">
+      <div class="ec-hero__icon">
+        <mat-icon>fact_check</mat-icon>
+      </div>
+      <div>
+        <h2 class="ec-hero__title">{{ 'chk.hero.title' | t }}</h2>
+        <p class="ec-hero__sub">{{ 'chk.hero.sub' | t }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- 1. Location -->
+  <span class="ec-section-label">{{ 'chk.section.location' | t }}</span>
+  <app-location-card [rows]="location?.rows ?? []" />
+
+  <!-- 2. Checklist -->
+  <span class="ec-section-label" #checklistAnchor>{{ 'chk.section.checklist' | t }}</span>
+  @if (loadingChecklist()) {
+    <div class="loader">
+      <mat-spinner diameter="30" strokeWidth="3" />
+      <span>{{ 'chk.loading' | t }}</span>
+    </div>
+  } @else {
+    <app-survey-card
+      [groups]="itemGroups()"
+      [maxImages]="maxImages()"
+      [usedImages]="usedImages()"
+      (enlarge)="openPreview($event)"
+    />
+  }
+
+  <!-- 3. Uploaded images -->
+  @if (uploaded().length) {
+    <section class="uploads">
+      <header class="uploads__head">
+        <span>{{ 'chk.uploads.head' | t: { max: maxImages() } }}</span>
+        <span class="uploads__count">{{ uploaded().length }}/{{ maxImages() }}</span>
+      </header>
+      <div class="uploads__scroll">
+        @for (u of uploaded(); track u.surveyId) {
+          <figure class="thumb">
+            <img
+              [src]="u.image"
+              [alt]="u.title"
+              loading="lazy"
+              decoding="async"
+              (click)="openPreview(u.image)"
+            />
+            <button
+              type="button"
+              class="thumb__remove"
+              [attr.aria-label]="'common.remove' | t"
+              (click)="removeUploaded(u.surveyId)"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+            <figcaption>{{ u.title }}</figcaption>
+          </figure>
+        }
+        @if (usedImages() < maxImages()) {
+          <button type="button" class="add-tile" (click)="scrollToChecklist()">
+            <mat-icon>add_a_photo</mat-icon>
+            <span>{{ 'chk.addMore' | t }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- 4. Coordinates -->
+  <span class="ec-section-label">{{ 'chk.coords' | t }}</span>
+  <app-coordinates-card
+    [coordinates]="coordinates()"
+    [loading]="geoLoading()"
+    [error]="geoError()"
+    (retry)="fetchLocation()"
+  />
+
+  <!-- 5. Other feedback -->
+  <span class="ec-section-label">{{ 'chk.feedback.label' | t }}</span>
+  <mat-form-field appearance="outline" class="feedback" subscriptSizing="dynamic">
+    <textarea
+      matInput
+      [formControl]="feedbackCtrl"
+      rows="3"
+      maxlength="500"
+      [placeholder]="'chk.feedback.placeholder' | t"
+    ></textarea>
+  </mat-form-field>
+</main>
+
+<!-- Sticky submit -->
+<footer class="footer">
+  @if (!canSubmit() && !loadingChecklist() && pendingCount() > 0) {
+    <p class="footer__hint">
+      <mat-icon>info</mat-icon>
+      {{ 'chk.footer.pending' | t: { n: pendingCount() } }}
+    </p>
+  }
+  <button
+    mat-flat-button
+    class="submit-btn"
+    [disabled]="!canSubmit() || submitting()"
+    (click)="requestSubmit()"
+  >
+    @if (submitting()) {
+      <mat-spinner diameter="20" strokeWidth="2" />
+    } @else {
+      <span>{{ 'chk.submit' | t }}</span>
+    }
+  </button>
+</footer>
+
+<!-- Submit confirmation -->
+@if (confirmOpen()) {
+  <div class="confirm" (click)="cancelConfirm()">
+    <div class="confirm__box" (click)="$event.stopPropagation()">
+      <div class="confirm__icon"><mat-icon>task_alt</mat-icon></div>
+      <h3 class="confirm__title">{{ 'chk.confirm.title' | t }}</h3>
+      <p class="confirm__text">{{ 'chk.confirm.body' | t }}</p>
+      <div class="confirm__actions">
+        <button mat-stroked-button class="confirm__cancel" (click)="cancelConfirm()">
+          {{ 'chk.confirm.cancel' | t }}
+        </button>
+        <button mat-flat-button class="confirm__ok" (click)="confirmSubmit()">
+          {{ 'chk.confirm.ok' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Fullscreen preview overlay -->
+@if (preview(); as img) {
+  <div class="overlay" (click)="closePreview()">
+    <button type="button" class="overlay__close" [attr.aria-label]="'common.close' | t">
+      <mat-icon>close</mat-icon>
+    </button>
+    <img [src]="img" alt="preview" decoding="async" />
+  </div>
+}

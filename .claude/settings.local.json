@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub *)",
+      "Bash(curl -s \"https://pub.dev/api/packages/go_router\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('latest:', d['latest']['version']\\); print\\('recent:', [v['version'] for v in d['versions'][-6:]]\\)\")",
+      "WebFetch(domain:pub.dev)",
+      "Bash(flutter analyze *)",
+      "Bash(awk '/^  go_router:/{f=1} f&&/version:/{print; exit}' pubspec.lock)",
+      "Skill(run)",
+      "Bash(flutter devices *)",
+      "Bash(flutter test *)"
+    ]
+  }
+}

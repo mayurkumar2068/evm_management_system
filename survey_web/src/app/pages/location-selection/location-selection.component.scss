@@ -1,0 +1,83 @@
+.page {
+  padding: 14px 14px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------------- Cards ---------------- */
+.block {
+  padding: 14px 14px 6px;
+  animation: ec-fade-up 0.4s ease both;
+}
+
+.block:nth-of-type(2) {
+  animation-delay: 0.05s;
+}
+
+/* ---------------- Area toggle ---------------- */
+.area-toggle {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ec-bg-soft);
+  border: 1px solid var(--ec-border-soft);
+  padding: 4px;
+  gap: 4px;
+}
+
+.area-toggle ::ng-deep .mat-button-toggle {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: var(--ec-text-muted);
+  background: transparent;
+  border: none !important;
+  border-radius: 11px;
+  transition: all 0.2s ease;
+}
+
+.area-toggle ::ng-deep .mat-button-toggle-button {
+  height: 44px;
+}
+
+.area-toggle ::ng-deep .mat-button-toggle-label-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 44px;
+  font-size: 14px;
+}
+
+.area-toggle ::ng-deep .mat-button-toggle-checked {
+  background: var(--ec-grad);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(113, 103, 232, 0.24);
+}
+
+/* ---------------- Next button ---------------- */
+.next-btn {
+  margin-top: 4px;
+  height: 54px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--ec-grad);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(113, 103, 232, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.next-btn:active {
+  transform: scale(0.98);
+}
+
+.next-btn[disabled] {
+  opacity: 0.65;
+  box-shadow: none;
+  background: var(--ec-border-soft);
+  color: #fff;
+}

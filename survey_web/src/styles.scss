@@ -1,0 +1,583 @@
+
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// ---------------------------------------------------------------------------
+// Angular Material M3 Theme
+// Soft Lavender + Indigo Light Theme
+// ---------------------------------------------------------------------------
+
+$election-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$violet-palette,
+      tertiary: mat.$azure-palette,
+    ),
+    typography: (
+      brand-family: 'Noto Sans Devanagari, Roboto, sans-serif',
+      plain-family: 'Noto Sans Devanagari, Roboto, sans-serif',
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+html {
+  @include mat.all-component-themes($election-theme);
+}
+
+// ---------------------------------------------------------------------------
+// Design Tokens
+// ---------------------------------------------------------------------------
+
+:root {
+  // Brand
+  --ec-primary: #7167e8;
+  --ec-primary-dark: #5b52cf;
+  --ec-primary-light: #958cf4;
+
+  --ec-accent: #8c84ee;
+  --ec-accent-soft: #f0eeff;
+
+  // Backgrounds
+  --ec-bg: #f7f8fc;
+  --ec-bg-soft: #fbfbfe;
+  --ec-bg-elevated: #f4f5fa;
+
+  // Surfaces
+  --ec-surface: #ffffff;
+  --ec-card: #ffffff;
+  --ec-card-soft: #fafafe;
+
+  // Borders
+  --ec-border: #e8e9f1;
+  --ec-border-soft: #f0f0f5;
+
+  // Typography
+  --ec-text: #252534;
+  --ec-text-secondary: #5e5e70;
+  --ec-text-muted: #9191a2;
+
+  // Status
+  --ec-success: #a7a1ff;
+  --ec-warning: #f0c97d;
+  --ec-danger: #d977aa;
+  --ec-info: #7ca9ff;
+
+  // Radius
+  --ec-radius-sm: 10px;
+  --ec-radius: 16px;
+  --ec-radius-lg: 24px;
+  --ec-radius-xl: 30px;
+
+  // Shadows
+  --ec-shadow-sm:
+    0 2px 8px rgba(43, 42, 78, 0.035),
+    0 8px 22px rgba(43, 42, 78, 0.035);
+
+  --ec-shadow:
+    0 8px 24px rgba(43, 42, 78, 0.05),
+    0 20px 45px rgba(43, 42, 78, 0.035);
+
+  --ec-shadow-soft:
+    0 16px 50px rgba(68, 63, 130, 0.05);
+
+  // Gradients
+  --ec-grad:
+    linear-gradient(
+      135deg,
+      #9188f4 0%,
+      #786ee9 48%,
+      #665bd8 100%
+    );
+
+  --ec-grad-soft:
+    linear-gradient(
+      135deg,
+      #f5f3ff 0%,
+      #faf9ff 48%,
+      #f5f7ff 100%
+    );
+
+  --ec-grad-accent:
+    linear-gradient(
+      180deg,
+      #9d95f5 0%,
+      #756be3 100%
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Global Reset
+// ---------------------------------------------------------------------------
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  width: 100%;
+  min-width: 100%;
+  min-height: 100%;
+
+  font-family:
+    'Noto Sans Devanagari',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+
+  color: var(--ec-text);
+
+  font-weight: 400;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  overscroll-behavior-y: none;
+}
+
+html {
+  min-height: 100%;
+  background: var(--ec-bg);
+}
+
+body {
+  position: relative;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  isolation: isolate;
+
+  background:
+    radial-gradient(
+      900px 500px at -10% -10%,
+      rgba(149, 140, 244, 0.07),
+      transparent 65%
+    ),
+    radial-gradient(
+      700px 450px at 110% 10%,
+      rgba(130, 154, 230, 0.05),
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      #fdfdff 0%,
+      #fafafd 42%,
+      #f7f8fc 100%
+    );
+
+  background-attachment: fixed;
+}
+
+// ---------------------------------------------------------------------------
+// App Canvas
+// ---------------------------------------------------------------------------
+
+body::before {
+  content: '';
+
+  position: fixed;
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      rgba(113, 103, 232, 0.014) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(113, 103, 232, 0.014) 1px,
+      transparent 1px
+    );
+
+  background-size: 44px 44px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.28),
+      transparent 60%
+    );
+
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.28),
+      transparent 60%
+    );
+
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+// ---------------------------------------------------------------------------
+// Premium Card
+// ---------------------------------------------------------------------------
+
+.ec-card {
+  position: relative;
+  isolation: isolate;
+
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.94);
+
+  border:
+    1px solid rgba(229, 229, 240, 0.82);
+
+  border-radius: var(--ec-radius);
+
+  box-shadow: var(--ec-shadow-sm);
+
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.ec-card::before {
+  content: '';
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.6),
+      transparent 42%
+    );
+
+  opacity: 0.4;
+
+  z-index: -1;
+}
+
+.ec-card:active {
+  transform: scale(0.997);
+}
+
+// ---------------------------------------------------------------------------
+// Section Label
+// ---------------------------------------------------------------------------
+
+.ec-section-label {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 0 0 11px;
+
+  font-size: 12.5px;
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+
+  color: var(--ec-text-secondary);
+}
+
+.ec-section-label::before {
+  content: '';
+
+  flex: 0 0 auto;
+
+  width: 3px;
+  height: 15px;
+
+  border-radius: 20px;
+
+  background: var(--ec-grad-accent);
+
+  box-shadow:
+    0 3px 9px rgba(113, 103, 232, 0.18);
+}
+
+// ---------------------------------------------------------------------------
+// Hero
+// ---------------------------------------------------------------------------
+
+.ec-hero {
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 19px 18px 21px;
+
+  border-radius: var(--ec-radius-lg);
+
+  color: #ffffff;
+
+  background: var(--ec-grad);
+
+  box-shadow:
+    0 14px 34px rgba(102, 91, 216, 0.18);
+
+  animation:
+    ec-fade-up 350ms ease both;
+}
+
+.ec-hero__strip {
+  position: absolute;
+
+  inset: 0 0 auto 0;
+
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.7),
+      transparent
+    );
+}
+
+.ec-hero::before {
+  content: '';
+
+  position: absolute;
+
+  width: 190px;
+  height: 190px;
+
+  right: -95px;
+  top: -110px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.09);
+
+  pointer-events: none;
+}
+
+.ec-hero::after {
+  content: '';
+
+  position: absolute;
+
+  width: 110px;
+  height: 110px;
+
+  right: 45px;
+  bottom: -85px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  pointer-events: none;
+}
+
+.ec-hero__row {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  z-index: 1;
+}
+
+.ec-hero__icon {
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  width: 48px;
+  height: 48px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.16);
+
+  border-radius: 15px;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ec-hero__icon mat-icon {
+  width: 25px;
+  height: 25px;
+
+  font-size: 25px;
+}
+
+.ec-hero__title {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 600;
+
+  line-height: 1.35;
+
+  letter-spacing: 0.005em;
+}
+
+.ec-hero__sub {
+  margin: 4px 0 0;
+
+  font-size: 12.5px;
+  font-weight: 400;
+
+  line-height: 1.45;
+
+  opacity: 0.86;
+}
+
+// ---------------------------------------------------------------------------
+// Notes
+// ---------------------------------------------------------------------------
+
+.ec-note {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 13px;
+
+  border:
+    1px solid rgba(113, 103, 232, 0.1);
+
+  border-radius: 14px;
+
+  color: var(--ec-primary-dark);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(113, 103, 232, 0.06),
+      rgba(149, 140, 244, 0.03)
+    );
+
+  font-size: 12.5px;
+  font-weight: 400;
+
+  line-height: 1.45;
+}
+
+.ec-note mat-icon {
+  flex: 0 0 auto;
+
+  width: 18px;
+  height: 18px;
+
+  font-size: 18px;
+
+  color: var(--ec-primary);
+}
+
+.ec-note--muted {
+  color: var(--ec-text-muted);
+
+  background: rgba(247, 247, 251, 0.85);
+
+  border-color: var(--ec-border);
+}
+
+.ec-note--muted mat-icon {
+  color: var(--ec-text-muted);
+}
+
+// ---------------------------------------------------------------------------
+// Animation
+// ---------------------------------------------------------------------------
+
+@keyframes ec-fade-up {
+  from {
+    opacity: 0;
+
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scrollbar
+// ---------------------------------------------------------------------------
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    rgba(113, 103, 232, 0.18)
+    transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 103, 232, 0.18);
+
+  border-radius: 20px;
+}
+
+// ---------------------------------------------------------------------------
+// Button
+// ---------------------------------------------------------------------------
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
