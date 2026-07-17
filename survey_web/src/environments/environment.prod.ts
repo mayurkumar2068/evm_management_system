@@ -1,7 +1,7 @@
 /**
- * Publish target (same as Downloads/survey_web).
- * IIS: http://10.115.197.192/pssurvey/
- * API: http://10.115.197.192/POElectionAPI
+ * GitHub Pages: https://mayurkumar2068.github.io/evm_management_system/
+ * IIS fallback: http://10.115.197.192/pssurvey/
+ * API (LAN): http://10.115.197.192/POElectionAPI
  */
 export const environment = {
   production: true,

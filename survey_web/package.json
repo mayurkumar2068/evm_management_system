@@ -8,6 +8,7 @@
     "build": "ng build",
     "build:webview": "ng build --configuration production --base-href /pssurvey/",
     "build:staging": "ng build --configuration production --base-href /pssurvey/",
+    "build:pages": "ng build --configuration production --base-href /evm_management_system/",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,
