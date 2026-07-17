@@ -3,7 +3,6 @@ import 'dart:io' show Platform;
 import 'package:evm_management_system/config/app_config.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:uuid/uuid.dart';
 
@@ -31,11 +30,17 @@ class WebSessionService {
 
     return WebSessionContext(
       accessToken: session?.token,
-      language: _normalizeLang(AppLocaleHolder.code),
+      language: 'hi',
       theme: theme,
       deviceId: deviceId,
       officerId: session?.userId,
       districtId: session?.districtId,
+      distName: session?.districtName,
+      bodyId: session?.bodyId,
+      bodyName: session?.bodyName,
+      urbanRural: session?.section,
+      boothLat: session?.lat,
+      boothLong: session?.long,
       appVersion: kWebAppVersion,
       buildNumber: kWebBuildNumber,
       platform: Platform.isIOS ? 'ios' : 'android',
@@ -44,7 +49,4 @@ class WebSessionService {
       correlationId: const Uuid().v4(),
     );
   }
-
-  static String _normalizeLang(String code) =>
-      code.toLowerCase().startsWith('en') ? 'en' : 'hi';
 }

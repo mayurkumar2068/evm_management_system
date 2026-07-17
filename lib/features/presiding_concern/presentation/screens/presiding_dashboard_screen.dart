@@ -5,6 +5,7 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_booth_map_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_milestone_section.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
@@ -88,6 +89,12 @@ class _DashboardBody extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
             children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: MpSecTokens.sectionSpacing,
+                ),
+                child: PresidingBoothMapCard(stationName: stationLabel),
+              ),
               Padding(
                 padding: const EdgeInsets.only(
                   bottom: MpSecTokens.sectionSpacing,

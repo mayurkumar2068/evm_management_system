@@ -59,6 +59,8 @@ final class PresidingElectionContextStore {
         'polling_station_code': context.pollingStationCode,
       if (context.pollingStationName != null)
         'polling_station_name': context.pollingStationName,
+      if (context.boothLat != null) 'booth_lat': context.boothLat,
+      if (context.boothLong != null) 'booth_long': context.boothLong,
     };
   }
 
@@ -80,7 +82,15 @@ final class PresidingElectionContextStore {
                   json['pollingStationName'] ??
                   json['boothName'])
               ?.toString(),
+      boothLat: _parseCoord(json['booth_lat'] ?? json['boothLat']),
+      boothLong: _parseCoord(json['booth_long'] ?? json['boothLong']),
     );
+  }
+
+  static double? _parseCoord(Object? raw) {
+    if (raw == null) return null;
+    if (raw is num) return raw.toDouble();
+    return double.tryParse(raw.toString().trim());
   }
 
   static int _parseElectionId(Object? raw) {

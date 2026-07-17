@@ -11,6 +11,7 @@ class ServiceSession {
     this.districtId,
     this.districtName,
     this.bodyId,
+    this.bodyName,
     this.lat,
     this.long,
     this.createdAt,
@@ -25,6 +26,7 @@ class ServiceSession {
     districtId: json['districtId'] as String?,
     districtName: json['districtName'] as String?,
     bodyId: json['bodyId'] as String?,
+    bodyName: json['bodyName'] as String?,
     lat: (json['lat'] as num?)?.toDouble(),
     long: (json['long'] as num?)?.toDouble(),
     createdAt: json['createdAt'] != null
@@ -43,6 +45,7 @@ class ServiceSession {
   final String? districtId;
   final String? districtName;
   final String? bodyId;
+  final String? bodyName;
 
   /// Coordinates from login-survey-pass response (`Lat` / `Long`).
   final double? lat;
@@ -60,6 +63,7 @@ class ServiceSession {
     'districtId': districtId,
     'districtName': districtName,
     'bodyId': bodyId,
+    'bodyName': bodyName,
     'lat': lat,
     'long': long,
     'createdAt': createdAt?.toIso8601String(),

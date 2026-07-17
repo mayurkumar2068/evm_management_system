@@ -25,7 +25,8 @@ class AppPickedImage {
 /// Shared camera/gallery picker with JPEG compression — same pipeline as
 /// [WebViewBridge] `pickImage`, reusable from Flutter screens.
 class AppImagePickerService {
-  AppImagePickerService({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
+  AppImagePickerService({ImagePicker? picker})
+    : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 

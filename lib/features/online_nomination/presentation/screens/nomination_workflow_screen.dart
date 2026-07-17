@@ -108,7 +108,8 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
   }
 
   Future<void> _restoreDraft() async {
-    final NominationDraft? draft = await AppServices.nominationDrafts.loadActive();
+    final NominationDraft? draft = await AppServices.nominationDrafts
+        .loadActive();
     if (draft == null || !mounted) {
       return;
     }
@@ -768,71 +769,81 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                     ),
                     AppSpacing.vGapLg,
                     LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints constraints) {
-                        final bool stackButtons = constraints.maxWidth < 360;
-                        final List<Widget> buttons = <Widget>[
-                          NominationGovButton(
-                            label: LocaleKeys.nominationPrevious.tr(),
-                            outlined: true,
-                            expanded: !stackButtons,
-                            onPressed: step == 0
-                                ? null
-                                : () {
-                                    _controller.previousStep();
-                                    _persistDraft();
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            final bool stackButtons =
+                                constraints.maxWidth < 360;
+                            final List<Widget> buttons = <Widget>[
+                              NominationGovButton(
+                                label: LocaleKeys.nominationPrevious.tr(),
+                                outlined: true,
+                                expanded: !stackButtons,
+                                onPressed: step == 0
+                                    ? null
+                                    : () {
+                                        _controller.previousStep();
+                                        _persistDraft();
+                                      },
+                              ),
+                              if (showSave)
+                                NominationGovButton(
+                                  label: LocaleKeys.nominationActionSave.tr(),
+                                  outlined: true,
+                                  expanded: !stackButtons,
+                                  onPressed: () async {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      await _controller.persistDraft(
+                                        _draftTextFields(),
+                                      );
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      AppSnackbar.success(
+                                        context,
+                                        LocaleKeys.commonSaved.tr(),
+                                      );
+                                    }
                                   },
-                          ),
-                          if (showSave)
-                            NominationGovButton(
-                              label: LocaleKeys.nominationActionSave.tr(),
-                              outlined: true,
-                              expanded: !stackButtons,
-                              onPressed: () async {
-                                if (_formKey.currentState?.validate() ??
-                                    false) {
-                                  await _controller.persistDraft(
-                                    _draftTextFields(),
-                                  );
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-                                  AppSnackbar.success(
-                                    context,
-                                    LocaleKeys.commonSaved.tr(),
-                                  );
-                                }
-                              },
-                            ),
-                          NominationGovButton(
-                            label: isLast
-                                ? LocaleKeys.nominationSubmitAction.tr()
-                                : LocaleKeys.nominationNext.tr(),
-                            expanded: !stackButtons,
-                            onPressed: _onPrimaryAction,
-                          ),
-                        ];
+                                ),
+                              NominationGovButton(
+                                label: isLast
+                                    ? LocaleKeys.nominationSubmitAction.tr()
+                                    : LocaleKeys.nominationNext.tr(),
+                                expanded: !stackButtons,
+                                onPressed: _onPrimaryAction,
+                              ),
+                            ];
 
-                        if (stackButtons) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              for (int i = 0; i < buttons.length; i++) ...<Widget>[
-                                if (i > 0) AppSpacing.vGapSm,
-                                buttons[i],
+                            if (stackButtons) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  for (
+                                    int i = 0;
+                                    i < buttons.length;
+                                    i++
+                                  ) ...<Widget>[
+                                    if (i > 0) AppSpacing.vGapSm,
+                                    buttons[i],
+                                  ],
+                                ],
+                              );
+                            }
+
+                            return Row(
+                              children: <Widget>[
+                                for (
+                                  int i = 0;
+                                  i < buttons.length;
+                                  i++
+                                ) ...<Widget>[
+                                  if (i > 0) AppSpacing.gapSm,
+                                  Expanded(child: buttons[i]),
+                                ],
                               ],
-                            ],
-                          );
-                        }
-
-                        return Row(
-                          children: <Widget>[
-                            for (int i = 0; i < buttons.length; i++) ...<Widget>[
-                              if (i > 0) AppSpacing.gapSm,
-                              Expanded(child: buttons[i]),
-                            ],
-                          ],
-                        );
-                      },
+                            );
+                          },
                     ),
                   ],
                 ),

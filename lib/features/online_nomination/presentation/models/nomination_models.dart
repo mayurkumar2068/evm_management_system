@@ -19,11 +19,7 @@ enum NominationPostType {
 }
 
 /// Urban local-body category used to filter municipality / UB dropdowns.
-enum UrbanBodyType {
-  nagarNigam,
-  nagarPalikaParishad,
-  nagarParishad,
-}
+enum UrbanBodyType { nagarNigam, nagarPalikaParishad, nagarParishad }
 
 extension UrbanBodyTypeKey on UrbanBodyType {
   String get labelKey => switch (this) {

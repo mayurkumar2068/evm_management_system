@@ -18,6 +18,12 @@ class WebSessionContext {
     required this.deviceId,
     this.officerId,
     this.districtId,
+    this.distName,
+    this.bodyId,
+    this.bodyName,
+    this.urbanRural,
+    this.boothLat,
+    this.boothLong,
     required this.appVersion,
     required this.buildNumber,
     required this.platform,
@@ -33,6 +39,12 @@ class WebSessionContext {
   final String deviceId;
   final String? officerId;
   final String? districtId;
+  final String? distName;
+  final String? bodyId;
+  final String? bodyName;
+  final String? urbanRural;
+  final double? boothLat;
+  final double? boothLong;
   final String appVersion;
   final String buildNumber;
   final String platform; // 'android' | 'ios'
@@ -75,6 +87,12 @@ class WebSessionContext {
       'deviceId': deviceId,
       'officerId': officerId,
       'districtId': districtId,
+      'distName': distName,
+      'bodyId': bodyId,
+      'bodyName': bodyName,
+      'urbanRural': urbanRural,
+      if (boothLat != null) 'boothLat': boothLat,
+      if (boothLong != null) 'boothLong': boothLong,
       'appVersion': appVersion,
       'buildNumber': buildNumber,
       'platform': platform,
@@ -95,6 +113,12 @@ class WebSessionContext {
       deviceId: deviceId,
       officerId: officerId,
       districtId: districtId,
+      distName: distName,
+      bodyId: bodyId,
+      bodyName: bodyName,
+      urbanRural: urbanRural,
+      boothLat: boothLat,
+      boothLong: boothLong,
       appVersion: appVersion,
       buildNumber: buildNumber,
       platform: platform,

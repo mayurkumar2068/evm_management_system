@@ -380,8 +380,7 @@ abstract final class LocaleKeys {
       'nomination.fields.nagar_nigam';
   static const String nominationFieldBodyType = 'nomination.fields.body_type';
   static const String nominationFieldUbName = 'nomination.fields.ub_name';
-  static const String nominationFieldUrbanBody =
-      'nomination.fields.urban_body';
+  static const String nominationFieldUrbanBody = 'nomination.fields.urban_body';
   static const String nominationFieldWard = 'nomination.fields.ward';
   static const String nominationFieldReservation =
       'nomination.fields.reservation';
@@ -528,11 +527,13 @@ abstract final class LocaleKeys {
   static const String nominationActionDownloadPdf =
       'nomination.actions.download_pdf';
   static const String nominationActionStart = 'nomination.actions.start';
-  static const String nominationDraftResumeTitle = 'nomination.draft.resume_title';
+  static const String nominationDraftResumeTitle =
+      'nomination.draft.resume_title';
   static const String nominationDraftResumeSubtitle =
       'nomination.draft.resume_subtitle';
   static const String nominationDraftContinue = 'nomination.draft.continue';
-  static const String nominationDraftStartFresh = 'nomination.draft.start_fresh';
+  static const String nominationDraftStartFresh =
+      'nomination.draft.start_fresh';
   static const String nominationActionSave = 'nomination.actions.save';
   static const String nominationActionReplace = 'nomination.actions.replace';
   static const String nominationActionDelete = 'nomination.actions.delete';

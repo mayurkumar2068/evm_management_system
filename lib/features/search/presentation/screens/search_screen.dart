@@ -211,7 +211,10 @@ class _SearchScreenState extends State<SearchScreen> {
               record: r,
               onTap: () {
                 _recentSearches.add(_query);
-                Get.toNamed<dynamic>(AppRoute.deviceDetail.path, arguments: r.id);
+                Get.toNamed<dynamic>(
+                  AppRoute.deviceDetail.path,
+                  arguments: r.id,
+                );
               },
             ),
           ),

@@ -14,9 +14,7 @@ abstract interface class PresidingConcernRemoteDatasource {
   });
 
   /// GET `/api/POElection/get-po-status?id={userId}`
-  Future<Map<String, dynamic>?> fetchPoStatus({
-    required String userId,
-  });
+  Future<Map<String, dynamic>?> fetchPoStatus({required String userId});
 }
 
 /// Dio-backed PO Election API client using the PO login access token.
@@ -46,9 +44,7 @@ final class PresidingConcernRemoteDatasourceImpl
   }
 
   @override
-  Future<Map<String, dynamic>?> fetchPoStatus({
-    required String userId,
-  }) async {
+  Future<Map<String, dynamic>?> fetchPoStatus({required String userId}) async {
     final String token = (await _getAccessToken())?.trim() ?? '';
     if (token.isEmpty || userId.trim().isEmpty) return null;
 

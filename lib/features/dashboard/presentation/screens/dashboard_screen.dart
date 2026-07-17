@@ -59,7 +59,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: DashboardGap.section),
             DashboardSectionHeader(
               title: LocaleKeys.dashboardRecentActivity.tr(),
-              onViewAll: () => Get.toNamed<dynamic>(AppRoute.activityHistory.path),
+              onViewAll: () =>
+                  Get.toNamed<dynamic>(AppRoute.activityHistory.path),
             ),
             const SizedBox(height: DashboardGap.headerToContent),
             Padding(

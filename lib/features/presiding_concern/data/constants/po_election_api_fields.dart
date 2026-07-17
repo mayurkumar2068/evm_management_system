@@ -102,4 +102,6 @@ abstract final class PoLoginResponseFields {
   static const String psNo = 'PSNo';
   static const String psName = 'PSName';
   static const String distName = 'DistName';
+  static const String lat = 'Lat';
+  static const String long = 'Long';
 }

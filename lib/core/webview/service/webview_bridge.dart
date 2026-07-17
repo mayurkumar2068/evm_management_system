@@ -119,11 +119,12 @@ class WebViewBridge {
         100,
       );
 
-      final AppPickedImage? picked = await _imagePickerService.pickCompressedImage(
-        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
-        maxSide: maxSide,
-        quality: quality,
-      );
+      final AppPickedImage? picked = await _imagePickerService
+          .pickCompressedImage(
+            source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+            maxSide: maxSide,
+            quality: quality,
+          );
 
       if (picked == null) {
         return <String, dynamic>{'ok': false, 'cancelled': true};

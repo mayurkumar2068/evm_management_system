@@ -17,7 +17,8 @@ class OnlineNominationHomeScreen extends StatefulWidget {
       _OnlineNominationHomeScreenState();
 }
 
-class _OnlineNominationHomeScreenState extends State<OnlineNominationHomeScreen> {
+class _OnlineNominationHomeScreenState
+    extends State<OnlineNominationHomeScreen> {
   NominationDraft? _savedDraft;
 
   @override
@@ -33,8 +34,8 @@ class _OnlineNominationHomeScreenState extends State<OnlineNominationHomeScreen>
   }
 
   Future<void> _loadSavedDraft() async {
-    final NominationDraft? draft =
-        await AppServices.nominationDrafts.loadActive();
+    final NominationDraft? draft = await AppServices.nominationDrafts
+        .loadActive();
     if (!mounted) {
       return;
     }

@@ -19,37 +19,24 @@ abstract final class AppFieldDecoration {
       helperText: helperText,
 
       filled: true,
-      fillColor: enabled
-          ? AppColors.surfaceVariant
-          : AppColors.slate100,
+      fillColor: enabled ? AppColors.surfaceVariant : AppColors.slate100,
 
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       alignLabelWithHint: true,
       isDense: false,
 
-      contentPadding: const EdgeInsets.fromLTRB(
-        16,
-        22,
-        16,
-        16,
-      ),
+      contentPadding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
 
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.slate500,
-      ),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate500),
 
       floatingLabelStyle: AppTextStyles.label.copyWith(
         color: AppColors.primary,
         backgroundColor: AppColors.surface,
       ),
 
-      helperStyle: AppTextStyles.caption.copyWith(
-        color: AppColors.slate500,
-      ),
+      helperStyle: AppTextStyles.caption.copyWith(color: AppColors.slate500),
 
-      errorStyle: AppTextStyles.caption.copyWith(
-        color: AppColors.error,
-      ),
+      errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
 
       errorMaxLines: 2,
 
@@ -58,42 +45,26 @@ abstract final class AppFieldDecoration {
           : Icon(
               prefixIcon,
               size: 22,
-              color: enabled
-                  ? AppColors.slate500
-                  : AppColors.slate300,
+              color: enabled ? AppColors.slate500 : AppColors.slate300,
             ),
 
-      prefixIconConstraints: const BoxConstraints(
-        minWidth: 48,
-      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 48),
 
       suffixIcon: suffixIcon,
 
       border: _border(AppColors.outline),
       enabledBorder: _border(AppColors.outline),
       disabledBorder: _border(AppColors.slate200),
-      focusedBorder: _border(
-        AppColors.primary,
-        width: 1.5,
-      ),
+      focusedBorder: _border(AppColors.primary, width: 1.5),
       errorBorder: _border(AppColors.error),
-      focusedErrorBorder: _border(
-        AppColors.error,
-        width: 1.5,
-      ),
+      focusedErrorBorder: _border(AppColors.error, width: 1.5),
     );
   }
 
-  static OutlineInputBorder _border(
-    Color color, {
-    double width = 1,
-  }) {
+  static OutlineInputBorder _border(Color color, {double width = 1}) {
     return OutlineInputBorder(
       borderRadius: AppRadius.brMd,
-      borderSide: BorderSide(
-        color: color,
-        width: width,
-      ),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 }
@@ -136,28 +107,22 @@ class AppDropdown<T> extends StatelessWidget {
 
   bool get _hasItems => items.isNotEmpty;
 
-  bool get _hasSelection =>
-      value != null && items.contains(value);
+  bool get _hasSelection => value != null && items.contains(value);
 
-  String get _label =>
-      isRequired ? '$label *' : label;
+  String get _label => isRequired ? '$label *' : label;
 
   @override
   Widget build(BuildContext context) {
     final Widget placeholder = Text(
       hint ?? _label,
       style: AppTextStyles.bodyLarge.copyWith(
-        color: enabled
-            ? AppColors.slate400
-            : AppColors.slate300,
+        color: enabled ? AppColors.slate400 : AppColors.slate300,
       ),
       overflow: TextOverflow.ellipsis,
     );
 
     return DropdownButtonFormField<T>(
-      key: ValueKey(
-        '$label-$value-${items.length}-$enabled',
-      ),
+      key: ValueKey('$label-$value-${items.length}-$enabled'),
 
       value: _hasSelection ? value : null,
 
@@ -173,9 +138,7 @@ class AppDropdown<T> extends StatelessWidget {
 
       icon: Icon(
         Icons.keyboard_arrow_down_rounded,
-        color: enabled
-            ? AppColors.slate600
-            : AppColors.slate400,
+        color: enabled ? AppColors.slate600 : AppColors.slate400,
       ),
 
       hint: placeholder,
@@ -193,9 +156,7 @@ class AppDropdown<T> extends StatelessWidget {
                 child: SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             : null,
@@ -204,29 +165,25 @@ class AppDropdown<T> extends StatelessWidget {
       items: !_hasItems
           ? const []
           : items
-              .map(
-                (item) => DropdownMenuItem<T>(
-                  value: item,
-                  child: Text(
-                    labelBuilder(item),
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.slate800,
+                .map(
+                  (item) => DropdownMenuItem<T>(
+                    value: item,
+                    child: Text(
+                      labelBuilder(item),
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.slate800,
+                      ),
                     ),
                   ),
-                ),
-              )
-              .toList(),
+                )
+                .toList(),
 
-      onChanged: enabled && !isLoading
-          ? onChanged
-          : null,
+      onChanged: enabled && !isLoading ? onChanged : null,
 
       validator: validator,
 
-      style: AppTextStyles.bodyLarge.copyWith(
-        color: AppColors.slate800,
-      ),
+      style: AppTextStyles.bodyLarge.copyWith(color: AppColors.slate800),
     );
   }
 }

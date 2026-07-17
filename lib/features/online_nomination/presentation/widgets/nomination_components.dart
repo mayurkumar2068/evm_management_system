@@ -656,10 +656,7 @@ class NominationUploadCard extends StatelessWidget {
             AppSpacing.vGapXs,
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: _buildActions(
-                isUploaded: isUploaded,
-                isError: isError,
-              ),
+              child: _buildActions(isUploaded: isUploaded, isError: isError),
             ),
           ],
         ],

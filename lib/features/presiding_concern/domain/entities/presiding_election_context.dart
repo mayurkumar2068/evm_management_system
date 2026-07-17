@@ -9,6 +9,8 @@ final class PresidingElectionContext {
     this.userId,
     this.pollingStationCode,
     this.pollingStationName,
+    this.boothLat,
+    this.boothLong,
   });
 
   final int electionId;
@@ -19,6 +21,16 @@ final class PresidingElectionContext {
   final String areaType;
   final String? pollingStationCode;
   final String? pollingStationName;
+
+  /// Polling booth coordinates from login API (`Lat` / `Long`).
+  final double? boothLat;
+  final double? boothLong;
+
+  bool get hasBoothCoordinates =>
+      boothLat != null &&
+      boothLong != null &&
+      boothLat!.abs() > 0 &&
+      boothLong!.abs() > 0;
 
   PresidingAreaType get resolvedAreaType => PresidingAreaType.parse(areaType);
 
@@ -47,6 +59,8 @@ final class PresidingElectionContext {
     String? userId,
     String? pollingStationCode,
     String? pollingStationName,
+    double? boothLat,
+    double? boothLong,
   }) {
     return PresidingElectionContext(
       electionId: electionId ?? this.electionId,
@@ -55,6 +69,8 @@ final class PresidingElectionContext {
       userId: userId ?? this.userId,
       pollingStationCode: pollingStationCode ?? this.pollingStationCode,
       pollingStationName: pollingStationName ?? this.pollingStationName,
+      boothLat: boothLat ?? this.boothLat,
+      boothLong: boothLong ?? this.boothLong,
     );
   }
 }

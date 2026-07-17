@@ -44,7 +44,10 @@ void main() {
   ) async {
     await pumpToDashboard(tester);
 
-    await Get.toNamed<dynamic>(AppRoute.deviceDetail.path, arguments: 'EVM-CU-1001');
+    await Get.toNamed<dynamic>(
+      AppRoute.deviceDetail.path,
+      arguments: 'EVM-CU-1001',
+    );
     await tester.pumpAndSettle();
     expect(find.byType(DeviceDetailScreen), findsOneWidget);
 
@@ -53,7 +56,10 @@ void main() {
     expect(find.byType(DeviceDetailScreen), findsNothing);
     expect(find.byType(DashboardScreen), findsOneWidget);
 
-    await Get.toNamed<dynamic>(AppRoute.deviceDetail.path, arguments: 'EVM-CU-2002');
+    await Get.toNamed<dynamic>(
+      AppRoute.deviceDetail.path,
+      arguments: 'EVM-CU-2002',
+    );
     await tester.pumpAndSettle();
     expect(find.byType(DeviceDetailScreen), findsOneWidget);
 

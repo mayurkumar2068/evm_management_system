@@ -129,12 +129,21 @@ class ServiceAuthController extends GetxController {
       }
     } catch (_) {}
 
+    final double? lat = _parseCoord(
+      data[PoLoginResponseFields.lat] ?? data['lat'],
+    );
+    final double? long = _parseCoord(
+      data[PoLoginResponseFields.long] ?? data['long'],
+    );
+
     final ServiceSession next = ServiceSession(
       token: data[PoLoginResponseFields.accessToken].toString(),
       userId: data[PoLoginResponseFields.userId].toString(),
       name: data[PoLoginResponseFields.userName].toString(),
       districtName: data[PoLoginResponseFields.distName]?.toString(),
       ttlHours: ttlHours,
+      lat: lat,
+      long: long,
       createdAt: DateTime.now(),
     );
 
@@ -157,6 +166,8 @@ class ServiceAuthController extends GetxController {
       ),
       pollingStationCode: data[PoLoginResponseFields.psNo]?.toString(),
       pollingStationName: data[PoLoginResponseFields.psName]?.toString(),
+      boothLat: lat,
+      boothLong: long,
     );
 
     final PresidingElectionContextStore store = PresidingElectionContextStore(
@@ -228,6 +239,8 @@ class ServiceAuthController extends GetxController {
       accessToken: token,
       fallback: data['DistName']?.toString(),
     );
+    final String? bodyName =
+        data['UBName']?.toString() ?? data['BlockName']?.toString();
 
     final ServiceSession next = ServiceSession(
       token: token,
@@ -238,6 +251,7 @@ class ServiceAuthController extends GetxController {
       districtId: districtId,
       districtName: districtName,
       bodyId: bodyId,
+      bodyName: bodyName,
       lat: lat,
       long: long,
       createdAt: DateTime.now(),

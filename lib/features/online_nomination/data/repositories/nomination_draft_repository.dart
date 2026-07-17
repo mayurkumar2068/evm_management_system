@@ -11,7 +11,10 @@ final class NominationDraftRepository {
   static const String _activeId = 'active';
 
   Future<NominationDraft?> loadActive() async {
-    final Map<String, dynamic>? raw = await _database.get(_collection, _activeId);
+    final Map<String, dynamic>? raw = await _database.get(
+      _collection,
+      _activeId,
+    );
     return NominationDraft.fromJson(raw);
   }
 

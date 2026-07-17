@@ -40,20 +40,51 @@ String appendWebViewToken(String url, {required String token}) {
   return appendWebViewQueryParam(url, key: 'token', value: clean);
 }
 
-/// Forwards survey session context to Angular.
-///
-/// Login DistID / bodyId are intentionally not appended — Masters cascade loads
-/// `district-list-all`, then `ub-list` / `block-list` from the selected district.
+/// Forwards login survey context (DistID, BodyID, UrbanRural) to Angular.
 String appendWebViewSurveyContext(
   String url, {
   required String token,
   String? userId,
+  String? districtId,
+  String? distName,
+  String? bodyId,
+  String? bodyName,
   String? urbanRural,
+  double? boothLat,
+  double? boothLong,
 }) {
   var result = appendWebViewToken(url, token: token);
   final String cleanUserId = userId?.trim() ?? '';
   if (cleanUserId.isNotEmpty) {
     result = appendWebViewQueryParam(result, key: 'userId', value: cleanUserId);
+  }
+  final String cleanDistrictId = districtId?.trim() ?? '';
+  if (cleanDistrictId.isNotEmpty) {
+    result = appendWebViewQueryParam(
+      result,
+      key: 'districtId',
+      value: cleanDistrictId,
+    );
+  }
+  final String cleanDistName = distName?.trim() ?? '';
+  if (cleanDistName.isNotEmpty) {
+    result = appendWebViewQueryParam(
+      result,
+      key: 'distName',
+      value: cleanDistName,
+    );
+  }
+  final String cleanBodyId = bodyId?.trim() ?? '';
+  if (cleanBodyId.isNotEmpty) {
+    result = appendWebViewQueryParam(result, key: 'bodyId', value: cleanBodyId);
+  }
+  final String cleanBodyName = bodyName?.trim() ?? '';
+  if (cleanBodyName.isNotEmpty) {
+    result = appendWebViewQueryParam(
+      result,
+      key: 'bodyName',
+      value: cleanBodyName,
+    );
   }
   final String cleanUrbanRural = urbanRural?.trim() ?? '';
   if (cleanUrbanRural.isNotEmpty) {
@@ -61,6 +92,20 @@ String appendWebViewSurveyContext(
       result,
       key: 'urbanRural',
       value: cleanUrbanRural,
+    );
+  }
+  if (boothLat != null && boothLat != 0) {
+    result = appendWebViewQueryParam(
+      result,
+      key: 'boothLat',
+      value: boothLat.toString(),
+    );
+  }
+  if (boothLong != null && boothLong != 0) {
+    result = appendWebViewQueryParam(
+      result,
+      key: 'boothLong',
+      value: boothLong.toString(),
     );
   }
   return result;

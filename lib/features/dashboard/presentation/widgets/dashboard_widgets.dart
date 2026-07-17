@@ -484,7 +484,10 @@ class DashboardServicesGrid extends StatelessWidget {
     // 1. Check for service login if required
     if (s.requiresServiceLogin) {
       if (session == null) {
-        await Get.toNamed<dynamic>(AppRoute.serviceLogin.path, arguments: s.title);
+        await Get.toNamed<dynamic>(
+          AppRoute.serviceLogin.path,
+          arguments: s.title,
+        );
         session = AppServices.serviceAuth.session.value;
         if (session == null) return; // User cancelled or failed login
       }
@@ -509,7 +512,13 @@ class DashboardServicesGrid extends StatelessWidget {
             s.url,
             token: token,
             userId: session?.userId,
+            districtId: session?.districtId,
+            distName: session?.districtName,
+            bodyId: session?.bodyId,
+            bodyName: session?.bodyName,
             urbanRural: session?.section,
+            boothLat: session?.lat,
+            boothLong: session?.long,
           )
         : s.url;
 

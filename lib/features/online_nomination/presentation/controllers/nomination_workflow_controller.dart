@@ -14,8 +14,9 @@ class NominationWorkflowController extends GetxController {
     required this.args,
     AppImagePickerService? imagePickerService,
     NominationDraftRepository? draftRepository,
-  })  : _imagePickerService = imagePickerService ?? AppImagePickerService(),
-        _draftRepository = draftRepository ?? Get.find<NominationDraftRepository>();
+  }) : _imagePickerService = imagePickerService ?? AppImagePickerService(),
+       _draftRepository =
+           draftRepository ?? Get.find<NominationDraftRepository>();
 
   final NominationFlowArgs args;
   final AppImagePickerService _imagePickerService;
@@ -334,7 +335,9 @@ class NominationWorkflowController extends GetxController {
       addressLine: textFields['addressLine'] ?? '',
       pincode: textFields['pincode'] ?? '',
       declarationAccepted: declarationAccepted.value,
-      documents: Map<String, NominationDocumentUploadState>.from(documentStates),
+      documents: Map<String, NominationDocumentUploadState>.from(
+        documentStates,
+      ),
     );
   }
 
@@ -401,9 +404,7 @@ class NominationWorkflowController extends GetxController {
       wardOptions.clear();
       selectedWardId.value = null;
       reservationOptions.assignAll(
-        municipalityId == null
-            ? const <NominationOptionItem>[]
-            : _reservations,
+        municipalityId == null ? const <NominationOptionItem>[] : _reservations,
       );
     }
     selectedReservationId.value = reservationId;
@@ -538,8 +539,9 @@ class NominationWorkflowController extends GetxController {
     final List<_UrbanBodyOption> bodies =
         _bodiesByDistrict[districtId] ?? const <_UrbanBodyOption>[];
     final Iterable<_UrbanBodyOption> filtered = switch (args.postType) {
-      NominationPostType.mahapaur =>
-        bodies.where((_UrbanBodyOption b) => b.type == UrbanBodyType.nagarNigam),
+      NominationPostType.mahapaur => bodies.where(
+        (_UrbanBodyOption b) => b.type == UrbanBodyType.nagarNigam,
+      ),
       NominationPostType.adhyaksh => bodies.where((_UrbanBodyOption b) {
         final UrbanBodyType? type = _urbanBodyTypeFromId(urbanBodyTypeId);
         return type != null && b.type == type;
@@ -612,9 +614,8 @@ class NominationWorkflowController extends GetxController {
     );
 
     try {
-      final AppPickedImage? picked = await _imagePickerService.pickCompressedImage(
-        source: source,
-      );
+      final AppPickedImage? picked = await _imagePickerService
+          .pickCompressedImage(source: source);
       if (picked == null) {
         documentStates[documentId] = previous;
         return false;

@@ -732,7 +732,9 @@ class _AppWebViewState extends State<AppWebView> {
     }
     return const Center(
       child: CircularProgressIndicator(
-        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.surveyPrimary),
+        valueColor: const AlwaysStoppedAnimation<Color>(
+          AppColors.surveyPrimary,
+        ),
       ),
     );
   }

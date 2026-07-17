@@ -190,7 +190,8 @@ class _OfflineBody extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               _ActionButtons(
-                onContinue: () => Get.toNamed<dynamic>(AppRoute.presidingDashboard.path),
+                onContinue: () =>
+                    Get.toNamed<dynamic>(AppRoute.presidingDashboard.path),
                 onRetry: onRetry,
                 onSync: onSync,
               ),
