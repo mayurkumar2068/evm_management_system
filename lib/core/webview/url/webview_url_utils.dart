@@ -33,6 +33,10 @@ String appendWebViewQueryParam(
   return uri.replace(queryParameters: params).toString();
 }
 
+/// Appends or updates the `lang` query parameter in a WebView launch URL.
+String appendWebViewLang(String url, {required String lang}) =>
+    appendWebViewQueryParam(url, key: 'lang', value: lang);
+
 /// Appends the service-auth token so web pages can restore session context.
 String appendWebViewToken(String url, {required String token}) {
   final String clean = token.trim();
