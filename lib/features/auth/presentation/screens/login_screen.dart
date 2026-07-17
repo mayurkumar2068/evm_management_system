@@ -17,9 +17,6 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-/// Soft mint accent — same family as Booth Survey CTA green.
-const Color _loginGreen = AppColors.greenDark;
-
 class _LoginScreenState extends State<LoginScreen> {
   late final Worker _authWorker;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -75,229 +72,237 @@ class _LoginScreenState extends State<LoginScreen> {
       final AuthState state = AppServices.auth.authState.value;
       final bool biometricEnabled =
           AppServices.auth.biometricEnabled.value ?? false;
+      final double top = MediaQuery.of(context).padding.top;
 
       return Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(
-          children: <Widget>[
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: MediaQuery.of(context).size.height * 0.16,
-              child: const TricolorWave(),
-            ),
-            Column(
-              children: <Widget>[
-                const _Header(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                    child: Transform.translate(
-                      offset: const Offset(0, -16),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(20, top + 12, 20, 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const _SoftLoginHero(),
+                  const SizedBox(height: 22),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.brXl,
+                      border: Border.all(color: AppColors.outline),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(
+                          color: AppColors.cardShadow,
+                          blurRadius: 18,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          LocaleKeys.authLoginTitle.tr(),
+                          style: AppTextStyles.titleLarge.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          LocaleKeys.authLoginSubtitle.tr(),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.slate500,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _FieldLabel(LocaleKeys.authDistrict.tr()),
+                        _DistrictDropdown(
+                          value: _district,
+                          items: _districts,
+                          onChanged: (String v) =>
+                              setState(() => _district = v),
+                        ),
+                        const SizedBox(height: 16),
+                        _FieldLabel(LocaleKeys.authUsername.tr()),
+                        _LoginField(
+                          controller: _officerId,
+                          hint: LocaleKeys.authUsernameHint.tr(),
+                          icon: Icons.tag_rounded,
+                          validator: Validators.requiredOfficerId,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            AppCard(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    LocaleKeys.authLoginTitle.tr(),
-                                    style: AppTextStyles.titleLarge,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    LocaleKeys.authLoginSubtitle.tr(),
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.slate400,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 22),
-                                  _FieldLabel(LocaleKeys.authDistrict.tr()),
-                                  _DistrictDropdown(
-                                    value: _district,
-                                    items: _districts,
-                                    onChanged: (String v) =>
-                                        setState(() => _district = v),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _FieldLabel(LocaleKeys.authUsername.tr()),
-                                  _LoginField(
-                                    controller: _officerId,
-                                    hint: LocaleKeys.authUsernameHint.tr(),
-                                    icon: Icons.tag_rounded,
-                                    validator: Validators.requiredOfficerId,
-                                    textInputAction: TextInputAction.next,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      _FieldLabel(LocaleKeys.authPassword.tr()),
-                                      GestureDetector(
-                                        onTap: () {
-                                          // TODO(mayur): implement forgot password
-                                        },
-                                        child: Text(
-                                          LocaleKeys.commonForgot.tr(),
-                                          style: AppTextStyles.caption.copyWith(
-                                            color: _loginGreen,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  _LoginField(
-                                    controller: _password,
-                                    hint: LocaleKeys.authPasswordHint.tr(),
-                                    icon: Icons.lock_outline_rounded,
-                                    obscure: _obscure,
-                                    validator: Validators.password,
-                                    textInputAction: TextInputAction.done,
-                                    onSubmitted: (_) => _submit(),
-                                    suffix: IconButton(
-                                      icon: Icon(
-                                        _obscure
-                                            ? AppIcons.visibility
-                                            : AppIcons.visibilityOff,
-                                        size: 18,
-                                        color: AppColors.slate400,
-                                      ),
-                                      onPressed: () =>
-                                          setState(() => _obscure = !_obscure),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () => setState(
-                                          () => _remember = !_remember,
-                                        ),
-                                        child: Container(
-                                          width: 20,
-                                          height: 20,
-                                          decoration: BoxDecoration(
-                                            color: _remember
-                                                ? _loginGreen
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                            border: Border.all(
-                                              color: _remember
-                                                  ? _loginGreen
-                                                  : AppColors.slate300,
-                                              width: 2,
-                                            ),
-                                          ),
-                                          child: _remember
-                                              ? const Icon(
-                                                  Icons.check,
-                                                  size: 12,
-                                                  color: Colors.white,
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          LocaleKeys.authRememberMe.tr(),
-                                          style: AppTextStyles.caption.copyWith(
-                                            color: AppColors.slate600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 22),
-                                  AppGradientButton(
-                                    label: LocaleKeys.authLoginButton.tr(),
-                                    icon: Icons.lock_outline_rounded,
-                                    gradient: AppGradients.green,
-                                    isLoading: state.isBusy,
-                                    onPressed: _submit,
-                                  ),
-                                  if (biometricEnabled) ...<Widget>[
-                                    const SizedBox(height: 12),
-                                    OutlinedButton.icon(
-                                      onPressed: state.isBusy
-                                          ? null
-                                          : () => AppServices.auth
-                                                .signInWithBiometrics(),
-                                      icon: const Icon(AppIcons.fingerprint),
-                                      label: Text(
-                                        LocaleKeys.authBiometricButton.tr(),
-                                      ),
-                                      style: OutlinedButton.styleFrom(
-                                        minimumSize: const Size.fromHeight(52),
-                                        side: const BorderSide(
-                                          color: _loginGreen,
-                                        ),
-                                        foregroundColor: _loginGreen,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: AppRadius.brMd,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              LocaleKeys.appCopyright.tr(),
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.slate300,
-                                fontSize: 10,
+                            _FieldLabel(LocaleKeys.authPassword.tr()),
+                            GestureDetector(
+                              onTap: () {
+                                // TODO(mayur): implement forgot password
+                              },
+                              child: Text(
+                                LocaleKeys.commonForgot.tr(),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        _LoginField(
+                          controller: _password,
+                          hint: LocaleKeys.authPasswordHint.tr(),
+                          icon: Icons.lock_outline_rounded,
+                          obscure: _obscure,
+                          validator: Validators.password,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _submit(),
+                          suffix: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? AppIcons.visibility
+                                  : AppIcons.visibilityOff,
+                              size: 18,
+                              color: AppColors.slate400,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _remember = !_remember),
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: _remember
+                                      ? AppColors.primary
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: _remember
+                                        ? AppColors.primary
+                                        : AppColors.slate300,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: _remember
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 12,
+                                        color: Colors.white,
+                                      )
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                LocaleKeys.authRememberMe.tr(),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.slate600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 22),
+                        AppGradientButton(
+                          label: LocaleKeys.authLoginButton.tr(),
+                          icon: Icons.lock_outline_rounded,
+                          gradient: AppGradients.primaryButton,
+                          isLoading: state.isBusy,
+                          onPressed: _submit,
+                        ),
+                        if (biometricEnabled) ...<Widget>[
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: state.isBusy
+                                ? null
+                                : () => AppServices.auth.signInWithBiometrics(),
+                            icon: const Icon(AppIcons.fingerprint),
+                            label: Text(LocaleKeys.authBiometricButton.tr()),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52),
+                              side: const BorderSide(color: AppColors.primary),
+                              foregroundColor: AppColors.primaryDark,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: AppRadius.brLg,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 18),
+                  Text(
+                    LocaleKeys.appCopyright.tr(),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.slate400,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       );
     });
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header();
+/// Soft blue→mint hero — same family as service (survey / pithasin) login.
+class _SoftLoginHero extends StatelessWidget {
+  const _SoftLoginHero();
 
   @override
   Widget build(BuildContext context) {
-    final double top = MediaQuery.of(context).padding.top;
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(24, top + 28, 24, 28),
-      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
+      decoration: BoxDecoration(
+        gradient: AppGradients.header,
+        borderRadius: AppRadius.brXl,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Column(
         children: <Widget>[
-          const BrandLogo(width: 96),
-          const SizedBox(height: 6),
+          const BrandLogo(width: 72),
+          const SizedBox(height: 14),
           Text(
             LocaleKeys.splashTitle.tr(),
             textAlign: TextAlign.center,
-            style: AppTextStyles.titleLarge.copyWith(color: _loginGreen),
+            style: AppTextStyles.titleLarge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 6),
           Text(
             LocaleKeys.dashboardBrandSubtitle.tr(),
-            style: AppTextStyles.caption.copyWith(color: AppColors.slate500),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Colors.white.withValues(alpha: 0.92),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -305,15 +310,15 @@ class _Header extends StatelessWidget {
             children: <Widget>[
               _TrustBadge(
                 label: LocaleKeys.authTrustNic.tr(),
-                color: AppColors.green,
+                color: Colors.white,
               ),
               _TrustBadge(
                 label: LocaleKeys.authTrustGovt.tr(),
-                color: AppColors.secondary,
+                color: Colors.white,
               ),
               _TrustBadge(
                 label: LocaleKeys.authTrustEncrypted.tr(),
-                color: AppColors.primary,
+                color: Colors.white,
               ),
             ],
           ),
@@ -334,9 +339,9 @@ class _TrustBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
+        color: color.withValues(alpha: 0.16),
         borderRadius: AppRadius.brPill,
-        border: Border.all(color: color.withValues(alpha: 0.22)),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -417,8 +422,12 @@ class _LoginField extends StatelessWidget {
         filled: true,
         fillColor: AppColors.slate50,
         enabledBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.brMd,
-          borderSide: BorderSide(color: AppColors.slate200),
+          borderRadius: AppRadius.brLg,
+          borderSide: BorderSide(color: AppColors.slate100),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.brLg,
+          borderSide: BorderSide(color: AppColors.primary, width: 1.6),
         ),
       ),
     );
@@ -454,8 +463,12 @@ class _DistrictDropdown extends StatelessWidget {
         filled: true,
         fillColor: AppColors.slate50,
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadius.brMd,
-          borderSide: BorderSide(color: AppColors.slate200),
+          borderRadius: AppRadius.brLg,
+          borderSide: BorderSide(color: AppColors.slate100),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.brLg,
+          borderSide: BorderSide(color: AppColors.primary, width: 1.6),
         ),
       ),
       items: items

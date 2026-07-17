@@ -175,11 +175,11 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                   color: AppColors.surface,
                   borderRadius: AppRadius.brXl,
                   border: Border.all(color: AppColors.outline),
-                  boxShadow: <BoxShadow>[
+                  boxShadow: const <BoxShadow>[
                     BoxShadow(
                       color: AppColors.cardShadow,
                       blurRadius: 18,
-                      offset: const Offset(0, 8),
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
@@ -409,7 +409,7 @@ class _Field extends StatelessWidget {
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadius.brLg,
-          borderSide: BorderSide(color: Color(0xFF0F8A5F), width: 1.6),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.6),
         ),
       ),
     );
