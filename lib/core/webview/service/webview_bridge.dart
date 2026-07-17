@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -74,6 +76,8 @@ class WebViewBridge {
           };
         }
         return onSubmitForm!(payload);
+      case 'apiRequest':
+        return _apiRequest(payload);
       case 'share':
         final String text = <String?>[
           payload['text']?.toString(),
@@ -109,6 +113,61 @@ class WebViewBridge {
   /// it to the web as a base64 JPEG data URL:
   ///   { ok: true, dataUrl: 'data:image/jpeg;base64,...' }
   /// On cancel: { ok: false, cancelled: true }. On error: { ok: false, error }.
+  /// Proxies cross-origin API calls from embedded pages (e.g. GitHub Pages UI
+  /// → mpsec API) through native Dio — bypasses browser CORS in WebView.
+  Future<Map<String, dynamic>> _apiRequest(Map<String, dynamic> payload) async {
+    final String url = payload['url']?.toString().trim() ?? '';
+    if (url.isEmpty) {
+      return <String, dynamic>{
+        'ok': false,
+        'status': 0,
+        'error': 'missing_url',
+      };
+    }
+
+    final String method = (payload['method']?.toString() ?? 'GET')
+        .toUpperCase();
+    final Map<String, dynamic> rawHeaders = payload['headers'] is Map
+        ? Map<String, dynamic>.from(payload['headers'] as Map)
+        : <String, dynamic>{};
+    final Map<String, String> headers = <String, String>{
+      for (final MapEntry<dynamic, dynamic> e in rawHeaders.entries)
+        e.key.toString(): e.value?.toString() ?? '',
+    };
+
+    try {
+      final config = AppServices.config;
+      final Dio dio = Dio(
+        BaseOptions(
+          connectTimeout: config.connectTimeout,
+          receiveTimeout: config.receiveTimeout,
+          sendTimeout: config.sendTimeout,
+          validateStatus: (_) => true,
+        ),
+      );
+      final Response<dynamic> res = await dio.request<dynamic>(
+        url,
+        data: payload['body'],
+        options: Options(method: method, headers: headers),
+      );
+      final int status = res.statusCode ?? 0;
+      final bool ok = status >= 200 && status < 300;
+      return <String, dynamic>{
+        'ok': ok,
+        'status': status,
+        'data': res.data,
+        if (!ok) 'error': res.statusMessage ?? 'http_$status',
+      };
+    } on DioException catch (e) {
+      return <String, dynamic>{
+        'ok': false,
+        'status': e.response?.statusCode ?? 0,
+        'data': e.response?.data,
+        'error': e.message ?? 'network_error',
+      };
+    }
+  }
+
   Future<Map<String, dynamic>> _pickImage(Map<String, dynamic> payload) async {
     try {
       final bool fromCamera =

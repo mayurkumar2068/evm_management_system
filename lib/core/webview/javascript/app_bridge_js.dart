@@ -39,6 +39,7 @@ String appBridgeBootstrapJs(String contextJson) {
     openScanner: function () { return nativeCall('openScanner', {}); },
     pickImage: function (opts) { return nativeCall('pickImage', opts || {}); },
     submitForm: function (opts) { return nativeCall('submitForm', opts || {}); },
+    apiRequest: function (opts) { return nativeCall('apiRequest', opts || {}); },
     logout: function () { return nativeCall('logout', {}); },
     navigate: function (route) { return nativeCall('navigate', { route: route }); },
     log: function (msg) { return nativeCall('log', { message: String(msg) }); },
