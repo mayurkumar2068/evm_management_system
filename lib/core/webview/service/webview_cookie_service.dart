@@ -63,20 +63,25 @@ class WebViewCookieService {
     await set('app_lang', ctx.language);
     await set('app_theme', ctx.themeName);
     await set('app_device', ctx.deviceId);
-    if (ctx.districtId != null) {
-      await set('app_district_id', ctx.districtId);
+    final String? districtId = ctx.districtId;
+    if (districtId != null) {
+      await set('app_district_id', districtId);
     }
-    if (ctx.distName != null) {
-      await set('app_dist_name', ctx.distName);
+    final String? distName = ctx.distName;
+    if (distName != null) {
+      await set('app_dist_name', distName);
     }
-    if (ctx.bodyId != null) {
-      await set('app_body_id', ctx.bodyId);
+    final String? bodyId = ctx.bodyId;
+    if (bodyId != null) {
+      await set('app_body_id', bodyId);
     }
-    if (ctx.bodyName != null) {
-      await set('app_body_name', ctx.bodyName);
+    final String? bodyName = ctx.bodyName;
+    if (bodyName != null) {
+      await set('app_body_name', bodyName);
     }
-    if (ctx.urbanRural != null) {
-      await set('app_urban_rural', ctx.urbanRural);
+    final String? urbanRural = ctx.urbanRural;
+    if (urbanRural != null) {
+      await set('app_urban_rural', urbanRural);
     }
 
     if (written.isNotEmpty) {
