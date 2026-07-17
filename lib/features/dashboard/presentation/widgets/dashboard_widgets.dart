@@ -509,8 +509,6 @@ class DashboardServicesGrid extends StatelessWidget {
             s.url,
             token: token,
             userId: session?.userId,
-            districtId: session?.districtId,
-            bodyId: session?.bodyId,
             urbanRural: session?.section,
           )
         : s.url;

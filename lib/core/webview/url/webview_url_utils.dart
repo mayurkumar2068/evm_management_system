@@ -40,31 +40,20 @@ String appendWebViewToken(String url, {required String token}) {
   return appendWebViewQueryParam(url, key: 'token', value: clean);
 }
 
-/// Forwards survey session context (token, user, district, area type) to Angular.
+/// Forwards survey session context to Angular.
+///
+/// Login DistID / bodyId are intentionally not appended — Masters cascade loads
+/// `district-list-all`, then `ub-list` / `block-list` from the selected district.
 String appendWebViewSurveyContext(
   String url, {
   required String token,
   String? userId,
-  String? districtId,
-  String? bodyId,
   String? urbanRural,
 }) {
   var result = appendWebViewToken(url, token: token);
   final String cleanUserId = userId?.trim() ?? '';
   if (cleanUserId.isNotEmpty) {
     result = appendWebViewQueryParam(result, key: 'userId', value: cleanUserId);
-  }
-  final String cleanDistrictId = districtId?.trim() ?? '';
-  if (cleanDistrictId.isNotEmpty) {
-    result = appendWebViewQueryParam(
-      result,
-      key: 'districtId',
-      value: cleanDistrictId,
-    );
-  }
-  final String cleanBodyId = bodyId?.trim() ?? '';
-  if (cleanBodyId.isNotEmpty) {
-    result = appendWebViewQueryParam(result, key: 'bodyId', value: cleanBodyId);
   }
   final String cleanUrbanRural = urbanRural?.trim() ?? '';
   if (cleanUrbanRural.isNotEmpty) {

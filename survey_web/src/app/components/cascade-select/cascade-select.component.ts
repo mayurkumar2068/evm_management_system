@@ -282,12 +282,19 @@ export class CascadeSelectComponent implements OnChanges {
     level.load(this.currentValues()).subscribe({
       next: (list) => {
         this.setOptions(level.key, list);
-        if (index !== 0) {
-          this.form.controls[level.key].enable({ emitEvent: false });
-        }
+        // Always enable once the request finishes so the user can open the
+        // panel (empty list is clearer than a permanently disabled control).
+        this.form.controls[level.key].enable({ emitEvent: false });
         this.loadingKey.set(null);
+        if (index > 0 && list.length === 0) {
+          this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
+            duration: 3500,
+          });
+        }
       },
       error: () => {
+        this.setOptions(level.key, []);
+        this.form.controls[level.key].enable({ emitEvent: false });
         this.loadingKey.set(null);
         this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
           duration: 3500,
