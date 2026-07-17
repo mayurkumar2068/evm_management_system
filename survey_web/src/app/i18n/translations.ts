@@ -41,8 +41,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'chk.progress': 'प्रश्न {current} / {total}',
     'chk.previous': 'पीछे',
     'chk.next': 'आगे बढ़ें',
-    'chk.remark.label': 'टिप्पणी (वैकल्पिक)',
-    'chk.remark.placeholder': 'कोई अतिरिक्त टिप्पणी यहाँ लिखें…',
+    'chk.remark.label': 'टिप्पणी',
+    'chk.remark.placeholder': 'यदि कोई विशेष टिप्पणी हो तो यहाँ लिखें…',
     'chk.empty': 'कोई प्रश्न उपलब्ध नहीं है।',
     'chk.validation.answerRequired': 'कृपया हाँ या नहीं चुनें।',
     'chk.validation.photoRequired': 'इस प्रश्न के लिए फ़ोटो आवश्यक है।',
@@ -78,11 +78,16 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'coord.loading': 'लाइव लोकेशन प्राप्त हो रही है…',
     'coord.live': 'लाइव लोकेशन प्राप्त',
     'coord.unavailable': 'लोकेशन उपलब्ध नहीं',
-    'coord.lat': 'अक्षांश (Latitude)',
-    'coord.lng': 'देशांतर (Longitude)',
+    'coord.lat': 'अक्षांश',
+    'coord.lng': 'देशांतर',
     'coord.permNote': 'लोकेशन की अनुमति दें और पुनः प्रयास करें।',
     'coord.source': 'स्रोत: GPS (उच्च सटीकता)',
     'coord.retry': 'फिर से प्राप्त करें',
+
+  // booth map
+    'map.boothTitle': 'मतदान केंद्र का स्थान',
+    'map.boothChip': 'मतदान केंद्र',
+    'map.navigate': 'मतदान केंद्र पर जाएँ',
 
     // image-upload
     'img.add': 'फ़ोटो जोड़ें',
@@ -172,6 +177,10 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'coord.permNote': 'Grant location permission and try again.',
     'coord.source': 'Source: GPS (high accuracy)',
     'coord.retry': 'Retry',
+
+    'map.boothTitle': 'Polling booth location',
+    'map.boothChip': 'Polling booth',
+    'map.navigate': 'Navigate to polling booth',
 
     'img.add': 'Add photo',
     'img.camera': 'Camera',

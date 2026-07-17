@@ -183,6 +183,10 @@ export class CascadeSelectComponent implements OnChanges {
   private readonly snack = inject(MatSnackBar);
 
   @Input({ required: true }) levels: CascadeLevel[] = [];
+  /** Login-scoped ids to auto-select (districtId, bodyId / blockId). */
+  @Input() prefillIds: Record<string, string> = {};
+  /** Display names for login-scoped ids (used when API label is missing). */
+  @Input() prefillNames: Record<string, string> = {};
   @Output() readonly selectionChange = new EventEmitter<CascadeSelection>();
 
   /** Localized "Select <level>" placeholder. */
@@ -223,6 +227,54 @@ export class CascadeSelectComponent implements OnChanges {
     }
   }
 
+  private pickAutoId(levelKey: string, list: LocationOption[]): string {
+    const prefilled = this.prefillIds[levelKey]?.trim();
+    if (prefilled && list.some((o) => this.idsMatch(o.id, prefilled))) {
+      return list.find((o) => this.idsMatch(o.id, prefilled))!.id;
+    }
+    if (list.length === 1) {
+      return list[0].id;
+    }
+    return '';
+  }
+
+  private idsMatch(a: string, b: string): boolean {
+    return a.trim().toLowerCase() === b.trim().toLowerCase();
+  }
+
+  private enrichOptions(levelKey: string, list: LocationOption[]): LocationOption[] {
+    const label = this.prefillNames[levelKey]?.trim();
+    if (!label) {
+      return list;
+    }
+    return list.map((opt) => {
+      const name = opt.name?.trim() ?? '';
+      if (!name || this.looksLikeGuid(name)) {
+        return { ...opt, name: label };
+      }
+      return opt;
+    });
+  }
+
+  private looksLikeGuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value.trim(),
+    );
+  }
+
+  private applyAutoSelect(index: number, list: LocationOption[]): void {
+    const level = this.levels[index];
+    const current = this.form.controls[level.key]?.value ?? '';
+    if (current) {
+      return;
+    }
+    const targetId = this.pickAutoId(level.key, list);
+    if (!targetId) {
+      return;
+    }
+    this.form.controls[level.key].setValue(targetId);
+  }
+
   /** Recreate the form + wiring whenever the level set changes (mode switch). */
   private rebuild(): void {
     this.teardown();
@@ -258,9 +310,11 @@ export class CascadeSelectComponent implements OnChanges {
     this.loadingKey.set(level.key);
     level.load(parentValues).subscribe({
       next: (list) => {
-        this.setOptions(level.key, list);
+        const options = this.enrichOptions(level.key, list);
+        this.setOptions(level.key, options);
         this.form.controls[level.key].enable({ emitEvent: false });
         this.loadingKey.set(null);
+        this.applyAutoSelect(index, options);
         if (index > 0 && list.length === 0) {
           this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
             duration: 3500,

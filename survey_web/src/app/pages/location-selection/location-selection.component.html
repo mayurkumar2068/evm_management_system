@@ -43,6 +43,8 @@
     <span class="ec-section-label">{{ 'loc.section.location' | t }}</span>
     <app-cascade-select
       [levels]="levels()"
+      [prefillIds]="cascadePrefill()"
+      [prefillNames]="cascadePrefillNames()"
       (selectionChange)="onSelectionChange($event)"
     />
   </section>

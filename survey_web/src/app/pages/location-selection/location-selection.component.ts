@@ -23,10 +23,30 @@ import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { SurveyService } from '../../services/survey.service';
 import { APP_PARAMS } from '../../core/app-params';
+import { SurveyAuthService } from '../../services/survey-auth.service';
 import {
   buildRuralLevels,
   buildUrbanLevels,
 } from '../../utils/location-levels.util';
+
+function loginUrbanRural(): string {
+  return APP_PARAMS.urbanRural.trim().toUpperCase();
+}
+
+function areaMatchesLogin(area: AreaType | null): boolean {
+  const scope = loginUrbanRural();
+  if (!scope || !area) {
+    return false;
+  }
+  // Prefill bodyId only for matching area — never put urban BodyID into rural block.
+  if ((scope === 'U' || scope === 'URBAN') && area === 'urban') {
+    return true;
+  }
+  if ((scope === 'R' || scope === 'RURAL') && area === 'rural') {
+    return true;
+  }
+  return false;
+}
 
 /** Material icon for each location level (used by the summary card). */
 const LEVEL_ICONS: Record<string, string> = {
@@ -54,6 +74,7 @@ const LEVEL_ICONS: Record<string, string> = {
 })
 export class LocationSelectionComponent implements OnInit {
   private readonly survey = inject(SurveyService);
+  private readonly surveyAuth = inject(SurveyAuthService);
   private readonly router = inject(Router);
   private readonly snack = inject(MatSnackBar);
   private readonly i18n = inject(I18nService);
@@ -73,6 +94,35 @@ export class LocationSelectionComponent implements OnInit {
 
   /** Live selection emitted by `<app-cascade-select>`. */
   readonly selection = signal<CascadeSelection | null>(null);
+
+  /** Auto-fill district + body/block only when area matches login scope. */
+  readonly cascadePrefill = computed(() => {
+    const area = this.areaType();
+    const scoped = areaMatchesLogin(area);
+    const session = this.surveyAuth.session;
+    const bodyId = scoped
+      ? APP_PARAMS.bodyId.trim() || session?.bodyId?.trim() || ''
+      : '';
+    return {
+      districtId: APP_PARAMS.districtId.trim() || session?.districtId?.trim() || '',
+      blockId: bodyId,
+      bodyId,
+    };
+  });
+
+  readonly cascadePrefillNames = computed(() => {
+    const area = this.areaType();
+    const scoped = areaMatchesLogin(area);
+    const session = this.surveyAuth.session;
+    const bodyName = scoped
+      ? APP_PARAMS.bodyName.trim() || session?.bodyName?.trim() || ''
+      : '';
+    return {
+      districtId: APP_PARAMS.distName.trim() || session?.distName?.trim() || '',
+      blockId: bodyName,
+      bodyId: bodyName,
+    };
+  });
 
   readonly canProceed = computed(
     () => this.areaType() !== null && this.selection()?.complete === true,

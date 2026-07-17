@@ -58,6 +58,50 @@
               "outputHashing": "all",
               "serviceWorker": false
             },
+            "pages": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pages.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kb",
+                  "maximumError": "12kb"
+                }
+              ],
+              "outputHashing": "all",
+              "serviceWorker": false
+            },
+            "mpsec": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.mpsec.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kb",
+                  "maximumError": "12kb"
+                }
+              ],
+              "outputHashing": "all",
+              "serviceWorker": false
+            },
             "staging": {
               "fileReplacements": [
                 {

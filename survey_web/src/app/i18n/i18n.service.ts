@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import { APP_PARAMS } from '../core/app-params';
 import { Lang, TRANSLATIONS } from './translations';
 
 /**
@@ -10,7 +9,8 @@ import { Lang, TRANSLATIONS } from './translations';
  */
 @Injectable({ providedIn: 'root' })
 export class I18nService {
-  readonly lang: Lang = APP_PARAMS.lang;
+  /** Survey UI is Hindi-first for field officers. */
+  readonly lang: Lang = 'hi';
 
   constructor() {
     if (typeof document !== 'undefined') {

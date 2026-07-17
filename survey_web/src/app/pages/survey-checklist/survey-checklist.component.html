@@ -1,24 +1,11 @@
 <main class="page">
-  <header class="ec-hero">
-    <span class="ec-hero__strip"></span>
-    <div class="ec-hero__row">
-      <div class="ec-hero__icon">
-        <mat-icon>fact_check</mat-icon>
-      </div>
-      <div>
-        <h2 class="ec-hero__title">{{ 'chk.hero.title' | t }}</h2>
-        <p class="ec-hero__sub">{{ 'chk.hero.sub' | t }}</p>
-      </div>
-    </div>
-  </header>
-
   <span class="ec-section-label">{{ 'chk.section.location' | t }}</span>
   <app-location-card [rows]="location?.rows ?? []" />
 
   <span class="ec-section-label">{{ 'chk.section.checklist' | t }}</span>
 
   @if (authError(); as authErr) {
-    <p class="question-step__error question-step__error--auth">
+    <p class="alert alert--warn">
       <mat-icon>warning_amber</mat-icon>
       {{ authErr }}
     </p>
@@ -30,39 +17,57 @@
       <span>{{ 'chk.loading' | t }}</span>
     </div>
   } @else if (currentQuestion()) {
-    <section class="question-step" [formGroup]="questionForm">
-      <div class="question-step__progress">{{ progressLabel() }}</div>
+    <section class="question-card" [formGroup]="questionForm">
+      <div class="question-card__head">
+        <span class="question-card__badge">{{ currentIndex() + 1 }}</span>
+        <div class="question-card__meta">
+          <span class="question-card__progress">{{ progressLabel() }}</span>
+          <div class="question-card__track" aria-hidden="true">
+            <span class="question-card__fill" [style.width.%]="progressPercent()"></span>
+          </div>
+        </div>
+      </div>
 
       <app-checklist-item
         [group]="questionForm"
         [index]="currentIndex()"
+        [compact]="true"
         [uploadDisabled]="false"
         (enlarge)="openPreview($event)"
       />
 
-      <mat-form-field appearance="outline" class="remark" subscriptSizing="dynamic">
-        <mat-label>{{ 'chk.remark.label' | t }}</mat-label>
+      <div class="remark-card">
+        <label class="remark-card__label" for="survey-remark">
+          <mat-icon>edit_note</mat-icon>
+          <span>{{ 'chk.remark.label' | t }}</span>
+        </label>
         <textarea
-          matInput
+          id="survey-remark"
+          class="remark-card__input"
           formControlName="remark"
           rows="3"
           maxlength="500"
           [placeholder]="'chk.remark.placeholder' | t"
         ></textarea>
-      </mat-form-field>
+      </div>
 
       @if (saveError(); as err) {
-        <p class="question-step__error">
+        <p class="alert alert--error">
           <mat-icon>error_outline</mat-icon>
           {{ err }}
         </p>
       }
     </section>
   } @else {
-    <p class="question-step__empty">{{ 'chk.empty' | t }}</p>
+    <p class="question-card__empty">{{ 'chk.empty' | t }}</p>
   }
 
   <span class="ec-section-label">{{ 'chk.coords' | t }}</span>
+  <app-booth-map-card
+    [booth]="boothCoordinates()"
+    [current]="coordinates()"
+    [boothLabel]="boothLabel()"
+  />
   <app-coordinates-card
     [coordinates]="coordinates()"
     [loading]="geoLoading()"
@@ -71,32 +76,32 @@
   />
 </main>
 
-<footer class="footer footer--dual">
-  <button
-    mat-stroked-button
-    class="footer__prev"
-    type="button"
-    [disabled]="currentIndex() === 0 || saving() || loadingQuestions()"
-    (click)="goPrevious()"
-  >
-    {{ 'chk.previous' | t }}
-  </button>
+<footer class="action-bar">
+  <div class="action-bar__inner">
+    <button
+      type="button"
+      class="action-btn action-btn--ghost"
+      [disabled]="currentIndex() === 0 || saving() || loadingQuestions()"
+      (click)="goPrevious()"
+    >
+      <mat-icon>arrow_back</mat-icon>
+      <span>{{ 'chk.previous' | t }}</span>
+    </button>
 
-  <button
-    mat-flat-button
-    class="footer__next"
-    type="button"
-    [disabled]="!currentQuestion() || saving() || loadingQuestions()"
-    (click)="saveAndContinue()"
-  >
-    @if (saving()) {
-      <mat-spinner diameter="20" strokeWidth="2" />
-    } @else if (isLastQuestion()) {
-      <span>{{ 'chk.submit' | t }}</span>
-    } @else {
-      <span>{{ 'chk.next' | t }}</span>
-    }
-  </button>
+    <button
+      type="button"
+      class="action-btn action-btn--primary"
+      [disabled]="!currentQuestion() || saving() || loadingQuestions()"
+      (click)="saveAndContinue()"
+    >
+      @if (saving()) {
+        <mat-spinner diameter="20" strokeWidth="2" />
+      } @else {
+        <span>{{ isLastQuestion() ? ('chk.submit' | t) : ('chk.next' | t) }}</span>
+        <mat-icon>{{ isLastQuestion() ? 'send' : 'arrow_forward' }}</mat-icon>
+      }
+    </button>
+  </div>
 </footer>
 
 @if (preview(); as img) {

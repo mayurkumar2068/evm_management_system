@@ -11,6 +11,7 @@ export interface SurveyLoginData {
   BodyID?: string | null;
   DistName?: string | null;
   UBName?: string | null;
+  BlockName?: string | null;
   Name?: string | null;
   /** Newly added on login response (PS / user coordinates). */
   Lat?: number | string | null;
@@ -28,7 +29,9 @@ export interface SurveyLoginRequest {
 export interface SurveySession {
   userId: string;
   districtId: string;
+  distName: string;
   bodyId: string;
+  bodyName: string;
   urbanRural: 'U' | 'R' | null;
   electionId: number | null;
   psId: string;

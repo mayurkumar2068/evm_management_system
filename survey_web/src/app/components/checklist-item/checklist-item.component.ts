@@ -31,11 +31,14 @@ type Answer = boolean | null;
   template: `
     <div
       class="ci"
+      [class.ci--compact]="compact"
       [class.ci--yes]="answer === true"
       [class.ci--no]="answer === false"
     >
       <div class="ci__top">
-        <span class="ci__idx">{{ index + 1 }}</span>
+        @if (!compact) {
+          <span class="ci__idx">{{ index + 1 }}</span>
+        }
         <p class="ci__title">{{ title }}</p>
       </div>
 
@@ -89,6 +92,17 @@ type Answer = boolean | null;
         padding: 12px 13px;
         transition: border-color 0.2s ease, background 0.2s ease;
       }
+      .ci--compact {
+        border: none;
+        border-left: none;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+      }
+      .ci--compact.ci--yes,
+      .ci--compact.ci--no {
+        background: transparent;
+      }
       .ci--yes {
         border-left-color: var(--ec-primary);
         background: rgba(113, 103, 232, 0.08);
@@ -119,9 +133,9 @@ type Answer = boolean | null;
       }
       .ci__title {
         margin: 0;
-        font-size: 14.5px;
-        font-weight: 500;
-        line-height: 1.45;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.5;
         color: var(--ec-text);
         word-break: break-word;
       }
@@ -133,14 +147,18 @@ type Answer = boolean | null;
         gap: 12px;
         padding-left: 34px;
       }
+      .ci--compact .ci__bar {
+        padding-left: 0;
+        margin-top: 4px;
+      }
 
       /* segmented हाँ/नहीं toggle */
       .seg {
         display: inline-flex;
-        background: #eef2f0;
-        border-radius: 12px;
-        padding: 3px;
-        gap: 2px;
+        background: #f1f2f8;
+        border-radius: 14px;
+        padding: 4px;
+        gap: 4px;
       }
       .seg__btn {
         border: none;
@@ -191,6 +209,8 @@ export class ChecklistItemComponent {
   @Input({ required: true }) group!: FormGroup;
   /** Zero-based position used for the row badge. */
   @Input() index = 0;
+  /** Hides row badge when parent already shows progress. */
+  @Input() compact = false;
   /** True when the global max-images budget is exhausted. */
   @Input() uploadDisabled = false;
 

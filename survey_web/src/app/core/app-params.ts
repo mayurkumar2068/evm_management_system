@@ -13,10 +13,14 @@ export interface AppParams {
   password: string;
   userId: string;
   districtId: string;
+  distName: string;
   bodyId: string;
+  bodyName: string;
   urbanRural: string;
   electionId: number | null;
   psId: string;
+  boothLat: number | null;
+  boothLong: number | null;
 }
 
 function readCookie(name: string): string {
@@ -26,9 +30,24 @@ function readCookie(name: string): string {
   return match ? decodeURIComponent(match[1]) : '';
 }
 
+function parseCoord(raw: string): number | null {
+  const n = Number(raw?.trim());
+  return Number.isFinite(n) ? n : null;
+}
+
 function read(): AppParams {
   try {
-    const ctx = (window as { __APP_CONTEXT__?: { districtId?: string } }).__APP_CONTEXT__;
+    const ctx = (window as {
+      __APP_CONTEXT__?: {
+        districtId?: string;
+        distName?: string;
+        bodyId?: string;
+        bodyName?: string;
+        urbanRural?: string;
+        boothLat?: number | string;
+        boothLong?: number | string;
+      };
+    }).__APP_CONTEXT__;
     const q = new URLSearchParams(window.location.search);
     const readParam = (names: string[], cookieName: string): string => {
       for (const name of names) {
@@ -48,17 +67,51 @@ function read(): AppParams {
     const districtId =
       readParam(['districtId', 'districtid', 'distId', 'distid'], 'app_district_id') ||
       (ctx?.districtId ?? '').trim();
-    const bodyId = readParam(['bodyId', 'bodyid'], 'app_body_id');
-    const urbanRural = readParam(['urbanRural', 'urbanrural'], 'app_urban_rural');
+    const distName =
+      readParam(['distName', 'distname'], 'app_dist_name') ||
+      (ctx?.distName ?? '').trim();
+    const bodyId =
+      readParam(['bodyId', 'bodyid'], 'app_body_id') ||
+      (ctx?.bodyId ?? '').trim();
+    const bodyName =
+      readParam(['bodyName', 'bodyname'], 'app_body_name') ||
+      (ctx?.bodyName ?? '').trim();
+    const urbanRural =
+      readParam(['urbanRural', 'urbanrural'], 'app_urban_rural') ||
+      (ctx?.urbanRural ?? '').trim();
     const electionIdRaw = readParam(['electionId', 'electionid'], 'app_election_id');
     const psId = readParam(['psId', 'psid'], 'app_ps_id');
+    const boothLatRaw =
+      readParam(['boothLat', 'boothlat'], 'app_booth_lat') ||
+      (ctx?.boothLat != null ? String(ctx.boothLat) : '');
+    const boothLongRaw =
+      readParam(['boothLong', 'boothlong'], 'app_booth_long') ||
+      (ctx?.boothLong != null ? String(ctx.boothLong) : '');
+    const boothLat = parseCoord(boothLatRaw);
+    const boothLong = parseCoord(boothLongRaw);
     const parsedElectionId = Number(electionIdRaw);
     const electionId = Number.isFinite(parsedElectionId) && parsedElectionId > 0
       ? parsedElectionId
       : null;
 
-    const lang: Lang = langParam.toLowerCase().startsWith('en') ? 'en' : 'hi';
-    return { token, lang, userName, password, userId, districtId, bodyId, urbanRural, electionId, psId };
+    // Hindi-first: device/en cookies default to Hindi unless ?lang=en is explicit.
+    const lang: Lang = langParam.toLowerCase() === 'en' ? 'en' : 'hi';
+    return {
+      token,
+      lang,
+      userName,
+      password,
+      userId,
+      districtId,
+      distName,
+      bodyId,
+      bodyName,
+      urbanRural,
+      electionId,
+      psId,
+      boothLat,
+      boothLong,
+    };
   } catch {
     return {
       token: '',
@@ -67,10 +120,14 @@ function read(): AppParams {
       password: '',
       userId: '',
       districtId: '',
+      distName: '',
       bodyId: '',
+      bodyName: '',
       urbanRural: '',
       electionId: null,
       psId: '',
+      boothLat: null,
+      boothLong: null,
     };
   }
 }

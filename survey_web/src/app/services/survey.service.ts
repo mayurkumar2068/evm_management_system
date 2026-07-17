@@ -42,16 +42,16 @@ export class SurveyService {
     return this.masters.getDistricts();
   }
 
-  getBlocks(districtId: string): Observable<LocationOption[]> {
-    return this.masters.getBlocks(districtId);
+  getBlocks(): Observable<LocationOption[]> {
+    return this.masters.getBlocks();
   }
 
   getRuralBooths(blockId: string): Observable<LocationOption[]> {
     return this.masters.getRuralBooths(blockId);
   }
 
-  getBodies(districtId: string): Observable<LocationOption[]> {
-    return this.masters.getBodies(districtId);
+  getBodies(): Observable<LocationOption[]> {
+    return this.masters.getBodies();
   }
 
   getUrbanBooths(bodyId: string): Observable<LocationOption[]> {

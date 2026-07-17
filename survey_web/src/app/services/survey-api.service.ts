@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { catchError, delay, map, tap } from 'rxjs/operators';
 
 import { ApiClientService } from '../core/api-client.service';
+import { SurveyOfflineCacheService } from '../core/survey-offline-cache.service';
 import {
   SaveSurveyAnswerRequest,
   SaveSurveyAnswerResponse,
@@ -10,21 +11,33 @@ import {
   SurveyQuestionDto,
 } from '../models/survey.model';
 
+const QUESTIONS_KEY = 'survey_questions';
+
 /**
  * PSSurvey API (`/api/PSSurvey/*`) — questions load + per-answer save.
  */
 @Injectable({ providedIn: 'root' })
 export class SurveyApiService {
   private readonly api = inject(ApiClientService);
+  private readonly cache = inject(SurveyOfflineCacheService);
 
   getQuestions(): Observable<SurveyQuestion[]> {
     if (this.api.useMockData) {
       return of(MOCK_QUESTIONS).pipe(delay(300));
     }
 
-    return this.api
-      .get<SurveyQuestionDto[]>('/api/PSSurvey/survey_questions')
-      .pipe(map((rows) => [...rows].sort((a, b) => a.SORT_ORDER - b.SORT_ORDER).map(mapQuestionDto)));
+    const cached = this.cache.readList<SurveyQuestion>(QUESTIONS_KEY);
+    return this.api.get<unknown>('/api/PSSurvey/survey_questions').pipe(
+      map((res) => normalizeQuestions(res)),
+      tap((items) => {
+        if (items.length > 0) {
+          this.cache.write(QUESTIONS_KEY, items);
+        }
+      }),
+      catchError(() =>
+        cached.length > 0 ? of(cached) : of([] as SurveyQuestion[]),
+      ),
+    );
   }
 
   saveAnswer(payload: SaveSurveyAnswerRequest): Observable<SaveSurveyAnswerResponse> {
@@ -36,8 +49,44 @@ export class SurveyApiService {
     return this.api.post<SaveSurveyAnswerResponse>(
       '/api/PSSurvey/save_survey_answer',
       payload,
+    ).pipe(
+      tap((res) => {
+        if (res?.Success) {
+          return;
+        }
+        this.cache.queuePendingSave(payload);
+      }),
+      catchError((err) => {
+        this.cache.queuePendingSave(payload);
+        throw err;
+      }),
     );
   }
+}
+
+/** mpsec may return raw array or `{ Status, Data }` envelope. */
+function normalizeQuestions(res: unknown): SurveyQuestion[] {
+  const rows = extractQuestionRows(res);
+  return [...rows]
+    .sort((a, b) => a.SORT_ORDER - b.SORT_ORDER)
+    .map(mapQuestionDto);
+}
+
+function extractQuestionRows(res: unknown): SurveyQuestionDto[] {
+  if (Array.isArray(res)) {
+    return res as SurveyQuestionDto[];
+  }
+  if (res && typeof res === 'object') {
+    const envelope = res as { Status?: boolean; Data?: unknown; data?: unknown };
+    if (envelope.Status === false) {
+      throw new Error('Survey questions request failed');
+    }
+    const data = envelope.Data ?? envelope.data;
+    if (Array.isArray(data)) {
+      return data as SurveyQuestionDto[];
+    }
+  }
+  return [];
 }
 
 function mapQuestionDto(dto: SurveyQuestionDto): SurveyQuestion {

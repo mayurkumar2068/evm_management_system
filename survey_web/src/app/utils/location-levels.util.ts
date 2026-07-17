@@ -17,7 +17,7 @@ export function buildRuralLevels(svc: SurveyService, i18n: I18nService): Cascade
     {
       key: 'blockId',
       label: i18n.t('level.block'),
-      load: (v) => svc.getBlocks(v['districtId']),
+      load: () => svc.getBlocks(),
     },
     {
       key: 'boothId',
@@ -33,7 +33,7 @@ export function buildUrbanLevels(svc: SurveyService, i18n: I18nService): Cascade
     {
       key: 'bodyId',
       label: i18n.t('level.body'),
-      load: (v) => svc.getBodies(v['districtId']),
+      load: () => svc.getBodies(),
     },
     {
       key: 'boothId',

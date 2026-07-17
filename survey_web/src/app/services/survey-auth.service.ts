@@ -77,12 +77,14 @@ export class SurveyAuthService {
     return {
       userId,
       districtId,
+      distName: APP_PARAMS.distName.trim(),
       bodyId,
+      bodyName: APP_PARAMS.bodyName.trim(),
       urbanRural,
       electionId: APP_PARAMS.electionId,
       psId: APP_PARAMS.psId.trim(),
-      lat: null,
-      long: null,
+      lat: APP_PARAMS.boothLat ?? null,
+      long: APP_PARAMS.boothLong ?? null,
     };
   }
 
@@ -94,7 +96,12 @@ export class SurveyAuthService {
     return {
       userId: data.UserId?.trim() ?? '',
       districtId: data.DistID?.trim() ?? APP_PARAMS.districtId.trim(),
+      distName: data.DistName?.trim() ?? APP_PARAMS.distName.trim(),
       bodyId: data.BodyID?.trim() ?? APP_PARAMS.bodyId.trim(),
+      bodyName:
+        data.UBName?.trim() ??
+        data.BlockName?.trim() ??
+        APP_PARAMS.bodyName.trim(),
       urbanRural: normalizeUrbanRural(data.UrbanRural),
       electionId,
       psId: data.PSID?.trim() ?? APP_PARAMS.psId.trim(),

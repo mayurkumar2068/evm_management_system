@@ -1,7 +1,6 @@
 /**
- * GitHub Pages: https://mayurkumar2068.github.io/evm_management_system/
- * IIS fallback: http://10.115.197.192/pssurvey/
- * API (LAN): http://10.115.197.192/POElectionAPI
+ * LAN / IIS fallback: http://10.115.197.192/pssurvey/
+ * GitHub Pages uses environment.pages.ts (mpsec live API).
  */
 export const environment = {
   production: true,

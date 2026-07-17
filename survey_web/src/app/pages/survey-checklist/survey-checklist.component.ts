@@ -8,16 +8,16 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { ChecklistItemComponent } from '../../components/checklist-item/checklist-item.component';
+import { BoothMapCardComponent } from '../../components/booth-map-card/booth-map-card.component';
 import { CoordinatesCardComponent } from '../../components/coordinates-card/coordinates-card.component';
 import { LocationCardComponent } from '../../components/location-card/location-card.component';
 import { Coordinates, SelectedLocation } from '../../models/location.model';
@@ -29,6 +29,7 @@ import {
 import { GeolocationError, GeolocationService } from '../../services/geolocation.service';
 import { SurveyAuthService } from '../../services/survey-auth.service';
 import { SurveyService } from '../../services/survey.service';
+import { APP_PARAMS } from '../../core/app-params';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
@@ -39,10 +40,9 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
     ReactiveFormsModule,
     LocationCardComponent,
     ChecklistItemComponent,
+    BoothMapCardComponent,
     CoordinatesCardComponent,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatIconModule,
     MatProgressSpinnerModule,
     TranslatePipe,
@@ -116,50 +116,71 @@ export class SurveyChecklistComponent implements OnInit {
       void this.router.navigate(['/location']);
       return;
     }
-    this.loadQuestions();
-    this.ensureAuth();
+    this.ensureAuthAndLoadQuestions();
     this.fetchLocation();
   }
 
-  private ensureAuth(): void {
+  private ensureAuthAndLoadQuestions(): void {
+    this.loadingQuestions.set(true);
     this.surveyAuth
       .ensureAuthenticated()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.authError.set(null);
-        },
-        error: () => {
-          this.authError.set(this.i18n.t('chk.toast.authFail'));
-        },
-      });
-  }
-
-  questionTitle(question: SurveyQuestion): string {
-    return this.i18n.lang === 'en' ? question.titleEn : question.titleHi;
-  }
-
-  private loadQuestions(): void {
-    this.loadingQuestions.set(true);
-    this.survey
-      .getSurveyQuestions()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        switchMap(() => this.survey.getSurveyQuestions()),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
         next: (items) => {
+          this.authError.set(null);
           this.questions.set(items);
           this.loadingQuestions.set(false);
           if (items.length > 0) {
             this.bindQuestionToForm(0);
+          } else {
+            this.snack.open(this.i18n.t('chk.toast.loadFail'), 'OK', {
+              duration: 3000,
+            });
           }
         },
         error: () => {
           this.loadingQuestions.set(false);
+          this.authError.set(this.i18n.t('chk.toast.authFail'));
           this.snack.open(this.i18n.t('chk.toast.loadFail'), 'OK', {
             duration: 3000,
           });
         },
       });
   }
+
+  questionTitle(question: SurveyQuestion): string {
+    return question.titleHi?.trim() || question.titleEn?.trim() || '';
+  }
+
+  readonly progressPercent = computed(() => {
+    const total = this.totalQuestions();
+    if (total <= 0) {
+      return 0;
+    }
+    return Math.round(((this.currentIndex() + 1) / total) * 100);
+  });
+
+  /** Booth location from login API (`Lat` / `Long`). */
+  readonly boothCoordinates = computed((): Coordinates | null => {
+    const session = this.surveyAuth.session;
+    const lat = APP_PARAMS.boothLat ?? session?.lat ?? null;
+    const lng = APP_PARAMS.boothLong ?? session?.long ?? null;
+    if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+    if (lat === 0 && lng === 0) {
+      return null;
+    }
+    return { latitude: lat, longitude: lng };
+  });
+
+  readonly boothLabel = computed(() => {
+    const rows = this.location?.rows ?? [];
+    return rows.find((r) => r.icon === 'how_to_vote')?.value ?? '';
+  });
 
   fetchLocation(): void {
     this.geoLoading.set(true);
