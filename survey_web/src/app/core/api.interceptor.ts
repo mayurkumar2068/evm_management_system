@@ -34,10 +34,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (!environment.production) {
-        // eslint-disable-next-line no-console
-        console.error(`[API] ${cloned.method} ${cloned.urlWithParams}`, error.status, error.error);
-      }
+      // eslint-disable-next-line no-console
+      console.error(`[API] ${cloned.method} ${cloned.urlWithParams}`, error.status, error.error);
       return throwError(() => error);
     }),
   );

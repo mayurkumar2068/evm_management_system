@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, delay, map } from 'rxjs/operators';
+import { catchError, delay, map, switchMap } from 'rxjs/operators';
 
 import { ApiClientService } from '../core/api-client.service';
 import { LocationOption } from '../models/location.model';
@@ -22,6 +22,7 @@ interface BlockDto {
 interface UrbanBodyDto {
   ID?: string;
   UrbanBodyID?: string;
+  BodyID?: string;
   UrbanBodyName?: string;
   UrbanBodyNameEn?: string;
 }
@@ -41,102 +42,97 @@ interface RuralPsDto {
 }
 
 /**
- * Masters API — aligned with OpenAPI (`api-1.json`) cascade:
- *   GET /api/Masters/district-list-all     (full district list; no DistID)
- *   GET /api/Masters/districts/{id}        (single district lookup only)
- *   GET /api/Masters/ub-list/{districtId}  (urban bodies for selected district)
- *   GET /api/Masters/ups-list/{bodyId}     (urban PS for selected body)
- *   GET /api/Masters/block-list/{districtId}
- *   GET /api/Masters/rps-list/{blockId}
+ * Masters cascade — refs:
+ * - `20260710 PSSurveyAPI.txt`: district-list-all + `ub-list?id={districtId}`
+ * - `20260713 PSSurveyAPI.txt` / `api-1.json`: `ub-list/{id}`, `ups-list/{id}`, …
  *
- * Login DistID / bodyId must NOT drive the district list — user picks district,
- * then child dropdowns load from that selection.
+ * Urban: district-list-all → ub-list(districtId) → ups-list(bodyId)
+ * Rural: district-list-all → block-list(districtId) → rps-list(blockId)
  */
 @Injectable({ providedIn: 'root' })
 export class MastersApiService {
   private readonly api = inject(ApiClientService);
 
-  /** Full district list — never pass login DistID. */
+  /** Full district list — never filter by login DistID. */
   getDistricts(): Observable<LocationOption[]> {
-    return this.fetchByPath<DistrictDto>(
+    return this.fetchList<DistrictDto>(
       '/api/Masters/district-list-all',
-      MOCK.districts,
       mapDistrict,
-    ).pipe(
-      catchError(() =>
-        // Soft fallbacks some backends expose for "all districts".
-        this.fetchByPath<DistrictDto>(
-          '/api/Masters/districts/0',
-          MOCK.districts,
-          mapDistrict,
-        ).pipe(catchError(() => of(MOCK.districts))),
-      ),
     );
   }
 
   getBlocks(districtId: string): Observable<LocationOption[]> {
-    const id = districtId?.trim();
-    if (!id) {
-      return of([]);
-    }
-    return this.fetchByPath<BlockDto>(
-      `/api/Masters/block-list/${encodeURIComponent(id)}`,
-      MOCK.blocks[id] ?? MOCK.blocksFallback,
+    return this.fetchByParentId<BlockDto>(
+      'block-list',
+      districtId,
       mapBlock,
     );
   }
 
   getRuralBooths(blockId: string): Observable<LocationOption[]> {
-    const id = blockId?.trim();
-    if (!id) {
-      return of([]);
-    }
-    return this.fetchByPath<RuralPsDto>(
-      `/api/Masters/rps-list/${encodeURIComponent(id)}`,
-      MOCK.boothsFallback,
+    return this.fetchByParentId<RuralPsDto>(
+      'rps-list',
+      blockId,
       mapRuralPs,
     );
   }
 
-  /** Urban bodies for the *selected* district — `ub-list/{districtId}`. */
+  /** Urban bodies for selected district (not login BodyID). */
   getBodies(districtId: string): Observable<LocationOption[]> {
-    const id = districtId?.trim();
-    if (!id) {
-      return of([]);
-    }
-    return this.fetchByPath<UrbanBodyDto>(
-      `/api/Masters/ub-list/${encodeURIComponent(id)}`,
-      MOCK.bodiesFallback,
+    return this.fetchByParentId<UrbanBodyDto>(
+      'ub-list',
+      districtId,
       mapUrbanBody,
     );
   }
 
-  /** Urban PS for the *selected* body — `ups-list/{bodyId}`. */
+  /** Urban PS for selected body. */
   getUrbanBooths(bodyId: string): Observable<LocationOption[]> {
-    const id = bodyId?.trim();
-    if (!id) {
-      return of([]);
-    }
-    return this.fetchByPath<UrbanPsDto>(
-      `/api/Masters/ups-list/${encodeURIComponent(id)}`,
-      MOCK.boothsFallback,
+    return this.fetchByParentId<UrbanPsDto>(
+      'ups-list',
+      bodyId,
       mapUrbanPs,
     );
   }
 
-  private fetchByPath<T>(
+  /**
+   * Tries OpenAPI path style first, then legacy query style from older docs.
+   *   /api/Masters/{resource}/{id}
+   *   /api/Masters/{resource}?id={id}
+   */
+  private fetchByParentId<T>(
+    resource: string,
+    parentId: string,
+    mapItem: (item: T) => LocationOption,
+  ): Observable<LocationOption[]> {
+    const id = parentId?.trim();
+    if (!id) {
+      return of([]);
+    }
+
+    const pathStyle = `/api/Masters/${resource}/${encodeURIComponent(id)}`;
+    const queryStyle = `/api/Masters/${resource}?id=${encodeURIComponent(id)}`;
+
+    return this.fetchList<T>(pathStyle, mapItem).pipe(
+      switchMap((rows) =>
+        rows.length > 0 ? of(rows) : this.fetchList<T>(queryStyle, mapItem),
+      ),
+      catchError(() => this.fetchList<T>(queryStyle, mapItem)),
+    );
+  }
+
+  private fetchList<T>(
     path: string,
-    mockData: LocationOption[],
     mapItem: (item: T) => LocationOption,
   ): Observable<LocationOption[]> {
     if (this.api.useMockData) {
-      return of(mockData).pipe(delay(250));
+      return of([]).pipe(delay(250));
     }
 
-    return this.api.get<{ Status?: boolean; Data?: unknown }>(path).pipe(
+    return this.api.get<{ Status?: boolean; Message?: string; Data?: unknown }>(path).pipe(
       map((res) => {
         if (res && res.Status === false) {
-          throw new Error('Master list request failed');
+          throw new Error(res.Message?.trim() || `Master list failed: ${path}`);
         }
         return asArray<T>(res?.Data)
           .map(mapItem)
@@ -158,7 +154,7 @@ function asArray<T>(data: unknown): T[] {
 
 function pickId(...candidates: Array<string | undefined | null>): string {
   for (const value of candidates) {
-    const trimmed = value?.trim();
+    const trimmed = value?.toString().trim();
     if (trimmed) {
       return trimmed;
     }
@@ -167,9 +163,10 @@ function pickId(...candidates: Array<string | undefined | null>): string {
 }
 
 function mapDistrict(item: DistrictDto): LocationOption {
+  // API samples use `ID` as DistID GUID (same value login returns as DistID).
   return {
-    id: pickId(item.ID, item.DistID),
-    name: item.DistName?.trim() || item.DistNameEn?.trim() || pickId(item.ID, item.DistID),
+    id: pickId(item.DistID, item.ID),
+    name: item.DistName?.trim() || item.DistNameEn?.trim() || pickId(item.DistID, item.ID),
   };
 }
 
@@ -182,11 +179,11 @@ function mapBlock(item: BlockDto): LocationOption {
 
 function mapUrbanBody(item: UrbanBodyDto): LocationOption {
   return {
-    id: pickId(item.ID, item.UrbanBodyID),
+    id: pickId(item.ID, item.UrbanBodyID, item.BodyID),
     name:
       item.UrbanBodyName?.trim() ||
       item.UrbanBodyNameEn?.trim() ||
-      pickId(item.ID, item.UrbanBodyID),
+      pickId(item.ID, item.UrbanBodyID, item.BodyID),
   };
 }
 
@@ -203,19 +200,3 @@ function mapRuralPs(item: RuralPsDto): LocationOption {
     name: item.PSNoName?.trim() || item.PSName?.trim() || pickId(item.ID, item.PSID),
   };
 }
-
-const MOCK = {
-  districts: <LocationOption[]>[
-    { id: 'morena', name: 'मुरैना (Morena)' },
-    { id: 'bhopal', name: 'भोपाल (Bhopal)' },
-  ],
-  blocksFallback: <LocationOption[]>[{ id: 'block-1', name: 'जनपद 1' }],
-  blocks: <Record<string, LocationOption[]>>{
-    morena: [{ id: 'joura', name: 'जौरा (Joura)' }],
-  },
-  bodiesFallback: <LocationOption[]>[{ id: 'body-1', name: 'निकाय 1' }],
-  boothsFallback: <LocationOption[]>[
-    { id: 'booth-1', name: 'मतदान केंद्र 1' },
-    { id: 'booth-2', name: 'मतदान केंद्र 2' },
-  ],
-};

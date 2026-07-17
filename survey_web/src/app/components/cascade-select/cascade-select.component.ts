@@ -252,6 +252,37 @@ export class CascadeSelectComponent implements OnChanges {
     this.emit();
   }
 
+  private loadLevel(index: number): void {
+    const level = this.levels[index];
+    const parentValues = this.currentValues();
+    this.loadingKey.set(level.key);
+    level.load(parentValues).subscribe({
+      next: (list) => {
+        this.setOptions(level.key, list);
+        this.form.controls[level.key].enable({ emitEvent: false });
+        this.loadingKey.set(null);
+        if (index > 0 && list.length === 0) {
+          this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
+            duration: 3500,
+          });
+        }
+      },
+      error: (err: unknown) => {
+        this.setOptions(level.key, []);
+        this.form.controls[level.key].enable({ emitEvent: false });
+        this.loadingKey.set(null);
+        const detail =
+          err instanceof Error && err.message.trim()
+            ? err.message.trim()
+            : this.i18n.t('cascade.loadError');
+        // Always log — GitHub Pages production build hides console.debug.
+        // eslint-disable-next-line no-console
+        console.error(`[cascade] ${level.key} failed`, parentValues, err);
+        this.snack.open(detail, 'OK', { duration: 4000 });
+      },
+    });
+  }
+
   private onLevelChange(index: number, selectedId: string): void {
     for (let j = index + 1; j < this.levels.length; j++) {
       const key = this.levels[j].key;
@@ -261,6 +292,10 @@ export class CascadeSelectComponent implements OnChanges {
     }
 
     if (selectedId && index + 1 < this.levels.length) {
+      // Ensure parent id is visible to the next loader immediately.
+      this.form.controls[this.levels[index].key].setValue(selectedId, {
+        emitEvent: false,
+      });
       this.loadLevel(index + 1);
     }
 
@@ -274,33 +309,6 @@ export class CascadeSelectComponent implements OnChanges {
       values[level.key] = this.form.controls[level.key]?.value ?? '';
     }
     return values;
-  }
-
-  private loadLevel(index: number): void {
-    const level = this.levels[index];
-    this.loadingKey.set(level.key);
-    level.load(this.currentValues()).subscribe({
-      next: (list) => {
-        this.setOptions(level.key, list);
-        // Always enable once the request finishes so the user can open the
-        // panel (empty list is clearer than a permanently disabled control).
-        this.form.controls[level.key].enable({ emitEvent: false });
-        this.loadingKey.set(null);
-        if (index > 0 && list.length === 0) {
-          this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
-            duration: 3500,
-          });
-        }
-      },
-      error: () => {
-        this.setOptions(level.key, []);
-        this.form.controls[level.key].enable({ emitEvent: false });
-        this.loadingKey.set(null);
-        this.snack.open(this.i18n.t('cascade.loadError'), 'OK', {
-          duration: 3500,
-        });
-      },
-    });
   }
 
   private setOptions(key: string, list: LocationOption[]): void {
