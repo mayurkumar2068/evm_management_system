@@ -29,13 +29,19 @@ import {
   buildUrbanLevels,
 } from '../../utils/location-levels.util';
 
-function loginUrbanRural(): string {
-  return APP_PARAMS.urbanRural.trim().toUpperCase();
+function loginUrbanRural(sessionUrbanRural?: string | null): string {
+  return (
+    APP_PARAMS.urbanRural.trim().toUpperCase() ||
+    (sessionUrbanRural ?? '').trim().toUpperCase()
+  );
 }
 
-function areaMatchesLogin(area: AreaType | null): boolean {
-  const scope = loginUrbanRural();
-  if (!scope || !area) {
+function areaMatchesLogin(
+  area: AreaType | null,
+  sessionUrbanRural?: string | null,
+): boolean {
+  const scope = loginUrbanRural(sessionUrbanRural);
+  if (!area) {
     return false;
   }
   // Prefill bodyId only for matching area — never put urban BodyID into rural block.
@@ -43,6 +49,10 @@ function areaMatchesLogin(area: AreaType | null): boolean {
     return true;
   }
   if ((scope === 'R' || scope === 'RURAL') && area === 'rural') {
+    return true;
+  }
+  // Missing urbanRural but user is on rural: still prefill BodyID as जनपद (survey rural login).
+  if (!scope && area === 'rural' && APP_PARAMS.bodyId.trim()) {
     return true;
   }
   return false;
@@ -98,8 +108,8 @@ export class LocationSelectionComponent implements OnInit {
   /** Auto-fill district + body/block only when area matches login scope. */
   readonly cascadePrefill = computed(() => {
     const area = this.areaType();
-    const scoped = areaMatchesLogin(area);
     const session = this.surveyAuth.session;
+    const scoped = areaMatchesLogin(area, session?.urbanRural);
     const bodyId = scoped
       ? APP_PARAMS.bodyId.trim() || session?.bodyId?.trim() || ''
       : '';
@@ -112,8 +122,8 @@ export class LocationSelectionComponent implements OnInit {
 
   readonly cascadePrefillNames = computed(() => {
     const area = this.areaType();
-    const scoped = areaMatchesLogin(area);
     const session = this.surveyAuth.session;
+    const scoped = areaMatchesLogin(area, session?.urbanRural);
     const bodyName = scoped
       ? APP_PARAMS.bodyName.trim() || session?.bodyName?.trim() || ''
       : '';
@@ -129,7 +139,7 @@ export class LocationSelectionComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    const urbanRural = APP_PARAMS.urbanRural.trim().toUpperCase();
+    const urbanRural = loginUrbanRural(this.surveyAuth.session?.urbanRural);
     if (urbanRural === 'U' || urbanRural === 'URBAN') {
       this.areaType.set('urban');
     } else if (urbanRural === 'R' || urbanRural === 'RURAL') {

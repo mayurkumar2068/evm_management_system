@@ -63,6 +63,21 @@ class WebViewCookieService {
     await set('app_lang', ctx.language);
     await set('app_theme', ctx.themeName);
     await set('app_device', ctx.deviceId);
+    if (ctx.districtId != null) {
+      await set('app_district_id', ctx.districtId);
+    }
+    if (ctx.distName != null) {
+      await set('app_dist_name', ctx.distName);
+    }
+    if (ctx.bodyId != null) {
+      await set('app_body_id', ctx.bodyId);
+    }
+    if (ctx.bodyName != null) {
+      await set('app_body_name', ctx.bodyName);
+    }
+    if (ctx.urbanRural != null) {
+      await set('app_urban_rural', ctx.urbanRural);
+    }
 
     if (written.isNotEmpty) {
       _logger.logCookieBatchWrite(uri: uri, names: written, secure: secure);

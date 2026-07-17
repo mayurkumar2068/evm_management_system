@@ -76,26 +76,23 @@ export class MastersApiService {
     return this.tryListPaths<DistrictDto>(listPaths, mapDistrict, cacheKey);
   }
 
-  /** Rural only — never called from urban cascade. */
+  /**
+   * Rural only — never called from urban cascade.
+   *
+   * mpsec login-scoped rural: `block-list/{BodyID}` returns the officer's block.
+   * `block-list/{DistID}` often returns `[]` (Status true) — do not rely on it first.
+   */
   getBlocks(): Observable<LocationOption[]> {
     // Urban login BodyID is a municipal body, not a block — never call block-list with it.
     if (this.isUrbanLogin()) {
-      const distId = this.loginDistrictId();
-      if (!distId) {
-        return of([]);
-      }
-      return this.cachedFetch<BlockDto>(
-        `blocks:dist:${distId}`,
-        `/api/Masters/block-list/${encodeURIComponent(distId)}`,
-        mapBlock,
-        [],
-      );
+      return of([]);
     }
 
     const distId = this.loginDistrictId();
     const blockId = this.loginRuralBlockId();
     const fallback = this.loginBlockFallback();
 
+    // Prefer BodyID (block id from login). DistID path is a last-resort fallback.
     if (blockId) {
       return this.cachedFetch<BlockDto>(
         `blocks:body:${blockId}`,
@@ -122,11 +119,11 @@ export class MastersApiService {
         `blocks:dist:${distId}`,
         `/api/Masters/block-list/${encodeURIComponent(distId)}`,
         mapBlock,
-        [],
+        fallback,
       );
     }
 
-    return of([]);
+    return of(fallback);
   }
 
   /** Rural only — booth list for selected block. */
@@ -221,15 +218,15 @@ export class MastersApiService {
 
   /** Rural block fallback — never used for urban login. */
   private loginBlockFallback(): LocationOption[] {
-    if (this.isUrbanLogin() || !this.isRuralLogin()) {
+    if (this.isUrbanLogin()) {
       return [];
     }
     const id = this.loginRuralBlockId();
-    const name = this.loginBodyName();
-    if (!id || !name) {
+    if (!id) {
       return [];
     }
-    return [{ id, name }];
+    const name = this.loginBodyName();
+    return [{ id, name: name || 'चयनित जनपद' }];
   }
 
   private isRuralLogin(): boolean {
@@ -284,12 +281,11 @@ export class MastersApiService {
   /**
    * Rural BlockID for block-list / rps-list.
    * Blocked for urban login (their BodyID is a municipal body).
+   * When scope is rural OR unknown (missing urbanRural), treat BodyID as block id —
+   * requiring urbanRural=R alone caused empty जनपद when the flag was dropped.
    */
   private loginRuralBlockId(): string {
     if (this.isUrbanLogin()) {
-      return '';
-    }
-    if (!this.isRuralLogin()) {
       return '';
     }
     return (
