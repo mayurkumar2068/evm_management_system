@@ -529,13 +529,26 @@ class _AppWebViewState extends State<AppWebView> {
       headers: response.headers?.cast<String, String>(),
     );
 
-    if (statusCode >= 400) {
+    // GitHub Pages SPA fallback serves index.html with HTTP 404 for deep links
+    // like /location. Treat HTML 404 as a soft failure so load can settle.
+    final String mime = (response.contentType ?? '').toLowerCase();
+    final bool spaFallback404 =
+        statusCode == 404 && (mime.contains('text/html') || mime.isEmpty);
+    if (statusCode >= 400 && !spaFallback404) {
       await _pullToRefresh?.endRefreshing();
       setState(() {
         _loading = false;
         _error = true;
       });
       _config.onError?.call('HTTP $statusCode');
+      return;
+    }
+    if (spaFallback404) {
+      _scheduleLoadSettlement(
+        uri: uri,
+        reason: 'spa_http_404_fallback',
+        delay: const Duration(milliseconds: 800),
+      );
     }
   }
 

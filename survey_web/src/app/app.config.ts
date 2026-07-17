@@ -1,6 +1,6 @@
 import {
   ApplicationConfig,
-  provideZoneChangeDetection, isDevMode,
+  provideZoneChangeDetection,
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -15,9 +15,11 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(APP_ROUTES, withComponentInputBinding()),
     provideHttpClient(withInterceptors([apiInterceptor])),
-    provideAnimationsAsync(), provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          }),
+    provideAnimationsAsync(),
+    // Disabled: SW hangs InAppWebView load on GitHub Pages / IIS deep links.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: false,
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

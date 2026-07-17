@@ -43,6 +43,11 @@ jobs:
           SITE=dist/mp-election-survey/browser
           touch "$SITE/.nojekyll"
           cp "$SITE/index.html" "$SITE/404.html"
+          # Real 200 responses for Angular deep links (WebView stalls on HTTP 404).
+          for route in location checklist; do
+            mkdir -p "$SITE/$route"
+            cp "$SITE/index.html" "$SITE/$route/index.html"
+          done
 
       - uses: actions/upload-pages-artifact@v3
         with:

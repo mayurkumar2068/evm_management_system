@@ -56,7 +56,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config.json"
+              "serviceWorker": false
             },
             "staging": {
               "fileReplacements": [
