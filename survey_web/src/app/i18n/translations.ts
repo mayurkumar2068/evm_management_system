@@ -16,6 +16,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'area.urban': 'नगरीय',
     'area.rural': 'ग्रामीण',
     'loc.note.afterSelect': 'सही स्थान चयन के बाद ही सर्वे चेकलिस्ट उपलब्ध होगी।',
+    'loc.note.lockedArea': 'लॉगिन के अनुसार क्षेत्र तय है — केवल उसी प्रकार के स्थान चुनें।',
     'loc.section.location': 'स्थान का चयन',
     'loc.note.enableNext': 'सभी स्तर चुनने के बाद ही "आगे बढ़ें" बटन सक्रिय होगा।',
     'loc.next': 'आगे बढ़ें',
@@ -45,7 +46,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'chk.remark.placeholder': 'यदि कोई विशेष टिप्पणी हो तो यहाँ लिखें…',
     'chk.empty': 'कोई प्रश्न उपलब्ध नहीं है।',
     'chk.validation.answerRequired': 'कृपया हाँ या नहीं चुनें।',
-    'chk.validation.photoRequired': 'इस प्रश्न के लिए फ़ोटो आवश्यक है।',
+    'chk.validation.photoRequired': 'हाँ चुनने पर फ़ोटो आवश्यक है।',
     'chk.validation.locationMissing': 'मतदान केंद्र चयनित नहीं है।',
     'chk.toast.saveFail': 'उत्तर सहेजा नहीं जा सका। पुनः प्रयास करें।',
     'chk.uploads.head': 'अपलोड की गई फ़ोटो (अधिकतम: {max})',
@@ -72,7 +73,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'ci.yes': 'हाँ',
     'ci.no': 'नहीं',
     'ci.photo': 'फ़ोटो',
-    'ci.photoHint': '* कृपया इस बिंदु के लिए फ़ोटो जोड़ें',
+    'ci.photoHint': '* हाँ चुनने पर फ़ोटो अनिवार्य है',
 
     // coordinates-card
     'coord.loading': 'लाइव लोकेशन प्राप्त हो रही है…',
@@ -113,6 +114,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'area.rural': 'Rural',
     'loc.note.afterSelect':
       'The survey checklist is available only after a valid location is selected.',
+    'loc.note.lockedArea':
+      'Area type is fixed from login — only that location cascade is shown.',
     'loc.section.location': 'Location Selection',
     'loc.note.enableNext':
       'The "Continue" button activates only after all levels are selected.',
@@ -141,7 +144,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'chk.remark.placeholder': 'Write any additional remark here…',
     'chk.empty': 'No questions available.',
     'chk.validation.answerRequired': 'Please select Yes or No.',
-    'chk.validation.photoRequired': 'A photo is required for this question.',
+    'chk.validation.photoRequired': 'A photo is required when you select Yes.',
     'chk.validation.locationMissing': 'Polling station is not selected.',
     'chk.toast.saveFail': 'Could not save the answer. Please try again.',
     'chk.uploads.head': 'Uploaded photos (max: {max})',
@@ -167,7 +170,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'ci.yes': 'Yes',
     'ci.no': 'No',
     'ci.photo': 'Photo',
-    'ci.photoHint': '* Please add a photo for this point',
+    'ci.photoHint': '* Photo is mandatory when Yes is selected',
 
     'coord.loading': 'Fetching live location…',
     'coord.live': 'Live location acquired',

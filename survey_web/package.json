@@ -11,6 +11,9 @@
     "build:staging": "ng build --configuration staging --base-href /pssurvey/ && npm run postbuild:iis",
     "build:pages": "ng build --configuration pages --base-href /evm_management_system/ && npm run postbuild:iis",
     "postbuild:iis": "node scripts/prepare-iis-spa.mjs",
+    "test": "npm run test:logic && npm run test:api",
+    "test:logic": "node scripts/test-masters-logic.mjs",
+    "test:api": "node scripts/test-mpsec-api.mjs",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,

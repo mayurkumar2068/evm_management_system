@@ -1,0 +1,252 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "MPSEC Survey Masters (Urban + Rural)",
+    "description": "Login-survey-pass → DistID / BodyID / UrbanRural save → Masters cascade.\n\nRural: districts/{DistID} → block-list/{BodyID} → rps-list/{BodyID}\nUrban: districts/{DistID} → ub-list/{BodyID} → ups-list/{BodyID}\n\n1) Environment select karo\n2) Pehle Login (Rural sr1) ya Login (Urban su1) chalao\n3) Phir usi folder ke masters requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://mpsecerms.mp.gov.in/POElectionAPI"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "distId",
+      "value": ""
+    },
+    {
+      "key": "bodyId",
+      "value": ""
+    },
+    {
+      "key": "urbanRural",
+      "value": ""
+    },
+    {
+      "key": "distName",
+      "value": ""
+    },
+    {
+      "key": "bodyName",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0. Login",
+      "item": [
+        {
+          "name": "Login Rural (sr1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (!json.Status || !json.Data) {",
+                  "  console.error('Login failed', json.Message);",
+                  "  return;",
+                  "}",
+                  "const d = json.Data;",
+                  "pm.collectionVariables.set('token', d.AccessToken || '');",
+                  "pm.collectionVariables.set('distId', d.DistID || '');",
+                  "pm.collectionVariables.set('bodyId', d.BodyID || '');",
+                  "pm.collectionVariables.set('urbanRural', d.UrbanRural || '');",
+                  "pm.collectionVariables.set('distName', d.DistName || '');",
+                  "pm.collectionVariables.set('bodyName', d.BlockName || d.UBName || '');",
+                  "pm.collectionVariables.set('userId', d.UserId || '');",
+                  "console.log('urbanRural =', d.UrbanRural);",
+                  "console.log('distId =', d.DistID);",
+                  "console.log('bodyId =', d.BodyID, '(janpad / block)');",
+                  "console.log('bodyName =', d.BlockName || d.UBName);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"sr1\",\n  \"password\": \"sr1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Account/login-survey-pass",
+            "description": "Rural login. Saves token, distId, bodyId (= BlockID), urbanRural=R"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Urban (su1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (!json.Status || !json.Data) {",
+                  "  console.error('Login failed', json.Message);",
+                  "  return;",
+                  "}",
+                  "const d = json.Data;",
+                  "pm.collectionVariables.set('token', d.AccessToken || '');",
+                  "pm.collectionVariables.set('distId', d.DistID || '');",
+                  "pm.collectionVariables.set('bodyId', d.BodyID || '');",
+                  "pm.collectionVariables.set('urbanRural', d.UrbanRural || '');",
+                  "pm.collectionVariables.set('distName', d.DistName || '');",
+                  "pm.collectionVariables.set('bodyName', d.UBName || d.BlockName || '');",
+                  "pm.collectionVariables.set('userId', d.UserId || '');",
+                  "console.log('urbanRural =', d.UrbanRural);",
+                  "console.log('distId =', d.DistID);",
+                  "console.log('bodyId =', d.BodyID, '(urban body)');",
+                  "console.log('bodyName =', d.UBName || d.BlockName);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"su1\",\n  \"password\": \"su1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/Account/login-survey-pass",
+            "description": "Urban login. Saves token, distId, bodyId (= UrbanBody), urbanRural=U"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Rural Masters",
+      "item": [
+        {
+          "name": "District (districts/{distId})",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/districts/{{distId}}",
+            "description": "Login DistID se district"
+          },
+          "response": []
+        },
+        {
+          "name": "Janpad block-list/{bodyId} ✅",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/block-list/{{bodyId}}",
+            "description": "Sahi call — BodyID = BlockID. 1 janpad aana chahiye."
+          },
+          "response": []
+        },
+        {
+          "name": "Janpad block-list/{distId} ❌ empty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/block-list/{{distId}}",
+            "description": "Galat path — DistID se Data: [] aata hai. Comparison ke liye."
+          },
+          "response": []
+        },
+        {
+          "name": "Booths rps-list/{bodyId}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/rps-list/{{bodyId}}",
+            "description": "Rural polling stations for selected block (BodyID)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Urban Masters",
+      "item": [
+        {
+          "name": "District (districts/{distId})",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/districts/{{distId}}",
+            "description": "Login DistID se district"
+          },
+          "response": []
+        },
+        {
+          "name": "Urban Body ub-list/{bodyId}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/ub-list/{{bodyId}}",
+            "description": "Urban body list for login BodyID"
+          },
+          "response": []
+        },
+        {
+          "name": "Booths ups-list/{bodyId}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/Masters/ups-list/{{bodyId}}",
+            "description": "Urban polling stations for BodyID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Survey",
+      "item": [
+        {
+          "name": "Survey Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/PSSurvey/survey_questions",
+            "description": "Checklist questions (login ke baad token chahiye)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

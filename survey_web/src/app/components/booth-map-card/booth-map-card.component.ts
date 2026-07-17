@@ -148,8 +148,8 @@ import { openMapDirections, staticMapImageUrl } from '../../utils/map-navigation
         font-size: 15px;
         font-weight: 700;
         color: #fff;
-        background: linear-gradient(135deg, #6f63eb 0%, #5348cf 100%);
-        box-shadow: 0 10px 22px rgba(83, 72, 207, 0.24);
+        background: linear-gradient(135deg, var(--ec-primary) 0%, var(--ec-primary-dark) 100%);
+        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
         cursor: pointer;
       }
       .booth-map__nav:disabled {

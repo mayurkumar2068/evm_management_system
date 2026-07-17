@@ -46,21 +46,20 @@ export class SurveyApiService {
       return of<SaveSurveyAnswerResponse>({ Success: true, Id: id }).pipe(delay(500));
     }
 
-    return this.api.post<SaveSurveyAnswerResponse>(
-      '/api/PSSurvey/save_survey_answer',
-      payload,
-    ).pipe(
-      tap((res) => {
-        if (res?.Success) {
-          return;
-        }
-        this.cache.queuePendingSave(payload);
-      }),
-      catchError((err) => {
-        this.cache.queuePendingSave(payload);
-        throw err;
-      }),
-    );
+    return this.api
+      .post<unknown>('/api/PSSurvey/save_survey_answer', payload)
+      .pipe(
+        map((res) => normalizeSaveResponse(res)),
+        tap((res) => {
+          if (!res.Success) {
+            this.cache.queuePendingSave(payload);
+          }
+        }),
+        catchError((err) => {
+          this.cache.queuePendingSave(payload);
+          throw err;
+        }),
+      );
   }
 }
 
@@ -101,6 +100,43 @@ function mapQuestionDto(dto: SurveyQuestionDto): SurveyQuestion {
     sortOrder: dto.SORT_ORDER,
     mandatory: Boolean(dto.IS_MANDATORY),
   };
+}
+
+/**
+ * mpsec returns `{ Status, Message, Data: "<guid>" }`.
+ * Older shapes may use `{ Success, Id }` — accept both.
+ */
+function normalizeSaveResponse(res: unknown): SaveSurveyAnswerResponse {
+  if (!res || typeof res !== 'object') {
+    return { Success: false, Id: '' };
+  }
+  const row = res as {
+    Status?: boolean;
+    Message?: string;
+    Data?: unknown;
+    Success?: boolean;
+    Id?: string;
+    id?: string;
+  };
+
+  if (typeof row.Success === 'boolean') {
+    const id = row.Id ?? row.id ?? '';
+    return { Success: row.Success, Id: String(id || '') };
+  }
+
+  if (row.Status === true) {
+    const data = row.Data;
+    let id = '';
+    if (typeof data === 'string' || typeof data === 'number') {
+      id = String(data);
+    } else if (data && typeof data === 'object') {
+      const nested = data as { Id?: string; id?: string };
+      id = nested.Id ?? nested.id ?? '';
+    }
+    return { Success: id.length > 0, Id: id };
+  }
+
+  return { Success: false, Id: '' };
 }
 
 const MOCK_QUESTIONS: SurveyQuestion[] = [

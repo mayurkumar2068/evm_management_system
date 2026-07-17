@@ -34,18 +34,18 @@ html {
 // ---------------------------------------------------------------------------
 
 :root {
-  // Brand
-  --ec-primary: #7167e8;
-  --ec-primary-dark: #5b52cf;
-  --ec-primary-light: #958cf4;
+  /* Staging / GitHub Pages — align with MP SEC soft-blue + indigo (Flutter MpSecTokens) */
+  --ec-primary: #4a90e2;
+  --ec-primary-dark: #2563eb;
+  --ec-primary-light: #7cb9f5;
 
-  --ec-accent: #8c84ee;
-  --ec-accent-soft: #f0eeff;
+  --ec-accent: #5b52cf;
+  --ec-accent-soft: #eef5fc;
 
-  // Backgrounds
-  --ec-bg: #f7f8fc;
-  --ec-bg-soft: #fbfbfe;
-  --ec-bg-elevated: #f4f5fa;
+  // Backgrounds — soft government blue-gray
+  --ec-bg: #eef5fc;
+  --ec-bg-soft: #f8fafc;
+  --ec-bg-elevated: #f1f5f9;
 
   // Surfaces
   --ec-surface: #ffffff;

@@ -62,7 +62,7 @@ type Answer = boolean | null;
           </button>
         </div>
 
-        @if (photoRequired) {
+        @if (answer === true) {
           <div class="ci__photo">
             @if (!image) {
               <span class="ci__photo-hint">{{ 'ci.photo' | t }}</span>
@@ -77,7 +77,7 @@ type Answer = boolean | null;
         }
       </div>
 
-      @if (photoRequired && answer !== null && !image) {
+      @if (answer === true && !image) {
         <span class="ci__req">{{ 'ci.photoHint' | t }}</span>
       }
     </div>
@@ -202,6 +202,9 @@ type Answer = boolean | null;
         font-weight: 500;
         color: #ef4444;
       }
+      .ci--compact .ci__req {
+        margin-left: 0;
+      }
     `,
   ],
 })
@@ -229,14 +232,20 @@ export class ChecklistItemComponent {
   }
 
   get photoRequired(): boolean {
-    return Boolean(this.group.get('photoRequired')?.value);
+    // Photo is mandatory only when the officer answers हाँ / Yes.
+    return this.answer === true;
   }
 
   setAnswer(value: boolean): void {
     const control = this.group.get('checked');
     // tapping the active option again clears it back to "unanswered"
-    control?.setValue(this.answer === value ? null : value);
+    const next = this.answer === value ? null : value;
+    control?.setValue(next);
     control?.markAsDirty();
+    // नहीं → photo not required; clear any attached image
+    if (next !== true) {
+      this.group.get('image')?.setValue(null);
+    }
   }
 
   onImage(image: string | null): void {

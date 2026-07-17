@@ -274,7 +274,7 @@ export class SurveyChecklistComponent implements OnInit {
       return;
     }
 
-    if (question.photoRequired && !image) {
+    if (answerYN === true && !image) {
       this.saveError.set(this.i18n.t('chk.validation.photoRequired'));
       return;
     }
@@ -307,7 +307,7 @@ export class SurveyChecklistComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.saving.set(false);
-          if (!res?.Success) {
+          if (!res?.Success || !res.Id) {
             this.saveError.set(this.i18n.t('chk.toast.saveFail'));
             return;
           }

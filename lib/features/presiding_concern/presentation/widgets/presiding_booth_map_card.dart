@@ -9,6 +9,7 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 /// Map preview + navigation button for the assigned polling booth (login Lat/Long).
+/// Always visible on the PO dashboard — even when booth coordinates are missing.
 class PresidingBoothMapCard extends StatefulWidget {
   const PresidingBoothMapCard({this.stationName, super.key});
 
@@ -60,17 +61,30 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
       _boothLat!.abs() > 0 &&
       _boothLong!.abs() > 0;
 
+  String get _stationLabel {
+    final String? name = widget.stationName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return name;
+    }
+    return 'मतदान केंद्र';
+  }
+
   Future<void> _openNavigation() async {
-    if (!_hasBooth || _navigating) return;
+    if (_navigating) return;
     setState(() => _navigating = true);
     try {
-      await _maps.openDirections(
-        destinationLat: _boothLat!,
-        destinationLng: _boothLong!,
-        originLat: _current?.latitude,
-        originLng: _current?.longitude,
-        destinationLabel: widget.stationName,
-      );
+      if (_hasBooth) {
+        await _maps.openDirections(
+          destinationLat: _boothLat!,
+          destinationLng: _boothLong!,
+          originLat: _current?.latitude,
+          originLng: _current?.longitude,
+          destinationLabel: _stationLabel,
+        );
+      } else {
+        // Login me Lat/Long na ho to bhi map kholo — station name se search.
+        await _maps.openPlaceSearch(_stationLabel);
+      }
     } finally {
       if (mounted) setState(() => _navigating = false);
     }
@@ -87,15 +101,6 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
       );
     }
 
-    if (!_hasBooth) {
-      return const SizedBox.shrink();
-    }
-
-    final String mapUrl = _maps.staticMapImageUrl(
-      lat: _boothLat!,
-      lng: _boothLong!,
-    );
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -110,19 +115,16 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
             children: <Widget>[
               AspectRatio(
                 aspectRatio: 16 / 7,
-                child: Image.network(
-                  mapUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: AppColors.slate50,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.map_outlined,
-                      size: 40,
-                      color: AppColors.slate300,
-                    ),
-                  ),
-                ),
+                child: _hasBooth
+                    ? Image.network(
+                        _maps.staticMapImageUrl(
+                          lat: _boothLat!,
+                          lng: _boothLong!,
+                        ),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _mapPlaceholder(),
+                      )
+                    : _mapPlaceholder(),
               ),
               Positioned(
                 left: 12,
@@ -142,7 +144,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                       const Icon(
                         Icons.location_on_rounded,
                         size: 16,
-                        color: Color(0xFF5B52CF),
+                        color: MpSecTokens.softBlueDark,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -172,7 +174,17 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${_boothLat!.toStringAsFixed(5)}°, ${_boothLong!.toStringAsFixed(5)}°',
+                  _stationLabel,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.slate700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _hasBooth
+                      ? '${_boothLat!.toStringAsFixed(5)}°, ${_boothLong!.toStringAsFixed(5)}°'
+                      : 'लॉगिन में निर्देशांक नहीं मिले — मैप बटन से खोज खोलें',
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.slate500,
                     fontFeatures: const <FontFeature>[
@@ -215,7 +227,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF5B52CF),
+                      backgroundColor: MpSecTokens.softBlueDark,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -223,6 +235,27 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mapPlaceholder() {
+    return Container(
+      color: AppColors.slate50,
+      alignment: Alignment.center,
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(Icons.map_outlined, size: 40, color: AppColors.slate300),
+          SizedBox(height: 8),
+          Text(
+            'मैप पर जाएँ',
+            style: TextStyle(
+              color: AppColors.slate500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

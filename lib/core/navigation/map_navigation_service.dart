@@ -38,6 +38,21 @@ class MapNavigationService {
     return launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  /// Opens Google Maps search when booth coordinates are missing.
+  Future<bool> openPlaceSearch(String query) async {
+    final String q = query.trim().isNotEmpty ? query.trim() : 'मतदान केंद्र';
+    final Uri uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(q)}',
+    );
+    if (!await canLaunchUrl(uri)) {
+      return launchUrl(
+        Uri.parse('geo:0,0?q=${Uri.encodeComponent(q)}'),
+        mode: LaunchMode.externalApplication,
+      );
+    }
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   /// OpenStreetMap static preview (no API key).
   String staticMapImageUrl({
     required double lat,

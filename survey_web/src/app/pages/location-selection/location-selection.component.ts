@@ -92,6 +92,31 @@ export class LocationSelectionComponent implements OnInit {
   /** Top-level नगरीय / पंचायत switch. */
   readonly areaType = signal<AreaType | null>(null);
 
+  /** Login UrbanRural — locks UI to one area when present. */
+  readonly loginScope = computed(() =>
+    loginUrbanRural(this.surveyAuth.session?.urbanRural),
+  );
+
+  readonly isUrbanLocked = computed(() => {
+    const s = this.loginScope();
+    return s === 'U' || s === 'URBAN';
+  });
+
+  readonly isRuralLocked = computed(() => {
+    const s = this.loginScope();
+    return s === 'R' || s === 'RURAL';
+  });
+
+  /** Show urban toggle only when not locked to rural. */
+  readonly showUrbanTab = computed(() => !this.isRuralLocked());
+
+  /** Show rural toggle only when not locked to urban. */
+  readonly showRuralTab = computed(() => !this.isUrbanLocked());
+
+  readonly areaLocked = computed(
+    () => this.isUrbanLocked() || this.isRuralLocked(),
+  );
+
   /** Levels rendered by the cascade — swap automatically on area change. */
   readonly levels = computed(() => {
     const type = this.areaType();
@@ -148,6 +173,13 @@ export class LocationSelectionComponent implements OnInit {
   }
 
   setArea(type: AreaType): void {
+    // Login-scoped: do not allow switching away from U/R assigned area.
+    if (this.isUrbanLocked() && type !== 'urban') {
+      return;
+    }
+    if (this.isRuralLocked() && type !== 'rural') {
+      return;
+    }
     if (type === this.areaType()) {
       return;
     }

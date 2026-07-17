@@ -13,7 +13,7 @@
     </div>
   </header>
 
-  <!-- Area type -->
+  <!-- Area type: login U → only urban; login R → only rural -->
   <section class="ec-card block">
     <span class="ec-section-label">{{ 'loc.areaType' | t }}</span>
     <mat-button-toggle-group
@@ -22,19 +22,27 @@
       (change)="setArea($event.value)"
       hideSingleSelectionIndicator
     >
-      <mat-button-toggle value="urban">
-        <mat-icon>location_city</mat-icon>
-        {{ 'area.urban' | t }}
-      </mat-button-toggle>
-      <mat-button-toggle value="rural">
-        <mat-icon>agriculture</mat-icon>
-        {{ 'area.rural' | t }}
-      </mat-button-toggle>
+      @if (showUrbanTab()) {
+        <mat-button-toggle value="urban" [disabled]="isUrbanLocked()">
+          <mat-icon>location_city</mat-icon>
+          {{ 'area.urban' | t }}
+        </mat-button-toggle>
+      }
+      @if (showRuralTab()) {
+        <mat-button-toggle value="rural" [disabled]="isRuralLocked()">
+          <mat-icon>agriculture</mat-icon>
+          {{ 'area.rural' | t }}
+        </mat-button-toggle>
+      }
     </mat-button-toggle-group>
 
     <p class="ec-note">
       <mat-icon>info</mat-icon>
-      {{ 'loc.note.afterSelect' | t }}
+      @if (areaLocked()) {
+        {{ 'loc.note.lockedArea' | t }}
+      } @else {
+        {{ 'loc.note.afterSelect' | t }}
+      }
     </p>
   </section>
 
