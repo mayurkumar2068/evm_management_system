@@ -17,9 +17,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-/// Election-green brand accent used across the login surface (matches the
-/// splash / onboarding theme).
-const Color _loginGreen = Color(0xFF0F8A5F);
+/// Soft mint accent — same family as Booth Survey CTA green.
+const Color _loginGreen = AppColors.greenDark;
 
 class _LoginScreenState extends State<LoginScreen> {
   late final Worker _authWorker;

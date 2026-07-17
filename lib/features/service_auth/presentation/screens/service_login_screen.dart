@@ -20,8 +20,6 @@ class ServiceLoginScreen extends StatefulWidget {
 }
 
 class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
-  static const Color _ink = Color(0xFF0F1E17);
-
   final TextEditingController _userCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
 
@@ -109,7 +107,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   Widget build(BuildContext context) {
     final double top = MediaQuery.of(context).padding.top;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -122,78 +120,112 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                 child: IconButton(
                   onPressed: _busy ? null : () => Get.back<void>(),
                   icon: const Icon(Icons.arrow_back_rounded),
-                  color: _ink,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              const Center(child: BrandLogo(width: 76)),
-              const SizedBox(height: 18),
-              Text(
-                _isPoLogin
-                    ? _t('पी.ओ. लॉगिन', 'P.O. Login')
-                    : _t('सर्वे लॉगिन', 'Survey Login'),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.titleLarge.copyWith(
-                  color: _ink,
-                  fontWeight: FontWeight.w800,
+              Container(
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
+                decoration: BoxDecoration(
+                  gradient: AppGradients.header,
+                  borderRadius: AppRadius.brXl,
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                widget.serviceTitle != null
-                    ? _t(
-                        '"${widget.serviceTitle}" खोलने के लिए लॉगिन करें',
-                        'Sign in to open "${widget.serviceTitle}"',
-                      )
-                    : _t(
-                        'सेवा तक पहुँचने के लिए लॉगिन करें',
-                        'Sign in to access the service',
+                child: Column(
+                  children: <Widget>[
+                    const BrandLogo(width: 72),
+                    const SizedBox(height: 14),
+                    Text(
+                      _t('सेवा लॉगिन', 'Service Login'),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.titleLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
                       ),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.slate500,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.serviceTitle != null
+                          ? _t(
+                              '"${widget.serviceTitle}" खोलने के लिए लॉगिन करें',
+                              'Sign in to open "${widget.serviceTitle}"',
+                            )
+                          : _t(
+                              'सेवा तक पहुँचने के लिए लॉगिन करें',
+                              'Sign in to access the service',
+                            ),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white.withValues(alpha: 0.92),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 28),
-              _Field(
-                controller: _userCtrl,
-                label: _isPoLogin
-                    ? _t('यूज़र आईडी', 'User ID')
-                    : _t('यूज़रनेम', 'Username'),
-                icon: _isPoLogin
-                    ? Icons.person_outline_rounded
-                    : Icons.person_outline_rounded,
-                enabled: !_busy,
-              ),
-              const SizedBox(height: 14),
-              _Field(
-                controller: _passCtrl,
-                label: _t('पासवर्ड', 'Password'),
-                icon: Icons.lock_outline_rounded,
-                enabled: !_busy,
-                obscure: _obscure,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _submit(),
-                suffix: IconButton(
-                  onPressed: () => setState(() => _obscure = !_obscure),
-                  icon: Icon(
-                    _obscure
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: AppColors.slate400,
-                    size: 20,
-                  ),
+              const SizedBox(height: 22),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.brXl,
+                  border: Border.all(color: AppColors.outline),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: AppColors.cardShadow,
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ),
-              if (_error != null) ...<Widget>[
-                const SizedBox(height: 14),
-                _ErrorBanner(message: _error!),
-              ],
-              const SizedBox(height: 26),
-              _SubmitButton(
-                busy: _busy,
-                onPressed: _submit,
-                text: _t('लॉगिन करें', 'Sign in'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _Field(
+                      controller: _userCtrl,
+                      label: _isPoLogin
+                          ? _t('यूज़र आईडी', 'User ID')
+                          : _t('यूज़रनेम', 'Username'),
+                      icon: Icons.person_outline_rounded,
+                      enabled: !_busy,
+                    ),
+                    const SizedBox(height: 14),
+                    _Field(
+                      controller: _passCtrl,
+                      label: _t('पासवर्ड', 'Password'),
+                      icon: Icons.lock_outline_rounded,
+                      enabled: !_busy,
+                      obscure: _obscure,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _submit(),
+                      suffix: IconButton(
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppColors.slate400,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    if (_error != null) ...<Widget>[
+                      const SizedBox(height: 14),
+                      _ErrorBanner(message: _error!),
+                    ],
+                    const SizedBox(height: 22),
+                    _SubmitButton(
+                      busy: _busy,
+                      onPressed: _submit,
+                      text: _t('लॉगिन करें', 'Sign in'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 18),
               const _SecureBadge(),
@@ -255,28 +287,43 @@ class _SubmitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 52,
-      child: FilledButton(
-        onPressed: busy ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFF0F8A5F),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: AppGradients.primaryButton,
+          borderRadius: AppRadius.brLg,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.28),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: busy
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.4,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                text,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: busy ? null : onPressed,
+            borderRadius: AppRadius.brLg,
+            child: Center(
+              child: busy
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -293,7 +340,7 @@ class _SecureBadge extends StatelessWidget {
         const Icon(
           Icons.verified_user_outlined,
           size: 14,
-          color: Color(0xFF0B6B49),
+          color: AppColors.greenDark,
         ),
         const SizedBox(width: 6),
         Text(

@@ -34,79 +34,79 @@ html {
 // ---------------------------------------------------------------------------
 
 :root {
-  /* Staging / GitHub Pages — align with MP SEC soft-blue + indigo (Flutter MpSecTokens) */
-  --ec-primary: #4a90e2;
+  /* Soft Booth Survey theme — blue → mint (shared with Flutter AppColors) */
+  --ec-primary: #3b82f6;
   --ec-primary-dark: #2563eb;
-  --ec-primary-light: #7cb9f5;
+  --ec-primary-light: #60a5fa;
 
-  --ec-accent: #5b52cf;
-  --ec-accent-soft: #eef5fc;
+  --ec-accent: #10b981;
+  --ec-accent-soft: #ecfdf5;
 
   // Backgrounds — soft government blue-gray
   --ec-bg: #eef5fc;
   --ec-bg-soft: #f8fafc;
-  --ec-bg-elevated: #f1f5f9;
+  --ec-bg-elevated: #f0f7fc;
 
   // Surfaces
   --ec-surface: #ffffff;
   --ec-card: #ffffff;
-  --ec-card-soft: #fafafe;
+  --ec-card-soft: #fafcff;
 
   // Borders
-  --ec-border: #e8e9f1;
-  --ec-border-soft: #f0f0f5;
+  --ec-border: #e2e8f0;
+  --ec-border-soft: #f1f5f9;
 
   // Typography
-  --ec-text: #252534;
-  --ec-text-secondary: #5e5e70;
-  --ec-text-muted: #9191a2;
+  --ec-text: #0f2744;
+  --ec-text-secondary: #64748b;
+  --ec-text-muted: #94a3b8;
 
   // Status
-  --ec-success: #a7a1ff;
-  --ec-warning: #f0c97d;
-  --ec-danger: #d977aa;
-  --ec-info: #7ca9ff;
+  --ec-success: #10b981;
+  --ec-warning: #f59e0b;
+  --ec-danger: #ef4444;
+  --ec-info: #3b82f6;
 
   // Radius
   --ec-radius-sm: 10px;
   --ec-radius: 16px;
-  --ec-radius-lg: 24px;
-  --ec-radius-xl: 30px;
+  --ec-radius-lg: 20px;
+  --ec-radius-xl: 24px;
 
   // Shadows
   --ec-shadow-sm:
-    0 2px 8px rgba(43, 42, 78, 0.035),
-    0 8px 22px rgba(43, 42, 78, 0.035);
+    0 2px 8px rgba(59, 130, 246, 0.06),
+    0 8px 22px rgba(15, 39, 68, 0.04);
 
   --ec-shadow:
-    0 8px 24px rgba(43, 42, 78, 0.05),
-    0 20px 45px rgba(43, 42, 78, 0.035);
+    0 8px 24px rgba(59, 130, 246, 0.08),
+    0 20px 45px rgba(15, 39, 68, 0.05);
 
   --ec-shadow-soft:
-    0 16px 50px rgba(68, 63, 130, 0.05);
+    0 16px 50px rgba(59, 130, 246, 0.08);
 
-  // Gradients
+  // Gradients — blue → mint (hero + CTA)
   --ec-grad:
     linear-gradient(
       135deg,
-      #9188f4 0%,
-      #786ee9 48%,
-      #665bd8 100%
+      #60a5fa 0%,
+      #3b82f6 48%,
+      #34d399 100%
     );
 
   --ec-grad-soft:
     linear-gradient(
       135deg,
-      #f5f3ff 0%,
-      #faf9ff 48%,
-      #f5f7ff 100%
+      #eef5fc 0%,
+      #f8fafc 48%,
+      #ecfdf5 100%
     );
 
   --ec-grad-accent:
     linear-gradient(
-      180deg,
-      #9d95f5 0%,
-      #756be3 100%
+      90deg,
+      #3b82f6 0%,
+      #10b981 100%
     );
 }
 
