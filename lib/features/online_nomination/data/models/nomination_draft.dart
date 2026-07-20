@@ -9,12 +9,12 @@ class NominationDraft {
     required this.postType,
     required this.currentStep,
     required this.savedAt,
-    this.stateId,
     this.districtId,
     this.urbanBodyTypeId,
     this.municipalityId,
+    this.janpadPanchayatId,
+    this.gramPanchayatId,
     this.wardId,
-    this.reservationId,
     this.genderId,
     this.categoryId,
     this.fullName = '',
@@ -34,12 +34,12 @@ class NominationDraft {
   final NominationPostType postType;
   final int currentStep;
   final DateTime savedAt;
-  final String? stateId;
   final String? districtId;
   final String? urbanBodyTypeId;
   final String? municipalityId;
+  final String? janpadPanchayatId;
+  final String? gramPanchayatId;
   final String? wardId;
-  final String? reservationId;
   final String? genderId;
   final String? categoryId;
   final String fullName;
@@ -68,8 +68,9 @@ class NominationDraft {
     if (districtId != null ||
         urbanBodyTypeId != null ||
         municipalityId != null ||
-        wardId != null ||
-        reservationId != null) {
+        janpadPanchayatId != null ||
+        gramPanchayatId != null ||
+        wardId != null) {
       return true;
     }
     return documents.values.any(
@@ -101,12 +102,12 @@ class NominationDraft {
       'postType': postType.name,
       'currentStep': currentStep,
       'savedAt': savedAt.toIso8601String(),
-      'stateId': stateId,
       'districtId': districtId,
       'urbanBodyTypeId': urbanBodyTypeId,
       'municipalityId': municipalityId,
+      'janpadPanchayatId': janpadPanchayatId,
+      'gramPanchayatId': gramPanchayatId,
       'wardId': wardId,
-      'reservationId': reservationId,
       'genderId': genderId,
       'categoryId': categoryId,
       'fullName': fullName,
@@ -160,12 +161,12 @@ class NominationDraft {
       postType: postType,
       currentStep: (json['currentStep'] as num?)?.toInt() ?? 0,
       savedAt: savedAt,
-      stateId: json['stateId']?.toString(),
       districtId: json['districtId']?.toString(),
       urbanBodyTypeId: json['urbanBodyTypeId']?.toString(),
       municipalityId: json['municipalityId']?.toString(),
+      janpadPanchayatId: json['janpadPanchayatId']?.toString(),
+      gramPanchayatId: json['gramPanchayatId']?.toString(),
       wardId: json['wardId']?.toString(),
-      reservationId: json['reservationId']?.toString(),
       genderId: json['genderId']?.toString(),
       categoryId: json['categoryId']?.toString(),
       fullName: json['fullName']?.toString() ?? '',

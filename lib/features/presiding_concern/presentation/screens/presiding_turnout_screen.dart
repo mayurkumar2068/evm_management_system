@@ -429,7 +429,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
               final bool selected = slot.slotId == selectedSlotId;
               final TurnoutRecord? record = records[slot.slotId];
               final bool saved = record?.savedAt != null;
-              final bool locked = record?.isLocked ?? false;
+              final bool readOnly = record?.isReadOnly ?? false;
 
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -456,7 +456,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        if (locked)
+                        if (readOnly)
                           Icon(
                             Icons.lock_rounded,
                             size: 14,
@@ -468,7 +468,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
                             size: 14,
                             color: selected ? Colors.white : AppColors.success,
                           ),
-                        if (locked || saved) const SizedBox(width: 4),
+                        if (readOnly || saved) const SizedBox(width: 4),
                         Text(
                           slot.labelKey.tr(),
                           style: AppTextStyles.caption.copyWith(

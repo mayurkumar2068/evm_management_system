@@ -59,7 +59,10 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
-  Future<void> clearSession() => _tokenVault.clear();
+  Future<void> clearSession() async {
+    await _tokenVault.clear();
+    await _secureStorage.delete(SecureStorageKeys.userSession);
+  }
 
   @override
   Future<void> setBiometricEnabled({required bool enabled}) => _secureStorage

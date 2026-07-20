@@ -24,6 +24,7 @@ class WebSessionContext {
     this.urbanRural,
     this.boothLat,
     this.boothLong,
+    this.apiBaseUrl,
     required this.appVersion,
     required this.buildNumber,
     required this.platform,
@@ -45,6 +46,8 @@ class WebSessionContext {
   final String? urbanRural;
   final double? boothLat;
   final double? boothLong;
+  /// POElectionAPI root for survey_web (`PO_ELECTION_API_BASE_URL`).
+  final String? apiBaseUrl;
   final String appVersion;
   final String buildNumber;
   final String platform; // 'android' | 'ios'
@@ -93,6 +96,7 @@ class WebSessionContext {
       'urbanRural': urbanRural,
       if (boothLat != null) 'boothLat': boothLat,
       if (boothLong != null) 'boothLong': boothLong,
+      if (apiBaseUrl != null && apiBaseUrl!.isNotEmpty) 'apiBaseUrl': apiBaseUrl,
       'appVersion': appVersion,
       'buildNumber': buildNumber,
       'platform': platform,
@@ -119,6 +123,7 @@ class WebSessionContext {
       urbanRural: urbanRural,
       boothLat: boothLat,
       boothLong: boothLong,
+      apiBaseUrl: apiBaseUrl,
       appVersion: appVersion,
       buildNumber: buildNumber,
       platform: platform,

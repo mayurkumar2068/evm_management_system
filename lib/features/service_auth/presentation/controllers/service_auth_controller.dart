@@ -102,8 +102,8 @@ class ServiceAuthController extends GetxController {
           extra: <String, dynamic>{'skipAuth': true},
         ),
       );
-    } on DioException {
-      throw const ServiceAuthException(LocaleKeys.errorNetwork);
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
     }
 
     final dynamic body = res.data;
@@ -200,8 +200,8 @@ class ServiceAuthController extends GetxController {
           extra: <String, dynamic>{'skipAuth': true},
         ),
       );
-    } on DioException {
-      throw const ServiceAuthException(LocaleKeys.errorNetwork);
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
     }
 
     final dynamic body = res.data;
@@ -331,12 +331,27 @@ class ServiceAuthController extends GetxController {
     return double.tryParse(value.toString().trim());
   }
 
+  String _networkOrServerMessage(DioException e) {
+    final dynamic data = e.response?.data;
+    if (data is Map) {
+      final Object? message = data['Message'] ?? data['message'];
+      if (message != null && message.toString().trim().isNotEmpty) {
+        return message.toString();
+      }
+    }
+    final int? code = e.response?.statusCode;
+    if (code != null && code >= 500) {
+      return LocaleKeys.errorServer;
+    }
+    return LocaleKeys.errorNetwork;
+  }
+
   Future<void> signOut() async {
     session.value = null;
     _surveyDio = null;
     PoElectionApiClient.reset();
-    await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
     await AppServices.tokenVault.clear();
+    await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
     PresidingConcernModule.resetClients();
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,

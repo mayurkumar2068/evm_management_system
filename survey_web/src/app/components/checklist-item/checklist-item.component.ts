@@ -105,7 +105,7 @@ type Answer = boolean | null;
       }
       .ci--yes {
         border-left-color: var(--ec-primary);
-        background: rgba(113, 103, 232, 0.08);
+        background: rgba(59, 130, 246, 0.08);
       }
       .ci--no {
         border-left-color: #f28baf;
@@ -155,7 +155,7 @@ type Answer = boolean | null;
       /* segmented हाँ/नहीं toggle */
       .seg {
         display: inline-flex;
-        background: #f1f2f8;
+        background: #eef2f7;
         border-radius: 14px;
         padding: 4px;
         gap: 4px;
@@ -175,8 +175,8 @@ type Answer = boolean | null;
       }
       .seg__btn--yes.is-active {
         background: var(--ec-primary);
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(113, 103, 232, 0.24);
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.24);
       }
       .seg__btn--no.is-active {
         background: #fff;

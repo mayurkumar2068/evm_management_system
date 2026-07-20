@@ -1,3 +1,4 @@
+import 'package:evm_management_system/config/environment_config.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../models/web_session_context.dart';
@@ -63,6 +64,10 @@ class WebViewCookieService {
     await set('app_lang', ctx.language);
     await set('app_theme', ctx.themeName);
     await set('app_device', ctx.deviceId);
+    final String? apiBaseUrl = ctx.apiBaseUrl;
+    if (apiBaseUrl != null) {
+      await set('app_api_base', apiBaseUrl);
+    }
     final String? districtId = ctx.districtId;
     if (districtId != null) {
       await set('app_district_id', districtId);
@@ -98,8 +103,34 @@ class WebViewCookieService {
       'app_lang',
       'app_theme',
       'app_device',
+      'app_api_base',
+      'app_district_id',
+      'app_dist_name',
+      'app_body_id',
+      'app_body_name',
+      'app_urban_rural',
     ]) {
       await _cookies.deleteCookie(url: url, name: name, path: '/');
+    }
+  }
+
+  /// Clears mirrored session cookies for every configured web/API origin.
+  Future<void> clearSessionCookiesFor(EnvironmentConfig config) async {
+    final Set<String> origins = <String>{};
+    for (final String raw in <String>[
+      config.surveyWebBaseUrl,
+      config.poElectionApiBaseUrl,
+      config.surveyApiBaseUrl,
+      config.voterSearchEngineUrl,
+    ]) {
+      final Uri? uri = Uri.tryParse(raw.trim());
+      if (uri == null || uri.host.isEmpty) continue;
+      if (uri.scheme != 'http' && uri.scheme != 'https') continue;
+      origins.add(uri.origin);
+    }
+
+    for (final String origin in origins) {
+      await clearFor(WebUri(origin));
     }
   }
 

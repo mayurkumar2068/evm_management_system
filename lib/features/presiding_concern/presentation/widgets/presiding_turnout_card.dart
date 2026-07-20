@@ -125,7 +125,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
     required TextEditingController targetCtrl,
     required int delta,
   }) async {
-    if (_busy) return;
+    if (_busy || _isReadOnly) return;
 
     final int previous = _val(targetCtrl);
     final int next = previous + delta;
@@ -159,7 +159,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
   }
 
   Future<void> _handleSave() async {
-    if (_busy || _isLocked) return;
+    if (_busy || _isReadOnly) return;
     setState(() => _busy = true);
     try {
       await widget.onSave(
@@ -184,7 +184,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
     }
   }
 
-  bool get _isLocked => widget.initialRecord?.isLocked ?? false;
+  bool get _isReadOnly => widget.initialRecord?.isReadOnly ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +205,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
         ? _QueueCountSection(
             queueCtrl: _queueCtrl,
             isSaved: isSaved,
-            isLocked: _isLocked,
+            isReadOnly: _isReadOnly,
             busy: _busy,
             onSave: _handleSave,
           )
@@ -231,7 +231,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                           const SizedBox(height: 6),
                           _SaveStatusBadge(
                             isSaved: isSaved,
-                            isLocked: _isLocked,
+                            isReadOnly: _isReadOnly,
                             savedTime: savedTime,
                           ),
                         ],
@@ -242,7 +242,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
               else
                 _SaveStatusBadge(
                   isSaved: isSaved,
-                  isLocked: _isLocked,
+                  isReadOnly: _isReadOnly,
                   savedTime: savedTime,
                 ),
               if (!widget.embedded) const SizedBox(height: 16),
@@ -255,7 +255,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                       genderType: PresidingGenderType.male,
                       controller: _maleCtrl,
                       showSteps: widget.mode == PresidingTurnoutCardMode.live,
-                      disabled: _busy || _isLocked,
+                      disabled: _busy || _isReadOnly,
                       onDelta: (int d) =>
                           _handleLiveDelta(targetCtrl: _maleCtrl, delta: d),
                     ),
@@ -266,7 +266,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                       genderType: PresidingGenderType.female,
                       controller: _femaleCtrl,
                       showSteps: widget.mode == PresidingTurnoutCardMode.live,
-                      disabled: _busy || _isLocked,
+                      disabled: _busy || _isReadOnly,
                       onDelta: (int d) =>
                           _handleLiveDelta(targetCtrl: _femaleCtrl, delta: d),
                     ),
@@ -277,7 +277,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                       genderType: PresidingGenderType.other,
                       controller: _thirdGenderCtrl,
                       showSteps: widget.mode == PresidingTurnoutCardMode.live,
-                      disabled: _busy || _isLocked,
+                      disabled: _busy || _isReadOnly,
                       onDelta: (int d) => _handleLiveDelta(
                         targetCtrl: _thirdGenderCtrl,
                         delta: d,
@@ -291,10 +291,10 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                 alignment: Alignment.centerRight,
                 child: _SaveActionButton(
                   isSaved: isSaved,
-                  isLocked: _isLocked,
+                  isReadOnly: _isReadOnly,
                   busy: _busy,
                   onPressed:
-                      widget.mode == PresidingTurnoutCardMode.live || _isLocked
+                      widget.mode == PresidingTurnoutCardMode.live || _isReadOnly
                       ? null
                       : _handleSave,
                 ),
@@ -353,27 +353,26 @@ class _SaveStatusBadge extends StatelessWidget {
   const _SaveStatusBadge({
     required this.isSaved,
     required this.savedTime,
-    this.isLocked = false,
+    this.isReadOnly = false,
   });
 
   final bool isSaved;
-  final bool isLocked;
+  final bool isReadOnly;
   final String savedTime;
 
   @override
   Widget build(BuildContext context) {
-    final bool showLocked = isLocked;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Icon(
-          showLocked
+          isReadOnly
               ? Icons.lock_rounded
               : isSaved
               ? Icons.check_circle_rounded
               : Icons.radio_button_unchecked_rounded,
           size: 16,
-          color: showLocked
+          color: isReadOnly
               ? AppColors.slate500
               : isSaved
               ? AppColors.success
@@ -382,7 +381,7 @@ class _SaveStatusBadge extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            showLocked
+            isReadOnly
                 ? LocaleKeys.presidingAlreadyRegistered.tr()
                 : isSaved
                 ? LocaleKeys.presidingSavedAt.tr(args: <String>[savedTime])
@@ -404,25 +403,25 @@ class _SaveActionButton extends StatelessWidget {
   const _SaveActionButton({
     required this.isSaved,
     required this.busy,
-    this.isLocked = false,
+    this.isReadOnly = false,
     this.onPressed,
   });
 
   final bool isSaved;
-  final bool isLocked;
+  final bool isReadOnly;
   final bool busy;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final bool disabled = busy || isLocked || onPressed == null;
+    final bool disabled = busy || isReadOnly || onPressed == null;
     return SizedBox(
       width: 108,
       height: 48,
       child: ElevatedButton(
         onPressed: disabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isLocked
+          backgroundColor: isReadOnly
               ? AppColors.slate400
               : isSaved
               ? AppColors.success
@@ -472,14 +471,14 @@ class _QueueCountSection extends StatelessWidget {
   const _QueueCountSection({
     required this.queueCtrl,
     required this.isSaved,
-    required this.isLocked,
+    required this.isReadOnly,
     required this.busy,
     required this.onSave,
   });
 
   final TextEditingController queueCtrl;
   final bool isSaved;
-  final bool isLocked;
+  final bool isReadOnly;
   final bool busy;
   final VoidCallback onSave;
 
@@ -530,7 +529,8 @@ class _QueueCountSection extends StatelessWidget {
         const SizedBox(height: 12),
         TextField(
           controller: queueCtrl,
-          enabled: !isLocked && !busy,
+          enabled: !isReadOnly && !busy,
+          readOnly: isReadOnly,
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly,
@@ -549,9 +549,9 @@ class _QueueCountSection extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: _SaveActionButton(
             isSaved: isSaved,
-            isLocked: isLocked,
+            isReadOnly: isReadOnly,
             busy: busy,
-            onPressed: isLocked ? null : onSave,
+            onPressed: isReadOnly ? null : onSave,
           ),
         ),
       ],
@@ -712,6 +712,7 @@ class _CountBox extends StatelessWidget {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         enabled: !disabled,
+        readOnly: disabled,
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly,
         ],

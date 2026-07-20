@@ -13,6 +13,7 @@ class EnvironmentConfig {
     required this.poElectionApiBaseUrl,
     required this.surveyApiBaseUrl,
     required this.surveyWebBaseUrl,
+    required this.voterSearchEngineUrl,
     required this.electionId,
     required this.devPoPsId,
     required this.devPoAreaType,
@@ -60,6 +61,7 @@ class EnvironmentConfig {
         ?.trim();
     final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
     final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
+    final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']?.trim();
 
     return EnvironmentConfig(
       flavor: flavor,
@@ -80,6 +82,13 @@ class EnvironmentConfig {
               flavor,
               'SURVEY_WEB_BASE_URL',
               'http://localhost:4200/',
+            ),
+      voterSearchEngineUrl: (voterSearchRaw != null && voterSearchRaw.isNotEmpty)
+          ? voterSearchRaw
+          : _defaultVoterSearchUrl(
+              (poElectionRaw != null && poElectionRaw.isNotEmpty)
+                  ? poElectionRaw
+                  : _defaultPoElectionBaseUrl(apiBaseUrl),
             ),
       electionId: optionalInt('ELECTION_ID'),
       devPoPsId: optionalString('DEV_PO_PS_ID'),
@@ -114,6 +123,9 @@ class EnvironmentConfig {
   /// Base URL for the embedded Angular survey micro-app (`survey_web/`).
   final String surveyWebBaseUrl;
 
+  /// Voter search engine portal opened from the dashboard grid.
+  final String voterSearchEngineUrl;
+
   /// Active election cycle ID sent with officer login (deployment config).
   final int? electionId;
 
@@ -140,6 +152,14 @@ class EnvironmentConfig {
         ? '${uri.scheme}://${uri.host}:${uri.port}'
         : '${uri.scheme}://${uri.host}';
     return origin;
+  }
+
+  static String _defaultVoterSearchUrl(String poElectionOrigin) {
+    final Uri uri = Uri.parse(poElectionOrigin);
+    final String origin = uri.hasPort
+        ? '${uri.scheme}://${uri.host}:${uri.port}'
+        : '${uri.scheme}://${uri.host}';
+    return '$origin/SECSearchEngine';
   }
 
   /// DEV may omit survey URLs (localhost defaults). UAT/PROD must set env keys.

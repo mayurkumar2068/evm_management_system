@@ -1,26 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/webview/url/webview_url_utils.dart';
 import 'package:evm_management_system/core/utils/date_time_extensions.dart';
 import 'package:evm_management_system/core/utils/string_extensions.dart';
 import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
+import 'package:evm_management_system/features/dashboard/presentation/utils/dashboard_webview_launcher.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/features/web_portal/presentation/screens/web_view_screen.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/activity_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Local brand tints for the dashboard.
+/// Local brand tints for the dashboard — soft blue→mint (Booth Survey family).
 class DashboardBrand {
   const DashboardBrand._();
-  static const Color green = Color(0xFF0F8A5F);
-  static const Color greenDark = Color(0xFF0B6B49);
-  static const Color saffron = Color(0xFFFF8C00);
-  static const Color ink = Color(0xFF0F1E17);
-  static const Color surface = Color(0xFFF8FAFC);
+  static const Color green = AppColors.primary;
+  static const Color greenDark = AppColors.primaryDark;
+  static const Color accent = AppColors.green;
+  static const Color saffron = AppColors.saffron;
+  static const Color ink = AppColors.textPrimary;
+  static const Color surface = AppColors.slate50;
 }
 
 /// Local spacing constants for the dashboard.
@@ -51,11 +51,27 @@ class DashboardHeader extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          const BrandLogo(width: 48),
+          Container(
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: const <BoxShadow>[
+                BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const BrandLogo(width: 44),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
@@ -65,7 +81,7 @@ class DashboardHeader extends StatelessWidget {
                   style: AppTextStyles.titleMedium.copyWith(
                     color: DashboardBrand.ink,
                     fontWeight: FontWeight.w900,
-                    fontSize: 18,
+                    fontSize: 15,
                     height: 1.1,
                   ),
                 ),
@@ -91,8 +107,6 @@ class DashboardHeader extends StatelessWidget {
           const SizedBox(width: 12),
           _Avatar(
             name: name,
-            // Profile is a bottom-nav tab, so switch to it with go (not push)
-            // to avoid stacking a second copy inside the shell navigator.
             onTap: () => Get.offNamed<dynamic>(AppRoute.profile.path),
           ),
         ],
@@ -111,14 +125,14 @@ class _Avatar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: 40,
+        height: 40,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: DashboardBrand.green.withValues(alpha: 0.2),
+              color: AppColors.primary.withValues(alpha: 0.22),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -126,7 +140,7 @@ class _Avatar extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: <Color>[DashboardBrand.green, DashboardBrand.greenDark],
+            colors: <Color>[AppColors.primary, AppColors.green],
           ),
         ),
         child: Text(
@@ -157,11 +171,11 @@ class _RoundIcon extends StatelessWidget {
         clipBehavior: Clip.none,
         children: <Widget>[
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Colors.white,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(color: AppColors.slate100),
               boxShadow: const [
                 BoxShadow(
@@ -222,14 +236,10 @@ class DashboardWelcomeCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         borderRadius: AppRadius.brXl,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[DashboardBrand.green, DashboardBrand.saffron],
-        ),
+        gradient: AppGradients.header,
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: DashboardBrand.green.withValues(alpha: 0.35),
+            color: AppColors.primary.withValues(alpha: 0.28),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -237,6 +247,18 @@ class DashboardWelcomeCard extends StatelessWidget {
       ),
       child: Stack(
         children: <Widget>[
+          Positioned(
+            right: -16,
+            top: -28,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
           Positioned(
             right: -20,
             bottom: -30,
@@ -254,7 +276,7 @@ class DashboardWelcomeCard extends StatelessWidget {
                 LocaleKeys.dashboardGreeting.tr(args: <String>[name]),
                 style: AppTextStyles.titleLarge.copyWith(
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   fontSize: 16,
                 ),
               ),
@@ -262,7 +284,7 @@ class DashboardWelcomeCard extends StatelessWidget {
               Text(
                 designation,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withValues(alpha: 0.92),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -272,7 +294,7 @@ class DashboardWelcomeCard extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: <Widget>[
-                  _Chip(icon: Icons.location_on_outlined, label: district),
+                  _Chip(icon: Icons.location_on_outlined, label: name),
                   const _StatusPill(),
                 ],
               ),
@@ -342,7 +364,7 @@ class _StatusPill extends StatelessWidget {
             width: 8,
             height: 8,
             decoration: const BoxDecoration(
-              color: DashboardBrand.green,
+              color: AppColors.green,
               shape: BoxShape.circle,
             ),
           ),
@@ -350,7 +372,7 @@ class _StatusPill extends StatelessWidget {
           Text(
             LocaleKeys.dashboardStatusActive.tr(),
             style: AppTextStyles.caption.copyWith(
-              color: DashboardBrand.greenDark,
+              color: AppColors.greenDark,
               fontWeight: FontWeight.w800,
               fontSize: 11,
             ),
@@ -506,25 +528,20 @@ class DashboardServicesGrid extends StatelessWidget {
       return;
     }
 
-    final String token = session?.token ?? '';
-    final String url = token.isNotEmpty
-        ? appendWebViewSurveyContext(
-            s.url,
-            token: token,
-            userId: session?.userId,
-            districtId: session?.districtId,
-            distName: session?.districtName,
-            bodyId: session?.bodyId,
-            bodyName: session?.bodyName,
-            urbanRural: session?.section,
-            boothLat: session?.lat,
-            boothLong: session?.long,
-          )
-        : s.url;
+    final String url = DashboardWebViewLauncher.launchUrl(
+      baseUrl: s.url,
+      session: session,
+      passSessionContext: s.passSessionContext,
+      openAsExternalPortal: s.openAsExternalPortal,
+    );
 
     await Get.toNamed<dynamic>(
       AppRoute.webView.path,
-      arguments: WebViewArgs(title: s.title, url: url),
+      arguments: DashboardWebViewLauncher.args(
+        title: s.title,
+        url: url,
+        openAsExternalPortal: s.openAsExternalPortal,
+      ),
     );
   }
 }
@@ -639,19 +656,19 @@ class DashboardActivityList extends StatelessWidget {
   List<Widget> _fallbackTiles() => <Widget>[
     _ActivityTile(
       icon: Icons.assignment_turned_in_outlined,
-      color: DashboardBrand.green,
+      color: AppColors.primary,
       title: LocaleKeys.dashboardActInspection.tr(),
       time: LocaleKeys.timeJustNow.tr(),
     ),
     _ActivityTile(
       icon: Icons.verified_outlined,
-      color: AppColors.primary,
+      color: AppColors.green,
       title: LocaleKeys.dashboardActExpenditure.tr(),
       time: LocaleKeys.timeHours.tr(args: const <String>['2']),
     ),
     _ActivityTile(
       icon: Icons.location_on_outlined,
-      color: DashboardBrand.saffron,
+      color: AppColors.primaryBright,
       title: LocaleKeys.dashboardActBooth.tr(),
       time: LocaleKeys.timeYesterday.tr(),
     ),
@@ -664,15 +681,15 @@ class DashboardActivityList extends StatelessWidget {
     ),
     ActivityType.scanned => (
       icon: Icons.qr_code_rounded,
-      color: DashboardBrand.green,
+      color: AppColors.green,
     ),
     ActivityType.updated => (
       icon: Icons.edit_outlined,
-      color: DashboardBrand.saffron,
+      color: AppColors.primaryBright,
     ),
     ActivityType.login => (
       icon: Icons.lock_outline_rounded,
-      color: AppColors.purple,
+      color: AppColors.primaryDark,
     ),
     ActivityType.sync => (icon: Icons.sync_rounded, color: AppColors.teal),
     ActivityType.exported => (
@@ -752,16 +769,12 @@ class DashboardAlertBanner extends StatelessWidget {
         borderRadius: AppRadius.brXl,
         boxShadow: [
           BoxShadow(
-            color: DashboardBrand.greenDark.withValues(alpha: 0.25),
+            color: AppColors.primary.withValues(alpha: 0.26),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ],
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: <Color>[DashboardBrand.greenDark, DashboardBrand.green],
-        ),
+        gradient: AppGradients.primaryButton,
       ),
       child: Row(
         children: <Widget>[
@@ -847,7 +860,7 @@ class DashboardSectionHeader extends StatelessWidget {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: DashboardBrand.green.withValues(alpha: 0.08),
+                  color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: AppRadius.brSm,
                 ),
                 child: Row(
@@ -855,7 +868,7 @@ class DashboardSectionHeader extends StatelessWidget {
                     Text(
                       LocaleKeys.dashboardViewAll.tr().replaceAll(' →', ''),
                       style: AppTextStyles.caption.copyWith(
-                        color: DashboardBrand.green,
+                        color: AppColors.primaryDark,
                         fontWeight: FontWeight.w800,
                         fontSize: 12,
                       ),
@@ -863,7 +876,7 @@ class DashboardSectionHeader extends StatelessWidget {
                     const Icon(
                       Icons.chevron_right_rounded,
                       size: 18,
-                      color: DashboardBrand.green,
+                      color: AppColors.primaryDark,
                     ),
                   ],
                 ),

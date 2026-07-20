@@ -2,6 +2,11 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import {
+  clearSessionKey,
+  readSessionJson,
+  writeSessionJson,
+} from '../core/session-storage.util';
 import { LocationOption, SelectedLocation } from '../models/location.model';
 import {
   SaveSurveyAnswerRequest,
@@ -10,6 +15,8 @@ import {
 } from '../models/survey.model';
 import { MastersApiService } from './masters-api.service';
 import { SurveyApiService } from './survey-api.service';
+
+const SELECTED_LOCATION_KEY = 'survey.selected_location';
 
 /**
  * Session state + facade over Masters / PSSurvey APIs.
@@ -22,7 +29,9 @@ export class SurveyService {
   private readonly masters = inject(MastersApiService);
   private readonly surveyApi = inject(SurveyApiService);
 
-  readonly selectedLocation = signal<SelectedLocation | null>(null);
+  readonly selectedLocation = signal<SelectedLocation | null>(
+    readSessionJson<SelectedLocation>(SELECTED_LOCATION_KEY),
+  );
   readonly surveyQuestions = signal<SurveyQuestion[]>([]);
   readonly savedAnswerIds = signal<Record<string, string>>({});
 
@@ -30,12 +39,15 @@ export class SurveyService {
 
   setLocation(location: SelectedLocation): void {
     this.selectedLocation.set(location);
+    writeSessionJson(SELECTED_LOCATION_KEY, location);
   }
 
   clearSurveySession(): void {
     this.surveyQuestions.set([]);
     this.questionsLoaded = false;
     this.savedAnswerIds.set({});
+    this.selectedLocation.set(null);
+    clearSessionKey(SELECTED_LOCATION_KEY);
   }
 
   getDistricts(): Observable<LocationOption[]> {

@@ -27,26 +27,26 @@ class NominationWorkflowController extends GetxController {
 
   final RxInt currentStep = 0.obs;
 
-  final RxnString selectedStateId = RxnString();
   final RxnString selectedDistrictId = RxnString();
   final RxnString selectedUrbanBodyTypeId = RxnString();
   final RxnString selectedMunicipalityId = RxnString();
+  final RxnString selectedJanpadPanchayatId = RxnString();
+  final RxnString selectedGramPanchayatId = RxnString();
   final RxnString selectedWardId = RxnString();
-  final RxnString selectedReservationId = RxnString();
   final RxnString selectedGenderId = RxnString();
   final RxnString selectedCategoryId = RxnString();
 
-  final RxList<NominationOptionItem> stateOptions =
-      <NominationOptionItem>[].obs;
   final RxList<NominationOptionItem> districtOptions =
       <NominationOptionItem>[].obs;
   final RxList<NominationOptionItem> urbanBodyTypeOptions =
       <NominationOptionItem>[].obs;
   final RxList<NominationOptionItem> municipalityOptions =
       <NominationOptionItem>[].obs;
-  final RxList<NominationOptionItem> wardOptions = <NominationOptionItem>[].obs;
-  final RxList<NominationOptionItem> reservationOptions =
+  final RxList<NominationOptionItem> janpadPanchayatOptions =
       <NominationOptionItem>[].obs;
+  final RxList<NominationOptionItem> gramPanchayatOptions =
+      <NominationOptionItem>[].obs;
+  final RxList<NominationOptionItem> wardOptions = <NominationOptionItem>[].obs;
 
   final RxMap<String, NominationDocumentUploadState> documentStates =
       <String, NominationDocumentUploadState>{}.obs;
@@ -85,48 +85,20 @@ class NominationWorkflowController extends GetxController {
         ),
       ];
 
-  static const List<NominationOptionItem> _reservations =
-      <NominationOptionItem>[
-        NominationOptionItem(
-          id: 'general',
-          labelKey: LocaleKeys.nominationOptionGeneral,
-        ),
-        NominationOptionItem(id: 'sc', labelKey: LocaleKeys.nominationOptionSc),
-        NominationOptionItem(id: 'st', labelKey: LocaleKeys.nominationOptionSt),
-        NominationOptionItem(
-          id: 'obc',
-          labelKey: LocaleKeys.nominationOptionObc,
-        ),
-        NominationOptionItem(
-          id: 'women',
-          labelKey: LocaleKeys.nominationOptionWomen,
-        ),
-      ];
-
-  static const List<NominationOptionItem> _states = <NominationOptionItem>[
+  static const List<NominationOptionItem> _districts = <NominationOptionItem>[
     NominationOptionItem(
-      id: 'mp',
-      labelKey: LocaleKeys.nominationOptionStateMp,
+      id: 'bhopal',
+      labelKey: LocaleKeys.nominationOptionDistrictBhopal,
+    ),
+    NominationOptionItem(
+      id: 'indore',
+      labelKey: LocaleKeys.nominationOptionDistrictIndore,
+    ),
+    NominationOptionItem(
+      id: 'sagar',
+      labelKey: LocaleKeys.nominationOptionDistrictSagar,
     ),
   ];
-
-  static const Map<String, List<NominationOptionItem>> _districtByState =
-      <String, List<NominationOptionItem>>{
-        'mp': <NominationOptionItem>[
-          NominationOptionItem(
-            id: 'bhopal',
-            labelKey: LocaleKeys.nominationOptionDistrictBhopal,
-          ),
-          NominationOptionItem(
-            id: 'indore',
-            labelKey: LocaleKeys.nominationOptionDistrictIndore,
-          ),
-          NominationOptionItem(
-            id: 'sagar',
-            labelKey: LocaleKeys.nominationOptionDistrictSagar,
-          ),
-        ],
-      };
 
   static const Map<String, List<_UrbanBodyOption>> _bodiesByDistrict =
       <String, List<_UrbanBodyOption>>{
@@ -183,8 +155,12 @@ class NominationWorkflowController extends GetxController {
         ],
       };
 
-  static const List<NominationOptionItem> _adhyakshBodyTypes =
+  static const List<NominationOptionItem> _urbanBodyTypes =
       <NominationOptionItem>[
+        NominationOptionItem(
+          id: 'nagarNigam',
+          labelKey: LocaleKeys.nominationOptionBodyNagarNigam,
+        ),
         NominationOptionItem(
           id: 'nagarPalikaParishad',
           labelKey: LocaleKeys.nominationOptionBodyNagarPalikaParishad,
@@ -289,7 +265,206 @@ class NominationWorkflowController extends GetxController {
         ],
       };
 
+  static const Map<String, List<NominationOptionItem>> _wardByDistrict =
+      <String, List<NominationOptionItem>>{
+        'bhopal': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_12',
+            labelKey: LocaleKeys.nominationOptionWard12,
+          ),
+          NominationOptionItem(
+            id: 'ward_25',
+            labelKey: LocaleKeys.nominationOptionWard25,
+          ),
+        ],
+        'indore': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_25',
+            labelKey: LocaleKeys.nominationOptionWard25,
+          ),
+          NominationOptionItem(
+            id: 'ward_31',
+            labelKey: LocaleKeys.nominationOptionWard31,
+          ),
+        ],
+        'sagar': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_12',
+            labelKey: LocaleKeys.nominationOptionWard12,
+          ),
+          NominationOptionItem(
+            id: 'ward_31',
+            labelKey: LocaleKeys.nominationOptionWard31,
+          ),
+        ],
+      };
+
+  static const Map<String, List<NominationOptionItem>> _janpadByDistrict =
+      <String, List<NominationOptionItem>>{
+        'bhopal': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'janpad_phanda',
+            labelKey: LocaleKeys.nominationOptionJanpadPhanda,
+          ),
+          NominationOptionItem(
+            id: 'janpad_berasia',
+            labelKey: LocaleKeys.nominationOptionJanpadBerasia,
+          ),
+        ],
+        'indore': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'janpad_depalpur',
+            labelKey: LocaleKeys.nominationOptionJanpadDepalpur,
+          ),
+          NominationOptionItem(
+            id: 'janpad_mhow',
+            labelKey: LocaleKeys.nominationOptionJanpadMhow,
+          ),
+        ],
+        'sagar': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'janpad_bina',
+            labelKey: LocaleKeys.nominationOptionJanpadBina,
+          ),
+          NominationOptionItem(
+            id: 'janpad_rahatgarh',
+            labelKey: LocaleKeys.nominationOptionJanpadRahatgarh,
+          ),
+        ],
+      };
+
+  static const Map<String, List<NominationOptionItem>> _wardByJanpad =
+      <String, List<NominationOptionItem>>{
+        'janpad_phanda': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_7',
+            labelKey: LocaleKeys.nominationOptionWard7,
+          ),
+          NominationOptionItem(
+            id: 'ward_4',
+            labelKey: LocaleKeys.nominationOptionWard4,
+          ),
+        ],
+        'janpad_berasia': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_9',
+            labelKey: LocaleKeys.nominationOptionWard9,
+          ),
+          NominationOptionItem(
+            id: 'ward_12',
+            labelKey: LocaleKeys.nominationOptionWard12,
+          ),
+        ],
+        'janpad_depalpur': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_7',
+            labelKey: LocaleKeys.nominationOptionWard7,
+          ),
+          NominationOptionItem(
+            id: 'ward_9',
+            labelKey: LocaleKeys.nominationOptionWard9,
+          ),
+        ],
+        'janpad_mhow': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_4',
+            labelKey: LocaleKeys.nominationOptionWard4,
+          ),
+          NominationOptionItem(
+            id: 'ward_25',
+            labelKey: LocaleKeys.nominationOptionWard25,
+          ),
+        ],
+        'janpad_bina': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_31',
+            labelKey: LocaleKeys.nominationOptionWard31,
+          ),
+          NominationOptionItem(
+            id: 'ward_9',
+            labelKey: LocaleKeys.nominationOptionWard9,
+          ),
+        ],
+        'janpad_rahatgarh': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'ward_12',
+            labelKey: LocaleKeys.nominationOptionWard12,
+          ),
+          NominationOptionItem(
+            id: 'ward_7',
+            labelKey: LocaleKeys.nominationOptionWard7,
+          ),
+        ],
+      };
+
+  static const Map<String, List<NominationOptionItem>> _gramByJanpad =
+      <String, List<NominationOptionItem>>{
+        'janpad_phanda': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_ratua',
+            labelKey: LocaleKeys.nominationOptionGramRatua,
+          ),
+          NominationOptionItem(
+            id: 'gram_intkhedi',
+            labelKey: LocaleKeys.nominationOptionGramIntkhedi,
+          ),
+        ],
+        'janpad_berasia': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_nazirabad',
+            labelKey: LocaleKeys.nominationOptionGramNazirabad,
+          ),
+          NominationOptionItem(
+            id: 'gram_dongargaon',
+            labelKey: LocaleKeys.nominationOptionGramDongargaon,
+          ),
+        ],
+        'janpad_depalpur': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_gautampura',
+            labelKey: LocaleKeys.nominationOptionGramGautampura,
+          ),
+          NominationOptionItem(
+            id: 'gram_betma',
+            labelKey: LocaleKeys.nominationOptionGramBetma,
+          ),
+        ],
+        'janpad_mhow': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_manpur',
+            labelKey: LocaleKeys.nominationOptionGramManpur,
+          ),
+          NominationOptionItem(
+            id: 'gram_choral',
+            labelKey: LocaleKeys.nominationOptionGramChoral,
+          ),
+        ],
+        'janpad_bina': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_khurai',
+            labelKey: LocaleKeys.nominationOptionGramKhurai,
+          ),
+          NominationOptionItem(
+            id: 'gram_banagra',
+            labelKey: LocaleKeys.nominationOptionGramBanagra,
+          ),
+        ],
+        'janpad_rahatgarh': <NominationOptionItem>[
+          NominationOptionItem(
+            id: 'gram_rehli',
+            labelKey: LocaleKeys.nominationOptionGramRehli,
+          ),
+          NominationOptionItem(
+            id: 'gram_garhakota',
+            labelKey: LocaleKeys.nominationOptionGramGarhakota,
+          ),
+        ],
+      };
+
   bool get showUrbanBodyType => args.postType.requiresUrbanBodyType;
+  bool get showUrbanBodyName => args.postType.requiresUrbanBodyName;
+  bool get showJanpadPanchayat => args.postType.requiresJanpadPanchayat;
+  bool get showGramPanchayat => args.postType.requiresGramPanchayat;
   bool get showWard => args.postType.requiresWard;
   String get municipalityFieldLabelKey =>
       args.postType.municipalityFieldLabelKey;
@@ -317,12 +492,14 @@ class NominationWorkflowController extends GetxController {
       postType: args.postType,
       currentStep: currentStep.value,
       savedAt: DateTime.now(),
-      stateId: selectedStateId.value,
       districtId: selectedDistrictId.value,
       urbanBodyTypeId: selectedUrbanBodyTypeId.value,
-      municipalityId: selectedMunicipalityId.value,
-      wardId: selectedWardId.value,
-      reservationId: selectedReservationId.value,
+      municipalityId: showUrbanBodyName ? selectedMunicipalityId.value : null,
+      janpadPanchayatId: showJanpadPanchayat
+          ? selectedJanpadPanchayatId.value
+          : null,
+      gramPanchayatId: showGramPanchayat ? selectedGramPanchayatId.value : null,
+      wardId: showWard ? selectedWardId.value : null,
       genderId: selectedGenderId.value,
       categoryId: selectedCategoryId.value,
       fullName: textFields['fullName'] ?? '',
@@ -351,12 +528,12 @@ class NominationWorkflowController extends GetxController {
 
   void applyDraft(NominationDraft draft) {
     restoreAreaSelections(
-      stateId: draft.stateId,
       districtId: draft.districtId,
       urbanBodyTypeId: draft.urbanBodyTypeId,
       municipalityId: draft.municipalityId,
+      janpadPanchayatId: draft.janpadPanchayatId,
+      gramPanchayatId: draft.gramPanchayatId,
       wardId: draft.wardId,
-      reservationId: draft.reservationId,
     );
     selectedGenderId.value = draft.genderId ?? genderOptions.first.id;
     selectedCategoryId.value = draft.categoryId ?? categoryOptions.first.id;
@@ -369,53 +546,76 @@ class NominationWorkflowController extends GetxController {
   }
 
   void restoreAreaSelections({
-    required String? stateId,
     required String? districtId,
     required String? urbanBodyTypeId,
     required String? municipalityId,
+    required String? janpadPanchayatId,
+    required String? gramPanchayatId,
     required String? wardId,
-    required String? reservationId,
   }) {
-    selectedStateId.value = stateId;
-    districtOptions.assignAll(
-      _districtByState[stateId] ?? const <NominationOptionItem>[],
-    );
+    districtOptions.assignAll(_districts);
     selectedDistrictId.value = districtId;
-    urbanBodyTypeOptions.assignAll(
-      showUrbanBodyType ? _adhyakshBodyTypes : const <NominationOptionItem>[],
-    );
-    selectedUrbanBodyTypeId.value = urbanBodyTypeId;
-    municipalityOptions.assignAll(
-      _municipalityOptionsFor(
-        districtId: districtId,
-        urbanBodyTypeId: urbanBodyTypeId,
-      ),
-    );
-    selectedMunicipalityId.value = municipalityId;
+
+    if (showUrbanBodyType) {
+      urbanBodyTypeOptions.assignAll(_urbanBodyTypes);
+      selectedUrbanBodyTypeId.value = urbanBodyTypeId;
+    } else {
+      urbanBodyTypeOptions.clear();
+      selectedUrbanBodyTypeId.value = null;
+    }
+
+    if (showUrbanBodyName) {
+      municipalityOptions.assignAll(
+        _municipalityOptionsFor(
+          districtId: districtId,
+          urbanBodyTypeId: urbanBodyTypeId,
+        ),
+      );
+      selectedMunicipalityId.value = municipalityId;
+    } else {
+      municipalityOptions.clear();
+      selectedMunicipalityId.value = null;
+    }
+
+    if (showJanpadPanchayat) {
+      janpadPanchayatOptions.assignAll(
+        _janpadByDistrict[districtId] ?? const <NominationOptionItem>[],
+      );
+      selectedJanpadPanchayatId.value = janpadPanchayatId;
+    } else {
+      janpadPanchayatOptions.clear();
+      selectedJanpadPanchayatId.value = null;
+    }
+
+    if (showGramPanchayat) {
+      gramPanchayatOptions.assignAll(
+        _gramByJanpad[janpadPanchayatId] ?? const <NominationOptionItem>[],
+      );
+      selectedGramPanchayatId.value = gramPanchayatId;
+    } else {
+      gramPanchayatOptions.clear();
+      selectedGramPanchayatId.value = null;
+    }
+
     if (showWard) {
       wardOptions.assignAll(
-        _wardByMunicipality[municipalityId] ?? const <NominationOptionItem>[],
+        _wardOptionsFor(
+          districtId: districtId,
+          urbanBodyTypeId: urbanBodyTypeId,
+          janpadPanchayatId: janpadPanchayatId,
+        ),
       );
       selectedWardId.value = wardId;
-      reservationOptions.assignAll(
-        wardId == null ? const <NominationOptionItem>[] : _reservations,
-      );
     } else {
       wardOptions.clear();
       selectedWardId.value = null;
-      reservationOptions.assignAll(
-        municipalityId == null ? const <NominationOptionItem>[] : _reservations,
-      );
     }
-    selectedReservationId.value = reservationId;
   }
 
   @override
   void onInit() {
     super.onInit();
-    stateOptions.assignAll(_states);
-    selectedStateId.value = _states.first.id;
-    onStateChanged(selectedStateId.value);
+    districtOptions.assignAll(_districts);
     selectedGenderId.value = genderOptions.first.id;
     selectedCategoryId.value = categoryOptions.first.id;
     for (final NominationOptionItem doc in requiredDocuments) {
@@ -423,87 +623,95 @@ class NominationWorkflowController extends GetxController {
     }
   }
 
-  void onStateChanged(String? stateId) {
-    selectedStateId.value = stateId;
-    selectedDistrictId.value = null;
-    selectedUrbanBodyTypeId.value = null;
-    selectedMunicipalityId.value = null;
-    selectedWardId.value = null;
-    selectedReservationId.value = null;
-    districtOptions.assignAll(
-      _districtByState[stateId] ?? const <NominationOptionItem>[],
-    );
-    urbanBodyTypeOptions.clear();
-    municipalityOptions.clear();
-    wardOptions.clear();
-    reservationOptions.clear();
-  }
-
   void onDistrictChanged(String? districtId) {
     selectedDistrictId.value = districtId;
     selectedUrbanBodyTypeId.value = null;
     selectedMunicipalityId.value = null;
+    selectedJanpadPanchayatId.value = null;
+    selectedGramPanchayatId.value = null;
     selectedWardId.value = null;
-    selectedReservationId.value = null;
+    municipalityOptions.clear();
+    janpadPanchayatOptions.clear();
+    gramPanchayatOptions.clear();
     wardOptions.clear();
-    reservationOptions.clear();
 
     if (showUrbanBodyType) {
-      urbanBodyTypeOptions.assignAll(_adhyakshBodyTypes);
-      municipalityOptions.clear();
-      return;
+      urbanBodyTypeOptions.assignAll(_urbanBodyTypes);
+    } else {
+      urbanBodyTypeOptions.clear();
     }
 
-    urbanBodyTypeOptions.clear();
-    municipalityOptions.assignAll(
-      _municipalityOptionsFor(districtId: districtId, urbanBodyTypeId: null),
-    );
+    if (showJanpadPanchayat) {
+      janpadPanchayatOptions.assignAll(
+        _janpadByDistrict[districtId] ?? const <NominationOptionItem>[],
+      );
+    }
+
+    if (args.postType == NominationPostType.districtPanchayatMember) {
+      wardOptions.assignAll(
+        _wardByDistrict[districtId] ?? const <NominationOptionItem>[],
+      );
+    }
   }
 
   void onUrbanBodyTypeChanged(String? urbanBodyTypeId) {
     selectedUrbanBodyTypeId.value = urbanBodyTypeId;
     selectedMunicipalityId.value = null;
     selectedWardId.value = null;
-    selectedReservationId.value = null;
+    municipalityOptions.clear();
     wardOptions.clear();
-    reservationOptions.clear();
-    municipalityOptions.assignAll(
-      _municipalityOptionsFor(
-        districtId: selectedDistrictId.value,
-        urbanBodyTypeId: urbanBodyTypeId,
-      ),
-    );
+
+    if (showUrbanBodyName) {
+      municipalityOptions.assignAll(
+        _municipalityOptionsFor(
+          districtId: selectedDistrictId.value,
+          urbanBodyTypeId: urbanBodyTypeId,
+        ),
+      );
+      return;
+    }
+
+    if (args.postType == NominationPostType.parshad) {
+      wardOptions.assignAll(
+        _wardOptionsFor(
+          districtId: selectedDistrictId.value,
+          urbanBodyTypeId: urbanBodyTypeId,
+          janpadPanchayatId: null,
+        ),
+      );
+    }
   }
 
   void onMunicipalityChanged(String? municipalityId) {
     selectedMunicipalityId.value = municipalityId;
-    selectedWardId.value = null;
-    selectedReservationId.value = null;
+  }
 
-    if (showWard) {
-      wardOptions.assignAll(
-        _wardByMunicipality[municipalityId] ?? const <NominationOptionItem>[],
+  void onJanpadPanchayatChanged(String? janpadPanchayatId) {
+    selectedJanpadPanchayatId.value = janpadPanchayatId;
+    selectedGramPanchayatId.value = null;
+    selectedWardId.value = null;
+    gramPanchayatOptions.clear();
+    wardOptions.clear();
+
+    if (showGramPanchayat) {
+      gramPanchayatOptions.assignAll(
+        _gramByJanpad[janpadPanchayatId] ?? const <NominationOptionItem>[],
       );
-      reservationOptions.clear();
-      return;
     }
 
-    wardOptions.clear();
-    reservationOptions.assignAll(
-      municipalityId == null ? const <NominationOptionItem>[] : _reservations,
-    );
+    if (args.postType == NominationPostType.janpadPanchayatMember) {
+      wardOptions.assignAll(
+        _wardByJanpad[janpadPanchayatId] ?? const <NominationOptionItem>[],
+      );
+    }
+  }
+
+  void onGramPanchayatChanged(String? gramPanchayatId) {
+    selectedGramPanchayatId.value = gramPanchayatId;
   }
 
   void onWardChanged(String? wardId) {
     selectedWardId.value = wardId;
-    selectedReservationId.value = null;
-    reservationOptions.assignAll(
-      wardId == null ? const <NominationOptionItem>[] : _reservations,
-    );
-  }
-
-  void onReservationChanged(String? reservationId) {
-    selectedReservationId.value = reservationId;
   }
 
   void onGenderChanged(String? genderId) {
@@ -515,15 +723,19 @@ class NominationWorkflowController extends GetxController {
   }
 
   bool validateAreaStep() {
-    final bool baseValid =
-        selectedStateId.value != null &&
-        selectedDistrictId.value != null &&
-        selectedMunicipalityId.value != null &&
-        selectedReservationId.value != null;
-    if (!baseValid) {
+    if (selectedDistrictId.value == null) {
       return false;
     }
     if (showUrbanBodyType && selectedUrbanBodyTypeId.value == null) {
+      return false;
+    }
+    if (showUrbanBodyName && selectedMunicipalityId.value == null) {
+      return false;
+    }
+    if (showJanpadPanchayat && selectedJanpadPanchayatId.value == null) {
+      return false;
+    }
+    if (showGramPanchayat && selectedGramPanchayatId.value == null) {
       return false;
     }
     if (showWard && selectedWardId.value == null) {
@@ -538,23 +750,54 @@ class NominationWorkflowController extends GetxController {
   }) {
     final List<_UrbanBodyOption> bodies =
         _bodiesByDistrict[districtId] ?? const <_UrbanBodyOption>[];
-    final Iterable<_UrbanBodyOption> filtered = switch (args.postType) {
-      NominationPostType.mahapaur => bodies.where(
-        (_UrbanBodyOption b) => b.type == UrbanBodyType.nagarNigam,
-      ),
-      NominationPostType.adhyaksh => bodies.where((_UrbanBodyOption b) {
-        final UrbanBodyType? type = _urbanBodyTypeFromId(urbanBodyTypeId);
-        return type != null && b.type == type;
-      }),
-      NominationPostType.parshad => bodies,
-      _ => bodies,
-    };
-    return filtered
+    final UrbanBodyType? type = _urbanBodyTypeFromId(urbanBodyTypeId);
+    if (type == null) {
+      return const <NominationOptionItem>[];
+    }
+    return bodies
+        .where((_UrbanBodyOption b) => b.type == type)
         .map(
           (_UrbanBodyOption body) =>
               NominationOptionItem(id: body.id, labelKey: body.labelKey),
         )
         .toList(growable: false);
+  }
+
+  List<NominationOptionItem> _wardOptionsFor({
+    required String? districtId,
+    required String? urbanBodyTypeId,
+    required String? janpadPanchayatId,
+  }) {
+    switch (args.postType) {
+      case NominationPostType.parshad:
+        final UrbanBodyType? type = _urbanBodyTypeFromId(urbanBodyTypeId);
+        if (type == null) {
+          return const <NominationOptionItem>[];
+        }
+        final List<_UrbanBodyOption> bodies =
+            _bodiesByDistrict[districtId] ?? const <_UrbanBodyOption>[];
+        final Map<String, NominationOptionItem> unique =
+            <String, NominationOptionItem>{};
+        for (final _UrbanBodyOption body in bodies.where(
+          (_UrbanBodyOption b) => b.type == type,
+        )) {
+          for (final NominationOptionItem ward
+              in _wardByMunicipality[body.id] ??
+                  const <NominationOptionItem>[]) {
+            unique[ward.id] = ward;
+          }
+        }
+        return unique.values.toList(growable: false);
+      case NominationPostType.districtPanchayatMember:
+        return _wardByDistrict[districtId] ?? const <NominationOptionItem>[];
+      case NominationPostType.janpadPanchayatMember:
+        return _wardByJanpad[janpadPanchayatId] ??
+            const <NominationOptionItem>[];
+      case NominationPostType.mahapaur:
+      case NominationPostType.adhyaksh:
+      case NominationPostType.sarpanch:
+        return const <NominationOptionItem>[];
+    }
   }
 
   UrbanBodyType? _urbanBodyTypeFromId(String? id) {

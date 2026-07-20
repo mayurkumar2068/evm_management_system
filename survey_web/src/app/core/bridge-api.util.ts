@@ -1,11 +1,8 @@
 import { HttpRequest } from '@angular/common/http';
 
 import { environment } from '../../environments/environment';
-
-type AppBridgeInvoke = (
-  action: string,
-  payload?: Record<string, unknown>,
-) => Promise<unknown>;
+import { getAppBridgeInvoke } from './bridge.util';
+import { resolveApiBaseUrl } from './resolve-api-base';
 
 export interface NativeApiResult {
   body: unknown;
@@ -15,13 +12,11 @@ export interface NativeApiResult {
 
 /** True when the page host differs from the API host and Flutter bridge is ready. */
 export function shouldUseNativeApiBridge(url: string): boolean {
-  const invoke = (window as Window & { AppBridge?: { invoke?: AppBridgeInvoke } })
-    .AppBridge?.invoke;
-  if (typeof invoke !== 'function') {
+  if (!getAppBridgeInvoke()) {
     return false;
   }
   try {
-    const apiHost = new URL(environment.apiBaseUrl).host;
+    const apiHost = new URL(resolveApiBaseUrl(environment.apiBaseUrl)).host;
     const requestHost = new URL(url, window.location.origin).host;
     const pageHost = window.location.host;
     return (
@@ -38,8 +33,7 @@ export function shouldUseNativeApiBridge(url: string): boolean {
 export async function nativeApiRequest(
   req: HttpRequest<unknown>,
 ): Promise<NativeApiResult> {
-  const invoke = (window as Window & { AppBridge?: { invoke: AppBridgeInvoke } })
-    .AppBridge?.invoke;
+  const invoke = getAppBridgeInvoke();
   if (!invoke) {
     throw new Error('bridge_unavailable');
   }

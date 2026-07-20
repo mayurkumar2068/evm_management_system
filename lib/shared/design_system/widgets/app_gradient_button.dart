@@ -34,17 +34,17 @@ class AppGradientButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: disabled ? null : onPressed,
-          borderRadius: AppRadius.brMd,
+          borderRadius: AppRadius.brPill,
           child: Ink(
             height: height,
             decoration: BoxDecoration(
               gradient: gradient,
-              borderRadius: AppRadius.brMd,
+              borderRadius: AppRadius.brPill,
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
+                  color: AppColors.primary.withValues(alpha: 0.28),
                   blurRadius: 18,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -61,16 +61,17 @@ class AppGradientButton extends StatelessWidget {
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        if (icon != null) ...<Widget>[
-                          Icon(icon, color: Colors.white, size: 18),
-                          const SizedBox(width: 8),
-                        ],
                         Text(
                           label,
                           style: AppTextStyles.button.copyWith(
                             color: Colors.white,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
+                        if (icon != null) ...<Widget>[
+                          const SizedBox(width: 8),
+                          Icon(icon, color: Colors.white, size: 18),
+                        ],
                       ],
                     ),
             ),

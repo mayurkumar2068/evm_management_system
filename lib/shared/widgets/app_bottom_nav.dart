@@ -1,9 +1,8 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Election-green accent used by the floating bottom navigation.
-const Color _navAccent = Color(0xFF0F8A5F);
-const Color _navAccentDark = Color(0xFF0B6B49);
+/// Soft blue→mint accent used by the floating bottom navigation.
+const Color _navAccent = AppColors.primary;
 
 /// A single bottom-navigation entry.
 class BottomNavItem {
@@ -93,15 +92,11 @@ class _NavButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[_navAccent, _navAccentDark],
-                  ),
+                  gradient: AppGradients.primaryButton,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
-                      color: _navAccent.withValues(alpha: 0.45),
+                      color: _navAccent.withValues(alpha: 0.40),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),

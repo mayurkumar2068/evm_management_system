@@ -1,15 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/utils/validators.dart';
-import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Officer login screen — entry point demonstrating the full
-/// use case → repository → datasource flow.
+/// App entry after onboarding / session expiry — splash-style gateway.
+///
+/// No credential fields. Officer continues as guest into Dashboard / Reports /
+/// Profile. Pooling Survey and पीठासीन still use [ServiceLoginScreen].
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -19,21 +21,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   late final Worker _authWorker;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _officerId = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  bool _obscure = true;
-  bool _remember = false;
-
-  static const List<String> _districts = <String>[
-    'Delhi Central',
-    'Delhi North',
-    'Delhi South',
-    'Delhi East',
-    'Delhi West',
-    'New Delhi',
-  ];
-  String _district = _districts.first;
+  bool _busy = false;
 
   @override
   void initState() {
@@ -50,277 +38,421 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _authWorker.dispose();
-    _officerId.dispose();
-    _password.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    FocusScope.of(context).unfocus();
-    await AppServices.auth.signIn(
-      LoginCredentials(
-        officerId: _officerId.text.trim(),
-        password: _password.text,
-      ),
-    );
+  Future<void> _enter(AppRoute destination) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await AppServices.auth.continueAsGuest();
+      if (!mounted) return;
+      await Get.offAllNamed<dynamic>(destination.path);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final AuthState state = AppServices.auth.authState.value;
-      final bool biometricEnabled =
-          AppServices.auth.biometricEnabled.value ?? false;
+      final bool loading = _busy || state.isBusy;
       final double top = MediaQuery.of(context).padding.top;
 
       return Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20, top + 12, 20, 24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  const _SoftLoginHero(),
-                  const SizedBox(height: 22),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppRadius.brXl,
-                      border: Border.all(color: AppColors.outline),
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: AppColors.cardShadow,
-                          blurRadius: 18,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          LocaleKeys.authLoginTitle.tr(),
-                          style: AppTextStyles.titleLarge.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
+        body: Stack(
+          children: <Widget>[
+            const _SoftBackdrop(),
+            SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, top + 12, 20, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const _SoftLoginHero(),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppRadius.brXl,
+                        border: Border.all(color: AppColors.outline),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 28,
+                            offset: const Offset(0, 12),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          LocaleKeys.authLoginSubtitle.tr(),
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.slate500,
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'स्वागत है',
+                            style: AppTextStyles.titleLarge.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        _FieldLabel(LocaleKeys.authDistrict.tr()),
-                        _DistrictDropdown(
-                          value: _district,
-                          items: _districts,
-                          onChanged: (String v) =>
-                              setState(() => _district = v),
-                        ),
-                        const SizedBox(height: 16),
-                        _FieldLabel(LocaleKeys.authUsername.tr()),
-                        _LoginField(
-                          controller: _officerId,
-                          hint: LocaleKeys.authUsernameHint.tr(),
-                          icon: Icons.tag_rounded,
-                          validator: Validators.requiredOfficerId,
-                          textInputAction: TextInputAction.next,
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            _FieldLabel(LocaleKeys.authPassword.tr()),
-                            GestureDetector(
-                              onTap: () {
-                                // TODO(mayur): implement forgot password
-                              },
-                              child: Text(
-                                LocaleKeys.commonForgot.tr(),
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'सेवा चुनें और आगे बढ़ें',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.slate500,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          _NavTile(
+                            icon: AppIcons.dashboard,
+                            color: AppColors.primary,
+                            title: LocaleKeys.menuDashboard.tr(),
+                            subtitle: 'मुख्य सेवाएँ और सर्वे',
+                            enabled: !loading,
+                            onTap: () => _enter(AppRoute.dashboard),
+                          ),
+                          const SizedBox(height: 10),
+                          _NavTile(
+                            icon: AppIcons.reports,
+                            color: AppColors.green,
+                            title: LocaleKeys.regReports.tr(),
+                            subtitle: 'रिपोर्ट और सारांश',
+                            enabled: !loading,
+                            onTap: () => _enter(AppRoute.reports),
+                          ),
+                          const SizedBox(height: 10),
+                          _NavTile(
+                            icon: AppIcons.profile,
+                            color: AppColors.primaryDark,
+                            title: LocaleKeys.profileTitle.tr(),
+                            subtitle: 'खाता और सेटिंग्स',
+                            enabled: !loading,
+                            onTap: () => _enter(AppRoute.profile),
+                          ),
+                          if (!kHideEvmScanning) ...<Widget>[
+                            const SizedBox(height: 10),
+                            _NavTile(
+                              icon: AppIcons.stockRegister,
+                              color: AppColors.teal,
+                              title: LocaleKeys.regInventory.tr(),
+                              subtitle: 'ईवीएम सूची',
+                              enabled: !loading,
+                              onTap: () => _enter(AppRoute.masterStockRegister),
                             ),
                           ],
-                        ),
-                        _LoginField(
-                          controller: _password,
-                          hint: LocaleKeys.authPasswordHint.tr(),
-                          icon: Icons.lock_outline_rounded,
-                          obscure: _obscure,
-                          validator: Validators.password,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => _submit(),
-                          suffix: IconButton(
-                            icon: Icon(
-                              _obscure
-                                  ? AppIcons.visibility
-                                  : AppIcons.visibilityOff,
-                              size: 18,
-                              color: AppColors.slate400,
-                            ),
-                            onPressed: () =>
-                                setState(() => _obscure = !_obscure),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () =>
-                                  setState(() => _remember = !_remember),
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: _remember
-                                      ? AppColors.primary
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: _remember
-                                        ? AppColors.primary
-                                        : AppColors.slate300,
-                                    width: 2,
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 54,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: AppGradients.primaryButton,
+                                borderRadius: AppRadius.brPill,
+                                boxShadow: <BoxShadow>[
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.28,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: InkWell(
+                                  onTap: loading
+                                      ? null
+                                      : () => _enter(AppRoute.dashboard),
+                                  borderRadius: AppRadius.brPill,
+                                  child: Center(
+                                    child: loading
+                                        ? const SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.4,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Text(
+                                                LocaleKeys.commonGetStarted
+                                                    .tr(),
+                                                style: AppTextStyles.titleSmall
+                                                    .copyWith(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.arrow_forward_rounded,
+                                                color: Colors.white,
+                                                size: 20,
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                 ),
-                                child: _remember
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 12,
-                                        color: Colors.white,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                LocaleKeys.authRememberMe.tr(),
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.slate600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 22),
-                        AppGradientButton(
-                          label: LocaleKeys.authLoginButton.tr(),
-                          icon: Icons.lock_outline_rounded,
-                          gradient: AppGradients.primaryButton,
-                          isLoading: state.isBusy,
-                          onPressed: _submit,
-                        ),
-                        if (biometricEnabled) ...<Widget>[
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: state.isBusy
-                                ? null
-                                : () => AppServices.auth.signInWithBiometrics(),
-                            icon: const Icon(AppIcons.fingerprint),
-                            label: Text(LocaleKeys.authBiometricButton.tr()),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(52),
-                              side: const BorderSide(color: AppColors.primary),
-                              foregroundColor: AppColors.primaryDark,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: AppRadius.brLg,
                               ),
                             ),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    LocaleKeys.appCopyright.tr(),
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.slate400,
-                      fontSize: 10,
+                    const SizedBox(height: 18),
+                    Text(
+                      LocaleKeys.appCopyright.tr(),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.slate400,
+                        fontSize: 10,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       );
     });
   }
 }
 
-/// Soft blue→mint hero — same family as service (survey / pithasin) login.
+class _NavTile extends StatelessWidget {
+  const _NavTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.enabled = true,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.55,
+      child: Material(
+        color: AppColors.slate50,
+        borderRadius: AppRadius.brLg,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: AppRadius.brLg,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.brLg,
+              border: Border.all(color: AppColors.outline),
+            ),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.slate500,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: color.withValues(alpha: 0.7),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SoftBackdrop extends StatelessWidget {
+  const _SoftBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            top: -80,
+            right: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withValues(alpha: 0.10),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 140,
+            left: -90,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.green.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SoftLoginHero extends StatelessWidget {
   const _SoftLoginHero();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: AppGradients.header,
         borderRadius: AppRadius.brXl,
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.22),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      child: Column(
+      child: Stack(
         children: <Widget>[
-          const BrandLogo(width: 72),
-          const SizedBox(height: 14),
-          Text(
-            LocaleKeys.splashTitle.tr(),
-            textAlign: TextAlign.center,
-            style: AppTextStyles.titleLarge.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+          Positioned(
+            right: -40,
+            top: -50,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            LocaleKeys.dashboardBrandSubtitle.tr(),
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withValues(alpha: 0.92),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Container(
+                      width: 56,
+                      height: 56,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const ClipOval(
+                        child: BrandLogo(width: 40),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            LocaleKeys.splashTitle.tr(),
+                            style: AppTextStyles.titleLarge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              height: 1.15,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            LocaleKeys.dashboardBrandSubtitle.tr(),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white.withValues(alpha: 0.92),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    _TrustBadge(
+                      label: LocaleKeys.authTrustNic.tr(),
+                      color: Colors.white,
+                    ),
+                    _TrustBadge(
+                      label: LocaleKeys.authTrustGovt.tr(),
+                      color: Colors.white,
+                    ),
+                    _TrustBadge(
+                      label: LocaleKeys.authTrustEncrypted.tr(),
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: <Widget>[
-              _TrustBadge(
-                label: LocaleKeys.authTrustNic.tr(),
-                color: Colors.white,
-              ),
-              _TrustBadge(
-                label: LocaleKeys.authTrustGovt.tr(),
-                color: Colors.white,
-              ),
-              _TrustBadge(
-                label: LocaleKeys.authTrustEncrypted.tr(),
-                color: Colors.white,
-              ),
-            ],
           ),
         ],
       ),
@@ -362,121 +494,6 @@ class _TrustBadge extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text.toUpperCase(),
-        style: AppTextStyles.overline.copyWith(
-          color: AppColors.slate500,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginField extends StatelessWidget {
-  const _LoginField({
-    required this.controller,
-    required this.hint,
-    required this.icon,
-    this.obscure = false,
-    this.suffix,
-    this.validator,
-    this.textInputAction,
-    this.onSubmitted,
-  });
-
-  final TextEditingController controller;
-  final String hint;
-  final IconData icon;
-  final bool obscure;
-  final Widget? suffix;
-  final String? Function(String?)? validator;
-  final TextInputAction? textInputAction;
-  final ValueChanged<String>? onSubmitted;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      validator: validator,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onSubmitted,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate700),
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 18, color: AppColors.slate400),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: AppColors.slate50,
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.brLg,
-          borderSide: BorderSide(color: AppColors.slate100),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.brLg,
-          borderSide: BorderSide(color: AppColors.primary, width: 1.6),
-        ),
-      ),
-    );
-  }
-}
-
-class _DistrictDropdown extends StatelessWidget {
-  const _DistrictDropdown({
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  final String value;
-  final List<String> items;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      icon: const Icon(
-        Icons.keyboard_arrow_down_rounded,
-        color: AppColors.slate400,
-      ),
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate700),
-      decoration: const InputDecoration(
-        prefixIcon: Icon(
-          Icons.location_on_outlined,
-          size: 18,
-          color: AppColors.slate400,
-        ),
-        filled: true,
-        fillColor: AppColors.slate50,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadius.brLg,
-          borderSide: BorderSide(color: AppColors.slate100),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadius.brLg,
-          borderSide: BorderSide(color: AppColors.primary, width: 1.6),
-        ),
-      ),
-      items: items
-          .map((String d) => DropdownMenuItem<String>(value: d, child: Text(d)))
-          .toList(),
-      onChanged: (String? v) {
-        if (v != null) onChanged(v);
-      },
     );
   }
 }

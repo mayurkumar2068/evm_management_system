@@ -108,6 +108,9 @@ final class PresidingConcernRepositoryImpl
   }) async {
     final PresidingSession session = await loadSession();
     final TurnoutRecord? existing = session.turnoutRecords[slotId];
+    if (existing?.isReadOnly ?? false) {
+      return session;
+    }
 
     final TurnoutRecord record = TurnoutRecord(
       slotId: slotId,
@@ -127,7 +130,7 @@ final class PresidingConcernRepositoryImpl
     final TurnoutRecord persisted = record.copyWith(
       savedAt: savedAt,
       pendingSync: !apiResult.accepted,
-      isLocked: apiResult.alreadyRegistered || apiResult.success,
+      isLocked: true,
     );
 
     final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(

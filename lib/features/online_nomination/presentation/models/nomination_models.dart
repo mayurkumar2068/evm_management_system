@@ -36,22 +36,29 @@ extension NominationPostTypeUrbanCascade on NominationPostType {
       this == NominationPostType.adhyaksh ||
       this == NominationPostType.parshad;
 
-  /// Adhyaksh: choose Nagar Palika Parishad or Nagar Parishad first.
-  bool get requiresUrbanBodyType => this == NominationPostType.adhyaksh;
+  /// नगरीय निकाय: महापौर / अध्यक्ष / पार्षद — निकाय प्रकार.
+  bool get requiresUrbanBodyType => isUrbanPost;
 
-  /// Parshad nominations are ward-based.
-  bool get requiresWard =>
-      this == NominationPostType.parshad ||
-      this == NominationPostType.districtPanchayatMember ||
+  /// महापौर / अध्यक्ष — निकाय का नाम.
+  bool get requiresUrbanBodyName =>
+      this == NominationPostType.mahapaur ||
+      this == NominationPostType.adhyaksh;
+
+  /// जनपद पंचायत सदस्य / सरपंच — जनपद पंचायत.
+  bool get requiresJanpadPanchayat =>
       this == NominationPostType.janpadPanchayatMember ||
       this == NominationPostType.sarpanch;
 
-  String get municipalityFieldLabelKey => switch (this) {
-    NominationPostType.mahapaur => LocaleKeys.nominationFieldNagarNigam,
-    NominationPostType.adhyaksh => LocaleKeys.nominationFieldUbName,
-    NominationPostType.parshad => LocaleKeys.nominationFieldUrbanBody,
-    _ => LocaleKeys.nominationFieldMunicipality,
-  };
+  /// सरपंच — ग्राम पंचायत.
+  bool get requiresGramPanchayat => this == NominationPostType.sarpanch;
+
+  /// पार्षद / जिला पंचायत सदस्य / जनपद पंचायत सदस्य — वार्ड क्रमांक.
+  bool get requiresWard =>
+      this == NominationPostType.parshad ||
+      this == NominationPostType.districtPanchayatMember ||
+      this == NominationPostType.janpadPanchayatMember;
+
+  String get municipalityFieldLabelKey => LocaleKeys.nominationFieldUbName;
 }
 
 class NominationFlowArgs {

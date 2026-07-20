@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
+import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -38,6 +39,8 @@ class WebViewBridge {
   /// Offline-first form submit from any Angular page.
   final Future<Map<String, dynamic>> Function(Map<String, dynamic> payload)?
   onSubmitForm;
+
+  final ExternalUrlLauncher _externalLauncher = const ExternalUrlLauncher();
 
   void register(InAppWebViewController controller) {
     controller.addJavaScriptHandler(
@@ -78,6 +81,8 @@ class WebViewBridge {
         return onSubmitForm!(payload);
       case 'apiRequest':
         return _apiRequest(payload);
+      case 'openExternal':
+        return _openExternal(payload);
       case 'share':
         final String text = <String?>[
           payload['text']?.toString(),
@@ -115,6 +120,19 @@ class WebViewBridge {
   /// On cancel: { ok: false, cancelled: true }. On error: { ok: false, error }.
   /// Proxies cross-origin API calls from embedded pages (e.g. GitHub Pages UI
   /// → mpsec API) through native Dio — bypasses browser CORS in WebView.
+  Future<Map<String, dynamic>> _openExternal(Map<String, dynamic> payload) async {
+    final String url = payload['url']?.toString().trim() ?? '';
+    if (url.isEmpty) {
+      return <String, dynamic>{'ok': false, 'error': 'missing_url'};
+    }
+    final Uri? uri = Uri.tryParse(url);
+    if (uri == null) {
+      return <String, dynamic>{'ok': false, 'error': 'invalid_url'};
+    }
+    final bool launched = await _externalLauncher.launch(uri);
+    return <String, dynamic>{'ok': launched};
+  }
+
   Future<Map<String, dynamic>> _apiRequest(Map<String, dynamic> payload) async {
     final String url = payload['url']?.toString().trim() ?? '';
     if (url.isEmpty) {

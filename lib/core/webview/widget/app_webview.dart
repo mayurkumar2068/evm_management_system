@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:url_launcher/url_launcher.dart';
 
 import '../config/webview_config.dart';
 import '../url/webview_url_utils.dart';
@@ -39,6 +39,7 @@ class AppWebView extends StatefulWidget {
 
 class _AppWebViewState extends State<AppWebView> {
   static const WebViewNavigationPolicy _navPolicy = WebViewNavigationPolicy();
+  static const ExternalUrlLauncher _externalLauncher = ExternalUrlLauncher();
 
   AppWebViewController? _controller;
   PullToRefreshController? _pullToRefresh;
@@ -98,6 +99,17 @@ class _AppWebViewState extends State<AppWebView> {
         : WebThemeMode.light;
 
     try {
+      if (!_config.bootstrapSession) {
+        if (!mounted) return;
+        setState(() {
+          _session = null;
+          _initialRequest = _buildRequest();
+          _initialUserScripts = UnmodifiableListView<UserScript>([]);
+          _prepared = true;
+        });
+        return;
+      }
+
       final WebSessionContext session = await Get.find<WebSessionService>()
           .build(theme: theme);
 
@@ -305,12 +317,21 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Handles `window.open()` by reusing the current WebView instead of spawning
-  /// a secondary blank window that would otherwise fail silently on iOS.
+  /// Handles `window.open()` — external map/browser targets leave the WebView.
   Future<bool> _onCreateWindow(
     InAppWebViewController controller,
     CreateWindowAction createWindowAction,
   ) async {
+    final Uri? uri = Uri.tryParse(
+      createWindowAction.request.url?.toString() ?? '',
+    );
+    if (uri != null) {
+      final WebNavigationDecision decision = _navPolicy.decide(uri);
+      if (decision.action == WebNavDecision.external) {
+        await _launchExternal(uri);
+        return false;
+      }
+    }
     await controller.loadUrl(urlRequest: createWindowAction.request);
     return false;
   }
@@ -381,15 +402,12 @@ class _AppWebViewState extends State<AppWebView> {
 
   /// Launches supported external-app schemes.
   Future<void> _launchExternal(Uri uri) async {
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (error) {
+    final bool launched = await _externalLauncher.launch(uri);
+    if (!launched) {
       _logger.logError(
         uri: uri,
         category: 'external_launch',
-        description: error.toString(),
+        description: 'Failed to open external URL',
       );
     }
   }

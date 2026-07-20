@@ -73,17 +73,22 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
     if (_navigating) return;
     setState(() => _navigating = true);
     try {
-      if (_hasBooth) {
-        await _maps.openDirections(
-          destinationLat: _boothLat!,
-          destinationLng: _boothLong!,
-          originLat: _current?.latitude,
-          originLng: _current?.longitude,
-          destinationLabel: _stationLabel,
+      final bool opened = _hasBooth
+          ? await _maps.openDirections(
+              destinationLat: _boothLat!,
+              destinationLng: _boothLong!,
+              originLat: _current?.latitude,
+              originLng: _current?.longitude,
+              destinationLabel: _stationLabel,
+            )
+          : await _maps.openPlaceSearch(_stationLabel);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text('मैप खोलने में समस्या — Google Maps इंस्टॉल करें'),
+          ),
         );
-      } else {
-        // Login me Lat/Long na ho to bhi map kholo — station name se search.
-        await _maps.openPlaceSearch(_stationLabel);
       }
     } finally {
       if (mounted) setState(() => _navigating = false);

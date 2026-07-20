@@ -1,7 +1,7 @@
 {
   "/POElectionAPI": {
-    "target": "https://mpsecerms.mp.gov.in",
-    "secure": true,
+    "target": "http://10.115.197.192",
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }

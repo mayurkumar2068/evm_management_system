@@ -132,10 +132,10 @@ import { I18nService } from '../../i18n/i18n.service';
       .step[data-state='active'] .step__badge {
         background: var(--ec-grad);
         color: #fff;
-        box-shadow: 0 3px 8px rgba(113, 103, 232, 0.24);
+        box-shadow: 0 3px 8px rgba(59, 130, 246, 0.24);
       }
       .step[data-state='done'] .step__badge {
-        background: var(--ec-primary);
+        background: var(--ec-accent);
         color: #fff;
       }
 

@@ -17,6 +17,11 @@ String normalizeWebViewLaunchUrl(String rawUrl) {
     return parsed.replace(path: '/').toString();
   }
 
+  // IIS apps under /SECSearchEngine expect a trailing slash on first load.
+  if (parsed.path.endsWith('/SECSearchEngine')) {
+    return parsed.replace(path: '${parsed.path}/').toString();
+  }
+
   return parsed.toString();
 }
 
@@ -109,4 +114,13 @@ String appendWebViewSurveyContext(
     );
   }
   return result;
+}
+
+/// Prevents stale IIS bundles from being served by iOS/Android WebView cache.
+String appendWebViewCacheBust(String url) {
+  return appendWebViewQueryParam(
+    url,
+    key: 'v',
+    value: DateTime.now().millisecondsSinceEpoch.toString(),
+  );
 }

@@ -10,6 +10,7 @@ import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/settings/settings_service.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,7 +34,21 @@ Future<void> bootstrap(Flavor flavor) async {
         enabled: config.enableLogging,
         verbose: !config.isProduction,
       );
-      AppLogger.i('Bootstrapping ${flavor.label} (${config.apiBaseUrl})');
+      // Always print endpoints so flavor/URL mixups are visible in debug consoles.
+      // ignore: avoid_print
+      print(
+        '[ENV] ${flavor.label} | '
+        'po=${config.poElectionApiBaseUrl} | '
+        'surveyApi=${config.surveyApiBaseUrl} | '
+        'surveyWeb=${config.surveyWebBaseUrl}',
+      );
+      AppLogger.i(
+        'Bootstrapping ${flavor.label} '
+        'api=${config.apiBaseUrl} '
+        'po=${config.poElectionApiBaseUrl} '
+        'surveyApi=${config.surveyApiBaseUrl} '
+        'surveyWeb=${config.surveyWebBaseUrl}',
+      );
 
       final LocalDatabase database = JsonLocalDatabase();
       await database.init();
@@ -59,7 +74,10 @@ Future<void> bootstrap(Flavor flavor) async {
       final AppSettingsService settingsService = AppSettingsService(
         secureStorage,
       );
-      final Locale? savedLocale = await settingsService.loadLocale();
+      // App is Hindi-first for field officers — lock locale to Hindi for now.
+      const Locale appLocale = Locale('hi');
+      await settingsService.saveLocale(appLocale);
+      AppLocaleHolder.code = appLocale.languageCode;
       final ThemeMode savedTheme = await settingsService.loadThemeMode();
 
       await AppServices.register(
@@ -68,16 +86,16 @@ Future<void> bootstrap(Flavor flavor) async {
         secureStorage: secureStorage,
         onboardingSeen: onboardingSeen,
         settingsService: settingsService,
-        initialLocale: savedLocale ?? const Locale('en'),
+        initialLocale: appLocale,
         initialThemeMode: savedTheme,
       );
 
       runApp(
         EasyLocalization(
-          supportedLocales: const <Locale>[Locale('en'), Locale('hi')],
+          supportedLocales: const <Locale>[Locale('hi'), Locale('en')],
           path: 'assets/translations',
-          fallbackLocale: const Locale('en'),
-          startLocale: savedLocale ?? const Locale('en'),
+          fallbackLocale: appLocale,
+          startLocale: appLocale,
           saveLocale: false,
           child: const EvmApp(),
         ),

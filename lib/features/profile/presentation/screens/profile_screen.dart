@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
 import 'package:evm_management_system/core/utils/string_extensions.dart';
@@ -10,50 +11,9 @@ import 'package:evm_management_system/shared/widgets/language_picker_sheet.dart'
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-import '../../../dashboard/presentation/widgets/dashboard_widgets.dart';
-
-/// Profile — officer identity hero, quick stats and a navigation menu to the
-/// settings, audit, sync, search and notification modules.
+/// Officer profile — compact soft hero + grouped account / service rows.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  List<_MenuItem> _buildMenu() => <_MenuItem>[
-    _MenuItem(
-      Icons.settings_outlined,
-      LocaleKeys.profileSettings.tr(),
-      LocaleKeys.profileSettingsSub.tr(),
-      AppRoute.settings,
-      AppColors.primary,
-    ),
-    _MenuItem(
-      Icons.shield_outlined,
-      LocaleKeys.profileAudit.tr(),
-      LocaleKeys.profileAuditSub.tr(),
-      AppRoute.auditTrail,
-      AppColors.purple,
-    ),
-    _MenuItem(
-      Icons.wifi_rounded,
-      LocaleKeys.profileSync.tr(),
-      LocaleKeys.profileSyncSub.tr(),
-      AppRoute.syncManagement,
-      AppColors.green,
-    ),
-    _MenuItem(
-      Icons.search_rounded,
-      LocaleKeys.profileSearch.tr(),
-      LocaleKeys.profileSearchSub.tr(),
-      AppRoute.search,
-      AppColors.secondary,
-    ),
-    _MenuItem(
-      Icons.notifications_none_rounded,
-      LocaleKeys.profileNotifications.tr(),
-      LocaleKeys.profileNotificationsSub.tr(),
-      AppRoute.notifications,
-      AppColors.teal,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -63,223 +23,105 @@ class ProfileScreen extends StatelessWidget {
       final String officerId = user?.officerId ?? '—';
       final String role = user?.designation ?? LocaleKeys.dashboardRole.tr();
       final String initials = name.initials;
-
-      final List<DeviceRecord> all = AppServices.deviceRecords.records;
-      final DeviceStats stats = AppServices.deviceRecords.statsFor(null);
-      final DateTime weekAgo = DateTime.now().subtract(const Duration(days: 7));
-      final int thisWeek = all
-          .where((DeviceRecord r) => r.timestamp.isAfter(weekAgo))
-          .length;
+      final String location =
+          user?.districtCode ?? LocaleKeys.dashboardDistrictUnset.tr();
 
       final Locale currentLocale = AppServices.settings.locale.value;
       final ThemeMode currentThemeMode = AppServices.settings.themeMode.value;
-      final List<_MenuItem> menu = _buildMenu();
+      final double top = MediaQuery.of(context).padding.top;
 
-      return Container(
+      return ColoredBox(
         color: AppColors.background,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 120),
+          padding: EdgeInsets.fromLTRB(20, top + 12, 20, 120),
           children: <Widget>[
-            _hero(
-              name,
-              officerId,
-              role,
-              initials,
-              user?.districtCode ?? LocaleKeys.dashboardDistrictUnset.tr(),
+            _OfficerHero(
+              name: name,
+              role: role,
+              officerId: officerId,
+              initials: initials,
+              location: location,
             ),
-            Transform.translate(
-              offset: const Offset(0, -20),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: AppCard(
-                  child: Row(
-                    children: <Widget>[
-                      _Stat(
-                        value: '${stats.total}',
-                        label: LocaleKeys.regInventory.tr(),
-                        color: AppColors.primary,
-                      ),
-                      _Stat(
-                        value: '$thisWeek',
-                        label: LocaleKeys.profileThisWeek.tr(),
-                        color: AppColors.green,
-                      ),
-                      _Stat(
-                        value: '${stats.pending}',
-                        label: LocaleKeys.statsPending.tr(),
-                        color: AppColors.warning,
-                      ),
-                    ],
-                  ),
+            if (!kHideEvmScanning) ...<Widget>[
+              const SizedBox(height: 16),
+              _InventoryStats(),
+            ],
+            const SizedBox(height: 22),
+            const _SectionLabel('खाता'),
+            const SizedBox(height: 10),
+            _GroupCard(
+              children: <Widget>[
+                _RowTile(
+                  icon: Icons.language_rounded,
+                  color: AppColors.primary,
+                  title: LocaleKeys.settingsLanguage.tr(),
+                  subtitle: languageLabelFor(currentLocale),
+                  onTap: () => _showLanguagePicker(context),
                 ),
-              ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.dark_mode_outlined,
+                  color: AppColors.primaryDark,
+                  title: LocaleKeys.settingsTheme.tr(),
+                  subtitle: currentThemeMode == ThemeMode.dark
+                      ? LocaleKeys.settingsDarkMode.tr()
+                      : LocaleKeys.settingsLightMode.tr(),
+                  trailing: Switch.adaptive(
+                    value: currentThemeMode == ThemeMode.dark,
+                    onChanged: (_) => toggleAppTheme(),
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
+                  ),
+                  onTap: () => toggleAppTheme(),
+                ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.key_rounded,
+                  color: AppColors.warning,
+                  title: LocaleKeys.profileChangePassword.tr(),
+                  subtitle: LocaleKeys.profileLastChanged.tr(args: ['30']),
+                  onTap: () {},
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: <Widget>[
-                  for (final _MenuItem m in menu)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _MenuRow(
-                        item: m,
-                        onTap: () => Get.toNamed<dynamic>(m.route.path),
-                      ),
-                    ),
-                  const SizedBox(height: 8),
-                  _PreferenceRow(
-                    title: LocaleKeys.settingsLanguage.tr(),
-                    subtitle: languageLabelFor(currentLocale),
-                    icon: Icons.language_rounded,
-                    onTap: () => _showLanguagePicker(context),
-                  ),
-                  const SizedBox(height: 8),
-                  _PreferenceRow(
-                    title: LocaleKeys.settingsTheme.tr(),
-                    subtitle: currentThemeMode == ThemeMode.dark
-                        ? LocaleKeys.settingsDarkMode.tr()
-                        : LocaleKeys.settingsLightMode.tr(),
-                    icon: Icons.dark_mode_outlined,
-                    trailing: Switch.adaptive(
-                      value: currentThemeMode == ThemeMode.dark,
-                      onChanged: (_) => toggleAppTheme(),
-                      activeThumbColor: AppColors.primary,
-                      activeTrackColor: AppColors.primary.withValues(
-                        alpha: 0.35,
-                      ),
-                    ),
-                    onTap: () => toggleAppTheme(),
-                  ),
-                  const SizedBox(height: 4),
-                  _ActionRow(
-                    icon: Icons.key_rounded,
-                    iconBg: AppColors.warningSurface,
-                    iconColor: const Color(0xFFF59E0B),
-                    title: LocaleKeys.profileChangePassword.tr(),
-                    subtitle: LocaleKeys.profileLastChanged.tr(args: ['30']),
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 8),
-                  _SignOutButton(onTap: AppServices.auth.signOut),
-                ],
-              ),
+            const SizedBox(height: 22),
+            const _SectionLabel('सेवाएँ'),
+            const SizedBox(height: 10),
+            _GroupCard(
+              children: <Widget>[
+                _RowTile(
+                  icon: Icons.settings_outlined,
+                  color: AppColors.primary,
+                  title: LocaleKeys.profileSettings.tr(),
+                  subtitle: LocaleKeys.profileSettingsSub.tr(),
+                  onTap: () => Get.toNamed<dynamic>(AppRoute.settings.path),
+                ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.sync_rounded,
+                  color: AppColors.green,
+                  title: LocaleKeys.profileSync.tr(),
+                  subtitle: LocaleKeys.profileSyncSub.tr(),
+                  onTap: () =>
+                      Get.toNamed<dynamic>(AppRoute.syncManagement.path),
+                ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.notifications_none_rounded,
+                  color: AppColors.teal,
+                  title: LocaleKeys.profileNotifications.tr(),
+                  subtitle: LocaleKeys.profileNotificationsSub.tr(),
+                  onTap: () =>
+                      Get.toNamed<dynamic>(AppRoute.notifications.path),
+                ),
+              ],
             ),
+            const SizedBox(height: 28),
+            _SignOutButton(onTap: AppServices.auth.signOut),
           ],
         ),
       );
     });
-  }
-
-  Widget _hero(
-    String name,
-    String officerId,
-    String role,
-    String initials,
-    String location,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 36),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.brXl,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[DashboardBrand.green, DashboardBrand.saffron],
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: DashboardBrand.green.withValues(alpha: 0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        children: <Widget>[
-          Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  gradient: const LinearGradient(
-                    colors: <Color>[Color(0xFF60A5FA), Color(0xFF3B82F6)],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 3,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials,
-                  style: AppTextStyles.titleLarge.copyWith(
-                    color: Colors.white,
-                    fontSize: 28,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -4,
-                right: -4,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.green,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF0A4DCC),
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    size: 12,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            name,
-            style: AppTextStyles.titleLarge.copyWith(
-              color: Colors.white,
-              fontSize: 22,
-            ),
-          ),
-          Text(
-            role,
-            style: AppTextStyles.caption.copyWith(
-              color: const Color(0xFFAFC6FF),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            officerId,
-            style: AppTextStyles.caption.copyWith(
-              color: const Color(0xFF7E9BE0),
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            children: <Widget>[
-              _HeroChip(icon: Icons.location_on_outlined, label: location),
-              _HeroChip(
-                icon: Icons.bolt_rounded,
-                label: LocaleKeys.statsActive.tr(),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _showLanguagePicker(BuildContext context) async {
@@ -293,13 +135,224 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _MenuItem {
-  const _MenuItem(this.icon, this.label, this.sub, this.route, this.color);
-  final IconData icon;
-  final String label;
-  final String sub;
-  final AppRoute route;
-  final Color color;
+class _OfficerHero extends StatelessWidget {
+  const _OfficerHero({
+    required this.name,
+    required this.role,
+    required this.officerId,
+    required this.initials,
+    required this.location,
+  });
+
+  final String name;
+  final String role;
+  final String officerId;
+  final String initials;
+  final String location;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: AppGradients.header,
+        borderRadius: AppRadius.brXl,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            right: -36,
+            top: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 40,
+            bottom: -48,
+            child: Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppRadius.brLg,
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          borderRadius: AppRadius.brMd,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: <Color>[AppColors.primary, AppColors.green],
+                          ),
+                        ),
+                        child: Text(
+                          initials,
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: -3,
+                      bottom: -3,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          size: 11,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        role,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        officerId,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white.withValues(alpha: 0.78),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: <Widget>[
+                          _HeroChip(
+                            icon: Icons.location_on_outlined,
+                            label: location,
+                          ),
+                          _HeroChip(
+                            icon: Icons.bolt_rounded,
+                            label: LocaleKeys.statsActive.tr(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InventoryStats extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final List<DeviceRecord> all = AppServices.deviceRecords.records;
+      final DeviceStats stats = AppServices.deviceRecords.statsFor(null);
+      final DateTime weekAgo = DateTime.now().subtract(const Duration(days: 7));
+      final int thisWeek = all
+          .where((DeviceRecord r) => r.timestamp.isAfter(weekAgo))
+          .length;
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.brXl,
+          border: Border.all(color: AppColors.outline),
+        ),
+        child: Row(
+          children: <Widget>[
+            _Stat(
+              value: '${stats.total}',
+              label: LocaleKeys.regInventory.tr(),
+              color: AppColors.primary,
+            ),
+            _Stat(
+              value: '$thisWeek',
+              label: LocaleKeys.profileThisWeek.tr(),
+              color: AppColors.green,
+            ),
+            _Stat(
+              value: '${stats.pending}',
+              label: LocaleKeys.statsPending.tr(),
+              color: AppColors.warning,
+            ),
+          ],
+        ),
+      );
+    });
+  }
 }
 
 class _Stat extends StatelessWidget {
@@ -317,15 +370,17 @@ class _Stat extends StatelessWidget {
             value,
             style: AppTextStyles.titleLarge.copyWith(
               color: color,
-              fontSize: 24,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.slate400,
+              color: AppColors.slate500,
               fontSize: 10,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -342,22 +397,23 @@ class _HeroChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: AppRadius.brPill,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 11, color: const Color(0xFFAFC6FF)),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12, color: Colors.white),
+          const SizedBox(width: 5),
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white,
               fontSize: 10,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -366,182 +422,147 @@ class _HeroChip extends StatelessWidget {
   }
 }
 
-class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.item, required this.onTap});
-  final _MenuItem item;
-  final VoidCallback onTap;
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: item.color.withValues(alpha: 0.08),
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Icon(item.icon, size: 18, color: item.color),
+    return Row(
+      children: <Widget>[
+        Container(
+          width: 3,
+          height: 14,
+          decoration: const BoxDecoration(
+            borderRadius: AppRadius.brPill,
+            gradient: AppGradients.primaryButton,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  item.label,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.slate700,
-                  ),
-                ),
-                Text(
-                  item.sub,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.slate400,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.slate600,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.3,
+            fontSize: 12,
           ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 18,
-            color: AppColors.slate300,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _PreferenceRow extends StatelessWidget {
-  const _PreferenceRow({
+class _GroupCard extends StatelessWidget {
+  const _GroupCard({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.brXl,
+        border: Border.all(color: AppColors.outline),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _RowDivider extends StatelessWidget {
+  const _RowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      indent: 68,
+      endIndent: 16,
+      color: AppColors.slate100,
+    );
+  }
+}
+
+class _RowTile extends StatelessWidget {
+  const _RowTile({
+    required this.icon,
+    required this.color,
     required this.title,
     required this.subtitle,
-    required this.icon,
     this.trailing,
     this.onTap,
   });
 
+  final IconData icon;
+  final Color color;
   final String title;
   final String subtitle;
-  final IconData icon;
   final Widget? trailing;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.slate100,
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Icon(icon, size: 18, color: AppColors.primary),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.slate700,
-                  ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brXl,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.brMd,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.slate400,
-                    fontSize: 12,
-                  ),
+                child: Icon(icon, size: 18, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.slate500,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          if (trailing != null) trailing!,
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionRow extends StatelessWidget {
-  const _ActionRow({
-    required this.icon,
-    required this.iconBg,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color iconBg;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Icon(icon, size: 17, color: iconColor),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.slate700,
-                  ),
+              ),
+              if (trailing != null)
+                trailing!
+              else
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.slate300,
                 ),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.slate400,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 18,
-            color: AppColors.slate300,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -555,37 +576,30 @@ class _SignOutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.errorSurface,
-      borderRadius: AppRadius.brLg,
+      borderRadius: AppRadius.brXl,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.brLg,
+        borderRadius: AppRadius.brXl,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            borderRadius: AppRadius.brLg,
-            border: Border.all(color: const Color(0xFFFECACA)),
+            borderRadius: AppRadius.brXl,
+            border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFEE2E2),
-                  borderRadius: AppRadius.brMd,
-                ),
-                child: const Icon(
-                  Icons.logout_rounded,
-                  size: 17,
-                  color: Color(0xFFEF4444),
-                ),
+              const Icon(
+                Icons.logout_rounded,
+                size: 18,
+                color: AppColors.error,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 10),
               Text(
                 LocaleKeys.profileSignOut.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFEF4444),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.error,
                 ),
               ),
             ],

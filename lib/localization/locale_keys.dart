@@ -381,6 +381,10 @@ abstract final class LocaleKeys {
   static const String nominationFieldBodyType = 'nomination.fields.body_type';
   static const String nominationFieldUbName = 'nomination.fields.ub_name';
   static const String nominationFieldUrbanBody = 'nomination.fields.urban_body';
+  static const String nominationFieldJanpadPanchayat =
+      'nomination.fields.janpad_panchayat';
+  static const String nominationFieldGramPanchayat =
+      'nomination.fields.gram_panchayat';
   static const String nominationFieldWard = 'nomination.fields.ward';
   static const String nominationFieldReservation =
       'nomination.fields.reservation';
@@ -439,6 +443,42 @@ abstract final class LocaleKeys {
   static const String nominationOptionWard4 = 'nomination.options.ward_4';
   static const String nominationOptionWard31 = 'nomination.options.ward_31';
   static const String nominationOptionWard9 = 'nomination.options.ward_9';
+  static const String nominationOptionJanpadPhanda =
+      'nomination.options.janpad_phanda';
+  static const String nominationOptionJanpadBerasia =
+      'nomination.options.janpad_berasia';
+  static const String nominationOptionJanpadDepalpur =
+      'nomination.options.janpad_depalpur';
+  static const String nominationOptionJanpadMhow =
+      'nomination.options.janpad_mhow';
+  static const String nominationOptionJanpadBina =
+      'nomination.options.janpad_bina';
+  static const String nominationOptionJanpadRahatgarh =
+      'nomination.options.janpad_rahatgarh';
+  static const String nominationOptionGramRatua =
+      'nomination.options.gram_ratua';
+  static const String nominationOptionGramIntkhedi =
+      'nomination.options.gram_intkhedi';
+  static const String nominationOptionGramNazirabad =
+      'nomination.options.gram_nazirabad';
+  static const String nominationOptionGramDongargaon =
+      'nomination.options.gram_dongargaon';
+  static const String nominationOptionGramGautampura =
+      'nomination.options.gram_gautampura';
+  static const String nominationOptionGramBetma =
+      'nomination.options.gram_betma';
+  static const String nominationOptionGramManpur =
+      'nomination.options.gram_manpur';
+  static const String nominationOptionGramChoral =
+      'nomination.options.gram_choral';
+  static const String nominationOptionGramKhurai =
+      'nomination.options.gram_khurai';
+  static const String nominationOptionGramBanagra =
+      'nomination.options.gram_banagra';
+  static const String nominationOptionGramRehli =
+      'nomination.options.gram_rehli';
+  static const String nominationOptionGramGarhakota =
+      'nomination.options.gram_garhakota';
   static const String nominationNext = 'nomination.actions.next';
   static const String nominationPrevious = 'nomination.actions.previous';
   static const String nominationUpload = 'nomination.actions.upload';

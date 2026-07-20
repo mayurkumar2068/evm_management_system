@@ -11,15 +11,13 @@ import 'package:flutter/material.dart';
 ///
 /// Returns the chosen [Locale], or `null` if the sheet was dismissed.
 Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
-  final String current = context.locale.languageCode;
-
   final String? code = await AppSelectionSheet.show<String>(
     context,
     title: 'भाषा चुनें',
-    subtitle: 'कृपया अपनी पसंदीदा भाषा चुनें / Choose your preferred language',
+    subtitle: 'कृपया अपनी पसंदीदा भाषा चुनें',
     headerIcon: Icons.language_rounded,
     confirmLabel: 'जारी रखें',
-    initialValue: current,
+    initialValue: 'hi',
     isDismissible: false,
     options: const <AppSelectionOption<String>>[
       AppSelectionOption<String>(
@@ -71,7 +69,7 @@ Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
 
   if (code == null) return null;
   final Locale locale = Locale(code);
-  if (context.mounted && code != current) {
+  if (context.mounted && code != context.locale.languageCode) {
     await context.setLocale(locale);
   }
   return locale;

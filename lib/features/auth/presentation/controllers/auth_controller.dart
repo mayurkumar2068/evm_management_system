@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/config/app_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/usecase/usecase.dart';
+import 'package:evm_management_system/core/webview/service/webview_cookie_service.dart';
 import 'package:evm_management_system/features/auth/di/auth_module.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
@@ -119,8 +121,21 @@ class AuthController extends GetxController {
   }
 
   Future<void> signOut() async {
+    // Survey / PO officer session (shared secure storage + token vault).
+    await AppServices.serviceAuth.signOut();
+    try {
+      await Get.find<WebViewCookieService>().clearSessionCookiesFor(
+        AppServices.config,
+      );
+    } catch (_) {
+      // WebView cookie manager may be unavailable during teardown.
+    }
     await AuthModule.logout(const NoParams());
     authState.value = const AuthState.unauthenticated();
+    AuthNavigationGuard.apply();
+    if (Get.currentRoute != AppRoute.login.path) {
+      await Get.offAllNamed<dynamic>(AppRoute.login.path);
+    }
   }
 
   /// Invoked when the session is invalidated externally (e.g. 401 / timeout).

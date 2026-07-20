@@ -1,0 +1,255 @@
+openapi: 3.0.3
+info:
+  title: MP SEC POElectionAPI
+  description: |
+    PO Election + Polling Booth Survey APIs used by the EVM mobile app and `survey_web`.
+
+    **DEV base:** `http://10.115.197.192/POElectionAPI`
+    **PROD base:** `https://mpsecerms.mp.gov.in/POElectionAPI`
+
+    Survey Angular UI: `/pssurvey/` on the same host.
+    Voter search portal: `/SECSearchEngine` (external WebView; prod host only today).
+
+    Standard envelope: `{ "Status": true|false, "Message": "...", "Data": ... }`
+  version: 1.0.0
+
+servers:
+  - url: http://10.115.197.192/POElectionAPI
+    description: DEV (staging IIS)
+  - url: https://mpsecerms.mp.gov.in/POElectionAPI
+    description: PROD (MP SEC)
+
+tags:
+  - name: Account
+  - name: Masters
+  - name: PSSurvey
+  - name: POElection
+
+paths:
+  /api/Account/login-survey-pass:
+    post:
+      tags: [Account]
+      summary: Survey officer login (मतदान केंद्र / booth survey)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userName, password]
+              properties:
+                userName: { type: string, example: su1 }
+                password: { type: string, example: su1 }
+      responses:
+        '200':
+          description: Login result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginEnvelope'
+      x-codeSamples:
+        - lang: curl
+          label: DEV
+          source: |
+            curl -X POST 'http://10.115.197.192/POElectionAPI/api/Account/login-survey-pass' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"userName":"su1","password":"su1"}'
+        - lang: curl
+          label: PROD
+          source: |
+            curl -X POST 'https://mpsecerms.mp.gov.in/POElectionAPI/api/Account/login-survey-pass' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"userName":"su1","password":"su1"}'
+
+  /api/Account/login-po-pass:
+    post:
+      tags: [Account]
+      summary: Presiding officer login (release / prod flow)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userName, password]
+              properties:
+                userName: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: PO login result
+      x-codeSamples:
+        - lang: curl
+          label: DEV
+          source: |
+            curl -X POST 'http://10.115.197.192/POElectionAPI/api/Account/login-po-pass' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"userName":"<po_user>","password":"<po_pass>"}'
+        - lang: curl
+          label: PROD
+          source: |
+            curl -X POST 'https://mpsecerms.mp.gov.in/POElectionAPI/api/Account/login-po-pass' -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"userName":"<po_user>","password":"<po_pass>"}'
+
+  /api/Masters/districts/{distId}:
+    get:
+      tags: [Masters]
+      summary: District by login DistID
+      parameters:
+        - $ref: '#/components/parameters/distId'
+        - $ref: '#/components/parameters/tokenQuery'
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: District row(s) }
+      x-codeSamples:
+        - lang: curl
+          label: DEV
+          source: |
+            curl -G 'http://10.115.197.192/POElectionAPI/api/Masters/districts/{distId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+        - lang: curl
+          label: PROD
+          source: |
+            curl -G 'https://mpsecerms.mp.gov.in/POElectionAPI/api/Masters/districts/{distId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+
+  /api/Masters/ub-list/{bodyId}:
+    get:
+      tags: [Masters]
+      summary: Urban bodies (urban cascade)
+      parameters:
+        - $ref: '#/components/parameters/bodyId'
+        - $ref: '#/components/parameters/tokenQuery'
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Urban body list }
+      x-codeSamples:
+        - lang: curl
+          label: DEV
+          source: |
+            curl -G 'http://10.115.197.192/POElectionAPI/api/Masters/ub-list/{bodyId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+        - lang: curl
+          label: PROD
+          source: |
+            curl -G 'https://mpsecerms.mp.gov.in/POElectionAPI/api/Masters/ub-list/{bodyId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+
+  /api/Masters/ups-list/{bodyId}:
+    get:
+      tags: [Masters]
+      summary: Urban polling stations (मतदान केंद्र dropdown)
+      parameters:
+        - $ref: '#/components/parameters/bodyId'
+        - $ref: '#/components/parameters/tokenQuery'
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Urban PS list }
+      x-codeSamples:
+        - lang: curl
+          label: DEV
+          source: |
+            curl -G 'http://10.115.197.192/POElectionAPI/api/Masters/ups-list/{bodyId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+        - lang: curl
+          label: PROD
+          source: |
+            curl -G 'https://mpsecerms.mp.gov.in/POElectionAPI/api/Masters/ups-list/{bodyId}' -H 'Authorization: Bearer {token}' --data-urlencode 'token={token}'
+
+  /api/Masters/block-list/{bodyId}:
+    get:
+      tags: [Masters]
+      summary: Rural blocks (rural cascade)
+      parameters:
+        - $ref: '#/components/parameters/bodyId'
+        - $ref: '#/components/parameters/tokenQuery'
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Block list }
+
+  /api/Masters/rps-list/{bodyId}:
+    get:
+      tags: [Masters]
+      summary: Rural polling stations
+      parameters:
+        - $ref: '#/components/parameters/bodyId'
+        - $ref: '#/components/parameters/tokenQuery'
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Rural PS list }
+
+  /api/PSSurvey/survey_questions:
+    get:
+      tags: [PSSurvey]
+      summary: Survey checklist questions
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/tokenQuery'
+      responses:
+        '200': { description: Question list }
+
+  /api/PSSurvey/save_survey_answer:
+    post:
+      tags: [PSSurvey]
+      summary: Save one checklist answer
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: Saved answer id }
+
+  /api/POElection/get-po-status:
+    get:
+      tags: [POElection]
+      summary: Presiding officer milestone status
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string }
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: PO status }
+
+  /api/POElection/save-poll-live:
+    post:
+      tags: [POElection]
+      summary: Save poll live flag
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    distId:
+      name: distId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    bodyId:
+      name: bodyId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    tokenQuery:
+      name: token
+      in: query
+      required: false
+      schema: { type: string }
+      description: Optional duplicate of Bearer token (legacy web clients)
+
+  schemas:
+    LoginEnvelope:
+      type: object
+      properties:
+        Status: { type: boolean }
+        Message: { type: string }
+        Data:
+          type: object
+          properties:
+            AccessToken: { type: string }
+            UserId: { type: string }
+            DistID: { type: string }
+            BodyID: { type: string }
+            UrbanRural: { type: string, enum: [U, R] }
+            DistName: { type: string }
+            BodyName: { type: string }
+            Expiration: { type: string, format: date-time }

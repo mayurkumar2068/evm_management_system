@@ -235,17 +235,6 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
       () => Column(
         children: <Widget>[
           AppDropdown<String>(
-            label: LocaleKeys.nominationFieldState.tr(),
-            items: _controller.stateOptions.map((e) => e.id).toList(),
-            value: _controller.selectedStateId.value,
-            isRequired: true,
-            prefixIcon: Icons.map_outlined,
-            labelBuilder: (String value) =>
-                _controller.labelKeyFor(value, _controller.stateOptions).tr(),
-            onChanged: _dropdownSaver<String?>(_controller.onStateChanged),
-          ),
-          AppSpacing.vGapMd,
-          AppDropdown<String>(
             label: LocaleKeys.nominationFieldDistrict.tr(),
             items: _controller.districtOptions.map((e) => e.id).toList(),
             value: _controller.selectedDistrictId.value,
@@ -274,21 +263,59 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               enabled: _controller.urbanBodyTypeOptions.isNotEmpty,
             ),
           ],
-          AppSpacing.vGapMd,
-          AppDropdown<String>(
-            label: _controller.municipalityFieldLabelKey.tr(),
-            items: _controller.municipalityOptions.map((e) => e.id).toList(),
-            value: _controller.selectedMunicipalityId.value,
-            isRequired: true,
-            prefixIcon: Icons.apartment_outlined,
-            labelBuilder: (String value) => _controller
-                .labelKeyFor(value, _controller.municipalityOptions)
-                .tr(),
-            onChanged: _dropdownSaver<String?>(
-              _controller.onMunicipalityChanged,
+          if (_controller.showUrbanBodyName) ...<Widget>[
+            AppSpacing.vGapMd,
+            AppDropdown<String>(
+              label: _controller.municipalityFieldLabelKey.tr(),
+              items: _controller.municipalityOptions.map((e) => e.id).toList(),
+              value: _controller.selectedMunicipalityId.value,
+              isRequired: true,
+              prefixIcon: Icons.apartment_outlined,
+              labelBuilder: (String value) => _controller
+                  .labelKeyFor(value, _controller.municipalityOptions)
+                  .tr(),
+              onChanged: _dropdownSaver<String?>(
+                _controller.onMunicipalityChanged,
+              ),
+              enabled: _controller.municipalityOptions.isNotEmpty,
             ),
-            enabled: _controller.municipalityOptions.isNotEmpty,
-          ),
+          ],
+          if (_controller.showJanpadPanchayat) ...<Widget>[
+            AppSpacing.vGapMd,
+            AppDropdown<String>(
+              label: LocaleKeys.nominationFieldJanpadPanchayat.tr(),
+              items: _controller.janpadPanchayatOptions
+                  .map((e) => e.id)
+                  .toList(),
+              value: _controller.selectedJanpadPanchayatId.value,
+              isRequired: true,
+              prefixIcon: Icons.account_tree_outlined,
+              labelBuilder: (String value) => _controller
+                  .labelKeyFor(value, _controller.janpadPanchayatOptions)
+                  .tr(),
+              onChanged: _dropdownSaver<String?>(
+                _controller.onJanpadPanchayatChanged,
+              ),
+              enabled: _controller.janpadPanchayatOptions.isNotEmpty,
+            ),
+          ],
+          if (_controller.showGramPanchayat) ...<Widget>[
+            AppSpacing.vGapMd,
+            AppDropdown<String>(
+              label: LocaleKeys.nominationFieldGramPanchayat.tr(),
+              items: _controller.gramPanchayatOptions.map((e) => e.id).toList(),
+              value: _controller.selectedGramPanchayatId.value,
+              isRequired: true,
+              prefixIcon: Icons.holiday_village_outlined,
+              labelBuilder: (String value) => _controller
+                  .labelKeyFor(value, _controller.gramPanchayatOptions)
+                  .tr(),
+              onChanged: _dropdownSaver<String?>(
+                _controller.onGramPanchayatChanged,
+              ),
+              enabled: _controller.gramPanchayatOptions.isNotEmpty,
+            ),
+          ],
           if (_controller.showWard) ...<Widget>[
             AppSpacing.vGapMd,
             AppDropdown<String>(
@@ -303,21 +330,6 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               enabled: _controller.wardOptions.isNotEmpty,
             ),
           ],
-          AppSpacing.vGapMd,
-          AppDropdown<String>(
-            label: LocaleKeys.nominationFieldReservation.tr(),
-            items: _controller.reservationOptions.map((e) => e.id).toList(),
-            value: _controller.selectedReservationId.value,
-            isRequired: true,
-            prefixIcon: Icons.category_outlined,
-            labelBuilder: (String value) => _controller
-                .labelKeyFor(value, _controller.reservationOptions)
-                .tr(),
-            onChanged: _dropdownSaver<String?>(
-              _controller.onReservationChanged,
-            ),
-            enabled: _controller.reservationOptions.isNotEmpty,
-          ),
         ],
       ),
     );
@@ -502,15 +514,6 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
             value: widget.args.postType.labelKey.tr(),
           ),
           NominationSummaryRow(
-            label: LocaleKeys.nominationFieldState.tr(),
-            value: _controller
-                .labelKeyFor(
-                  _controller.selectedStateId.value,
-                  _controller.stateOptions,
-                )
-                .tr(),
-          ),
-          NominationSummaryRow(
             label: LocaleKeys.nominationFieldDistrict.tr(),
             value: _controller
                 .labelKeyFor(
@@ -529,15 +532,36 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                   )
                   .tr(),
             ),
-          NominationSummaryRow(
-            label: _controller.municipalityFieldLabelKey.tr(),
-            value: _controller
-                .labelKeyFor(
-                  _controller.selectedMunicipalityId.value,
-                  _controller.municipalityOptions,
-                )
-                .tr(),
-          ),
+          if (_controller.showUrbanBodyName)
+            NominationSummaryRow(
+              label: _controller.municipalityFieldLabelKey.tr(),
+              value: _controller
+                  .labelKeyFor(
+                    _controller.selectedMunicipalityId.value,
+                    _controller.municipalityOptions,
+                  )
+                  .tr(),
+            ),
+          if (_controller.showJanpadPanchayat)
+            NominationSummaryRow(
+              label: LocaleKeys.nominationFieldJanpadPanchayat.tr(),
+              value: _controller
+                  .labelKeyFor(
+                    _controller.selectedJanpadPanchayatId.value,
+                    _controller.janpadPanchayatOptions,
+                  )
+                  .tr(),
+            ),
+          if (_controller.showGramPanchayat)
+            NominationSummaryRow(
+              label: LocaleKeys.nominationFieldGramPanchayat.tr(),
+              value: _controller
+                  .labelKeyFor(
+                    _controller.selectedGramPanchayatId.value,
+                    _controller.gramPanchayatOptions,
+                  )
+                  .tr(),
+            ),
           if (_controller.showWard)
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldWard.tr(),
@@ -548,15 +572,6 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                   )
                   .tr(),
             ),
-          NominationSummaryRow(
-            label: LocaleKeys.nominationFieldReservation.tr(),
-            value: _controller
-                .labelKeyFor(
-                  _controller.selectedReservationId.value,
-                  _controller.reservationOptions,
-                )
-                .tr(),
-          ),
         ],
       ),
     );

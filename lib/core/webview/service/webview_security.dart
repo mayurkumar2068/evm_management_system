@@ -32,11 +32,17 @@ class WebViewSecurity {
     'localhost',
     '127.0.0.1',
     '10.0.2.2',
+    '10.115.197.192',
   };
 
-  /// Returns `true` when the host is a development-only loopback target.
-  bool _isDevHost(String? host) =>
-      host != null && _devHosts.contains(host.toLowerCase());
+  /// Returns `true` when the host is a development-only loopback / LAN target.
+  bool _isDevHost(String? host) {
+    if (host == null) return false;
+    final String normalized = host.toLowerCase();
+    if (_devHosts.contains(normalized)) return true;
+    // Allow other private LAN hosts used for internal staging IIS.
+    return normalized.startsWith('10.');
+  }
 
   /// Decide a server-trust challenge. Returns a PROCEED/CANCEL response.
   Future<ServerTrustAuthResponse> decide(

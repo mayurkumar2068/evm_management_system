@@ -27,6 +27,8 @@ class DashboardService {
     required this.url,
     this.routeName,
     this.requiresServiceLogin = true,
+    this.passSessionContext = true,
+    this.openAsExternalPortal = false,
   });
 
   final String title;
@@ -42,4 +44,10 @@ class DashboardService {
 
   /// When false, opens [url] directly without the per-service officer login.
   final bool requiresServiceLogin;
+
+  /// When false, opens [url] without survey token/query params or session headers.
+  final bool passSessionContext;
+
+  /// Third-party portals (voter search) — plain WebView, no cookies/bridge injection.
+  final bool openAsExternalPortal;
 }

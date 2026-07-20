@@ -46,14 +46,14 @@ import { LabelValue } from '../../models/location.model';
         gap: 10px;
       }
       .loc-row + .loc-row {
-        border-top: 1px dashed #eef1f8;
+        border-top: 1px dashed var(--ec-border);
       }
       .loc-row__label {
         display: flex;
         align-items: center;
         gap: 7px;
         font-weight: 500;
-        color: var(--ec-text-muted);
+        color: var(--ec-text-secondary);
         font-size: 13.5px;
       }
       .loc-row__label mat-icon {

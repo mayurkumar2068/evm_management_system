@@ -197,6 +197,9 @@ final class TurnoutRecord {
 
   bool get isQueueOnly => slotId == TurnoutSlotIds.queueCount;
 
+  /// Saved turnout slots must not be edited again in the UI.
+  bool get isReadOnly => isLocked || savedAt != null;
+
   TurnoutRecord copyWith({
     int? male,
     int? female,

@@ -53,21 +53,25 @@
 
 .area-toggle ::ng-deep .mat-button-toggle-checked {
   background: var(--ec-grad);
-  color: #fff;
-  box-shadow: 0 10px 24px rgba(113, 103, 232, 0.24);
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.22);
+}
+
+.area-toggle ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
+  color: #fff !important;
 }
 
 /* ---------------- Next button ---------------- */
 .next-btn {
   margin-top: 4px;
   height: 54px;
-  border-radius: 16px;
+  border-radius: 999px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
-  background: var(--ec-grad);
-  color: #fff;
-  box-shadow: 0 10px 22px rgba(113, 103, 232, 0.28);
+  background: var(--ec-grad-accent);
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(59, 130, 246, 0.26);
   transition: transform 0.12s ease, box-shadow 0.2s ease;
 }
 
@@ -76,8 +80,8 @@
 }
 
 .next-btn[disabled] {
-  opacity: 0.65;
+  opacity: 0.55;
   box-shadow: none;
-  background: var(--ec-border-soft);
-  color: #fff;
+  background: #cbd5e1;
+  color: #fff !important;
 }

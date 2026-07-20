@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../models/web_session_context.dart';
 import 'device_id_service.dart';
 
+
 /// App version/build mirrored from pubspec (`1.0.0+1`). Kept as constants to
 /// avoid an extra `package_info_plus` dependency.
 const String kWebAppVersion = '1.0.0';
@@ -41,6 +42,7 @@ class WebSessionService {
       urbanRural: session?.section,
       boothLat: session?.lat,
       boothLong: session?.long,
+      apiBaseUrl: AppServices.config.poElectionApiBaseUrl,
       appVersion: kWebAppVersion,
       buildNumber: kWebBuildNumber,
       platform: Platform.isIOS ? 'ios' : 'android',

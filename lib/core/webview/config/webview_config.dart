@@ -29,6 +29,7 @@ class WebViewConfig {
     this.enablePullToRefresh = true,
     this.injectSessionContext = true,
     this.syncCookies = true,
+    this.bootstrapSession = true,
     this.cachePolicy = WebViewCachePolicy.normal,
     this.allowCleartextLocalhost = true,
     this.serverTrustPolicy = WebViewServerTrustPolicy.compatibility,
@@ -56,6 +57,9 @@ class WebViewConfig {
   final bool enablePullToRefresh;
   final bool injectSessionContext;
   final bool syncCookies;
+
+  /// When false, skip officer session/cookie bootstrap (third-party portals).
+  final bool bootstrapSession;
   final WebViewCachePolicy cachePolicy;
 
   /// Allow http://localhost / 10.0.2.2 (dev micro-apps) over cleartext.
@@ -92,6 +96,7 @@ class WebViewConfig {
       enablePullToRefresh: enablePullToRefresh,
       injectSessionContext: injectSessionContext,
       syncCookies: syncCookies,
+      bootstrapSession: bootstrapSession,
       cachePolicy: cachePolicy,
       allowCleartextLocalhost: allowCleartextLocalhost,
       serverTrustPolicy: serverTrustPolicy ?? this.serverTrustPolicy,

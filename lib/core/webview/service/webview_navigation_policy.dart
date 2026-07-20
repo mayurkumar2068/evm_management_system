@@ -1,3 +1,5 @@
+import 'package:evm_management_system/core/navigation/external_navigation_urls.dart';
+
 /// What the engine should do with a navigation target.
 enum WebNavDecision {
   /// Load inside the WebView (normal in-app navigation).
@@ -25,14 +27,6 @@ class WebNavigationDecision {
 class WebViewNavigationPolicy {
   /// Creates a centralized navigation policy.
   const WebViewNavigationPolicy();
-
-  static const Set<String> _externalSchemes = <String>{
-    'mailto',
-    'tel',
-    'sms',
-    'intent',
-    'whatsapp',
-  };
 
   static const Set<String> _dangerousSchemes = <String>{
     'javascript',
@@ -66,7 +60,7 @@ class WebViewNavigationPolicy {
         reason: 'embedded_scheme',
       );
     }
-    if (_externalSchemes.contains(scheme)) {
+    if (ExternalNavigationUrls.isExternalScheme(scheme)) {
       return const WebNavigationDecision(
         action: WebNavDecision.external,
         reason: 'supported_external_scheme',
@@ -79,6 +73,12 @@ class WebViewNavigationPolicy {
       );
     }
     if (scheme == 'http' || scheme == 'https') {
+      if (ExternalNavigationUrls.isExternalMapWebUrl(uri)) {
+        return const WebNavigationDecision(
+          action: WebNavDecision.external,
+          reason: 'external_map_url',
+        );
+      }
       final String path = uri.path.toLowerCase();
       final int dot = path.lastIndexOf('.');
       if (dot != -1) {

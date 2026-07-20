@@ -3,8 +3,7 @@ import 'dart:typed_data';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Branded survey-purple header for the in-app browser. Matches the Angular
-/// survey pages (`--ec-primary` / hero gradient).
+/// Soft blue→mint WebView chrome — matches Booth Survey / login hero.
 class AppWebViewHeader extends StatelessWidget {
   const AppWebViewHeader({
     required this.title,
@@ -25,73 +24,128 @@ class AppWebViewHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final double top = MediaQuery.of(context).padding.top;
     return Container(
-      padding: EdgeInsets.fromLTRB(8, top + 8, 8, 12),
-      decoration: const BoxDecoration(gradient: AppGradients.survey),
-      child: Row(
-        children: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-            onPressed: onBack,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: AppGradients.header,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(22)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Color(0x383B82F6),
+            blurRadius: 22,
+            offset: Offset(0, 8),
           ),
-          if (icon != null) ...<Widget>[
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: 8),
+        ],
+      ),
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            right: -36,
+            top: -28,
+            child: Container(
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(6),
-                image: DecorationImage(
-                  image: MemoryImage(icon!),
-                  fit: BoxFit.contain,
-                ),
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
               ),
             ),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(6, top + 6, 6, 14),
+            child: Row(
               children: <Widget>[
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
+                _ChromeIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: onBack,
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const Icon(
-                      Icons.lock_rounded,
-                      size: 11,
-                      color: Colors.white70,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        host,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 11,
-                        ),
+                if (icon != null) ...<Widget>[
+                  Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: MemoryImage(icon!),
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ],
+                  ),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            Icons.lock_rounded,
+                            size: 11,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              host,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.caption.copyWith(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                _ChromeIconButton(
+                  icon: Icons.refresh_rounded,
+                  onPressed: onReload,
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-            onPressed: onReload,
-          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChromeIconButton extends StatelessWidget {
+  const _ChromeIconButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.18),
+      borderRadius: AppRadius.brMd,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: AppRadius.brMd,
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/app_urls.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
@@ -62,6 +61,7 @@ class DashboardController extends GetxController {
     final DeviceRecordsController store = AppServices.deviceRecords;
     final List<ActivityEvent> activity = AppServices.activityLog.events;
     final String surveyWebUrl = AppServices.config.surveyWebBaseUrl;
+    final String voterSearchUrl = AppServices.config.voterSearchEngineUrl;
     final ServiceSession? session = AppServices.serviceAuth.session.value;
 
     final String name =
@@ -92,14 +92,14 @@ class DashboardController extends GetxController {
         value: '${total.total}',
         trend: '+12%',
         icon: Icons.groups_2_outlined,
-        color: const Color(0xFF0F8A5F),
+        color: AppColors.primary,
       ),
       DashboardStat(
         label: LocaleKeys.dashboardStatExpenditure.tr(),
         value: '${bu.registered}',
         trend: '+8%',
         icon: Icons.account_balance_wallet_outlined,
-        color: const Color(0xFFFF8C00),
+        color: AppColors.green,
       ),
       DashboardStat(
         label: LocaleKeys.dashboardStatInspections.tr(),
@@ -123,14 +123,16 @@ class DashboardController extends GetxController {
         desc: LocaleKeys.serviceVoterSearchEngineDesc.tr(),
         icon: Icons.manage_search_outlined,
         color: AppColors.primary,
-        url: AppUrls.mpSecVoterSearchEngine,
+        url: voterSearchUrl,
         requiresServiceLogin: false,
+        passSessionContext: false,
+        openAsExternalPortal: true,
       ),
       DashboardService(
         title: LocaleKeys.serviceBoothTitle.tr(),
         desc: LocaleKeys.serviceBoothDesc.tr(),
         icon: Icons.location_on_outlined,
-        color: AppColors.purple,
+        color: AppColors.primaryBright,
         url: surveyWebUrl,
       ),
       DashboardService(

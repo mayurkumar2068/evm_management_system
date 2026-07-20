@@ -5,6 +5,7 @@ import { Observable, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { APP_PARAMS } from '../core/app-params';
 import { AuthTokenService } from '../core/auth-token.service';
+import { resolveApiBaseUrl } from '../core/resolve-api-base';
 import {
   PoActionRequest,
   PoActionResponse,
@@ -21,7 +22,7 @@ import {
 export class PoElectionService {
   private readonly http = inject(HttpClient);
   private readonly authToken = inject(AuthTokenService);
-  private readonly base = environment.apiBaseUrl.replace(/\/+$/, '');
+  private readonly base = resolveApiBaseUrl(environment.apiBaseUrl);
 
   private contextState: PoContext | null = this.readInitialContext();
 

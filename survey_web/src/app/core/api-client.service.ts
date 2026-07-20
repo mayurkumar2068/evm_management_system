@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
+import { resolveApiBaseUrl } from './resolve-api-base';
 
 /** Standard `{ Status, Message, Data }` envelope from POElection / PSSurvey APIs. */
 export interface ApiEnvelope<T> {
@@ -15,7 +16,7 @@ export interface ApiEnvelope<T> {
 @Injectable({ providedIn: 'root' })
 export class ApiClientService {
   private readonly http = inject(HttpClient);
-  readonly baseUrl = environment.apiBaseUrl.replace(/\/+$/, '');
+  readonly baseUrl = resolveApiBaseUrl(environment.apiBaseUrl);
 
   get useMockData(): boolean {
     return environment.useMockData || !this.baseUrl;

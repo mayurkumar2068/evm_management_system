@@ -104,17 +104,17 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         height: 44px;
         border: none;
         border-radius: 14px;
-        background: linear-gradient(135deg, #7f6fec 0%, #5d49d5 100%);
-        color: #fff;
+        background: var(--ec-grad-accent);
+        color: #fff !important;
         display: grid;
         place-items: center;
         cursor: pointer;
-        box-shadow: 0 10px 22px rgba(113, 103, 232, 0.22);
+        box-shadow: 0 10px 22px rgba(59, 130, 246, 0.22);
         transition: transform 0.1s ease, box-shadow 0.2s ease;
       }
       .iu-btn:active {
         transform: scale(0.96);
-        box-shadow: 0 8px 18px rgba(113, 103, 232, 0.24);
+        box-shadow: 0 8px 18px rgba(59, 130, 246, 0.24);
       }
       .iu-btn--disabled {
         opacity: 0.5;

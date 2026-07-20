@@ -40,6 +40,7 @@ String appBridgeBootstrapJs(String contextJson) {
     pickImage: function (opts) { return nativeCall('pickImage', opts || {}); },
     submitForm: function (opts) { return nativeCall('submitForm', opts || {}); },
     apiRequest: function (opts) { return nativeCall('apiRequest', opts || {}); },
+    openExternal: function (url) { return nativeCall('openExternal', { url: url }); },
     logout: function () { return nativeCall('logout', {}); },
     navigate: function (route) { return nativeCall('navigate', { route: route }); },
     log: function (msg) { return nativeCall('log', { message: String(msg) }); },

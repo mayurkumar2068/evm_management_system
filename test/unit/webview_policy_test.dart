@@ -31,6 +31,28 @@ void main() {
       expect(decision.reason, 'supported_external_scheme');
     });
 
+    test('opens geo and map app schemes externally', () {
+      expect(
+        createPolicy().decide(Uri.parse('geo:22.7,75.8')).action,
+        WebNavDecision.external,
+      );
+      expect(
+        createPolicy().decide(Uri.parse('comgooglemaps://?daddr=22.7,75.8')).action,
+        WebNavDecision.external,
+      );
+    });
+
+    test('opens google maps web urls externally', () {
+      final WebNavigationDecision decision = createPolicy().decide(
+        Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=22.7,75.8',
+        ),
+      );
+
+      expect(decision.action, WebNavDecision.external);
+      expect(decision.reason, 'external_map_url');
+    });
+
     test('blocks unsupported custom schemes', () {
       final WebNavigationDecision decision = createPolicy().decide(
         Uri.parse('customapp://launch'),

@@ -178,7 +178,9 @@ abstract final class PresidingSessionMapper {
           ? null
           : DateTime.tryParse(json['saved_at'] as String),
       pendingSync: json['pending_sync'] as bool? ?? true,
-      isLocked: json['is_locked'] as bool? ?? false,
+      isLocked:
+          json['is_locked'] as bool? ??
+          (json['saved_at'] != null && (json['saved_at'] as String).isNotEmpty),
     );
   }
 }

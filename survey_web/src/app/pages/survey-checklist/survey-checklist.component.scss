@@ -85,8 +85,8 @@
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #7b6ff0 0%, #5f54d6 100%);
-  box-shadow: 0 8px 18px rgba(95, 84, 214, 0.22);
+  background: var(--ec-grad-accent);
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.22);
 }
 
 .question-card__meta {
@@ -106,7 +106,7 @@
 .question-card__track {
   height: 6px;
   border-radius: 999px;
-  background: #ececf5;
+  background: #e2e8f0;
   overflow: hidden;
 }
 
@@ -114,7 +114,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #7b6ff0 0%, #5f54d6 100%);
+  background: var(--ec-grad-accent);
   transition: width 0.25s ease;
 }
 
@@ -124,8 +124,8 @@
   gap: 8px;
   padding: 14px;
   border-radius: 16px;
-  background: #f8f8fc;
-  border: 1px solid #ececf3;
+  background: var(--ec-bg-soft);
+  border: 1px solid var(--ec-border);
 }
 
 .remark-card__label {
@@ -148,7 +148,7 @@
   width: 100%;
   min-height: 88px;
   resize: vertical;
-  border: 1px solid #e3e4ee;
+  border: 1px solid var(--ec-border);
   border-radius: 14px;
   padding: 12px 14px;
   font: inherit;
@@ -160,13 +160,13 @@
 }
 
 .remark-card__input::placeholder {
-  color: #a8a8b8;
+  color: var(--ec-text-muted);
 }
 
 .remark-card__input:focus {
   outline: none;
-  border-color: rgba(113, 103, 232, 0.55);
-  box-shadow: 0 0 0 4px rgba(113, 103, 232, 0.12);
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
 .question-card__empty {
@@ -231,15 +231,15 @@
   padding: 0 14px;
   color: var(--ec-primary-dark);
   background: #fff;
-  border: 1.5px solid #e4e5ef;
+  border: 1.5px solid var(--ec-border);
 }
 
 .action-btn--primary {
   flex: 1;
   padding: 0 18px;
-  color: #fff;
-  background: linear-gradient(135deg, #6f63eb 0%, #5348cf 100%);
-  box-shadow: 0 10px 24px rgba(83, 72, 207, 0.28);
+  color: #fff !important;
+  background: var(--ec-grad-accent);
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.28);
 }
 
 .action-btn--primary:not(:disabled):active,

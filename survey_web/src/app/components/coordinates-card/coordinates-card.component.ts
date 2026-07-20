@@ -81,12 +81,12 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         position: relative;
         overflow: hidden;
         background:
-          radial-gradient(120% 90% at 100% 0%, rgba(113, 103, 232, 0.2), transparent 55%),
-          linear-gradient(135deg, #1f2145 0%, #111229 100%);
-        color: #e9eefc;
+          radial-gradient(120% 90% at 100% 0%, rgba(59, 130, 246, 0.28), transparent 55%),
+          linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+        color: #e8f1ff;
         border-radius: var(--ec-radius);
         padding: 14px 15px;
-        box-shadow: 0 12px 28px rgba(24, 24, 72, 0.28);
+        box-shadow: 0 12px 28px rgba(15, 39, 68, 0.28);
       }
       .coord__glow {
         position: absolute;
@@ -95,7 +95,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         width: 90px;
         height: 90px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(113, 103, 232, 0.3), transparent 70%);
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.28), transparent 70%);
       }
       .coord__head {
         position: relative;
@@ -104,15 +104,15 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         gap: 8px;
         font-size: 12.5px;
         font-weight: 600;
-        color: #d8dcff;
+        color: #c7dbf5;
         margin-bottom: 12px;
       }
       .coord__dot {
         width: 9px;
         height: 9px;
         border-radius: 50%;
-        background: #8b78f0;
-        box-shadow: 0 0 0 0 rgba(139, 120, 240, 0.6);
+        background: #34d399;
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55);
         animation: coord-pulse 1.8s infinite;
       }
       .coord__dot--idle {
