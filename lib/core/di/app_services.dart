@@ -34,6 +34,9 @@ import 'package:evm_management_system/core/webview/service/webview_cookie_servic
 import 'package:evm_management_system/core/webview/service/webview_logger.dart';
 import 'package:evm_management_system/core/webview/service/webview_warmer.dart';
 import 'package:evm_management_system/features/online_nomination/data/repositories/nomination_draft_repository.dart';
+import 'package:evm_management_system/features/online_nomination/data/repositories/urban_nomination_master_repository.dart';
+import 'package:evm_management_system/features/online_nomination/data/datasources/urban_nomination_remote_datasource.dart';
+import 'package:evm_management_system/core/network/olin_api_client.dart';
 import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
@@ -147,6 +150,12 @@ abstract final class AppServices {
       NominationDraftRepository(database),
       permanent: true,
     );
+    Get.put<UrbanNominationMasterRepository>(
+      UrbanNominationMasterRepository(
+        UrbanNominationRemoteDatasource(OlinApiClient.instance(config)),
+      ),
+      permanent: true,
+    );
 
     Get.put<DeviceRecordsController>(
       DeviceRecordsController(database),
@@ -154,6 +163,8 @@ abstract final class AppServices {
     );
     Get.put<ActivityLogController>(ActivityLogController(), permanent: true);
     Get.put<ServiceAuthController>(ServiceAuthController(), permanent: true);
+    // Auth before dashboard — DashboardController.onInit listens to authState.
+    Get.put<AuthController>(AuthController(), permanent: true);
     Get.put<DashboardController>(DashboardController(), permanent: true);
     Get.put<PresidingDashboardController>(
       PresidingDashboardController(),
@@ -163,7 +174,6 @@ abstract final class AppServices {
       PresidingTurnoutController(),
       permanent: true,
     );
-    Get.put<AuthController>(AuthController(), permanent: true);
   }
 
   static ServiceAuthController get serviceAuth =>
@@ -192,6 +202,8 @@ abstract final class AppServices {
       Get.find<ActivityLogController>();
   static NominationDraftRepository get nominationDrafts =>
       Get.find<NominationDraftRepository>();
+  static UrbanNominationMasterRepository get urbanNominationMasters =>
+      Get.find<UrbanNominationMasterRepository>();
 }
 
 /// Reactive locale and theme preferences.

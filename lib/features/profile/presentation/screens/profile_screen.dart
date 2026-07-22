@@ -4,6 +4,9 @@ import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
 import 'package:evm_management_system/core/utils/string_extensions.dart';
+import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
+import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/features/offline/presentation/widgets/offline_status_sheet.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/device_record.dart';
@@ -11,43 +14,61 @@ import 'package:evm_management_system/shared/widgets/language_picker_sheet.dart'
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Officer profile — compact soft hero + grouped account / service rows.
+/// Officer profile — real session data + language / theme / services.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final user = AppServices.auth.authState.value.user;
-      final String name = user?.fullName ?? LocaleKeys.dashboardGuest.tr();
-      final String officerId = user?.officerId ?? '—';
-      final String role = user?.designation ?? LocaleKeys.dashboardRole.tr();
-      final String initials = name.initials;
-      final String location =
-          user?.districtCode ?? LocaleKeys.dashboardDistrictUnset.tr();
+      // Touch reactive deps so language / theme / sessions rebuild immediately.
+      AppServices.settings.locale.value;
+      final ThemeMode currentThemeMode = AppServices.settings.themeMode.value;
+      final AuthUser? authUser = AppServices.auth.authState.value.user;
+      final ServiceSession? session = AppServices.serviceAuth.session.value;
+      final _ProfileViewData data = _ProfileViewData.from(
+        authUser: authUser,
+        session: session,
+      );
 
       final Locale currentLocale = AppServices.settings.locale.value;
-      final ThemeMode currentThemeMode = AppServices.settings.themeMode.value;
       final double top = MediaQuery.of(context).padding.top;
 
       return ColoredBox(
-        color: AppColors.background,
+        color: context.appBackground,
         child: ListView(
           padding: EdgeInsets.fromLTRB(20, top + 12, 20, 120),
           children: <Widget>[
             _OfficerHero(
-              name: name,
-              role: role,
-              officerId: officerId,
-              initials: initials,
-              location: location,
+              name: data.name,
+              role: data.role,
+              officerId: data.primaryId,
+              initials: data.name.initials,
+              location: data.location,
+              isActive: session != null && !session.isExpired,
             ),
+            if (data.detailRows.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 16),
+              _SectionLabel(LocaleKeys.profileDetails.tr()),
+              const SizedBox(height: 10),
+              _GroupCard(
+                children: <Widget>[
+                  for (int i = 0; i < data.detailRows.length; i++) ...<Widget>[
+                    if (i > 0) const _RowDivider(),
+                    _DetailRow(
+                      label: data.detailRows[i].label,
+                      value: data.detailRows[i].value,
+                    ),
+                  ],
+                ],
+              ),
+            ],
             if (!kHideEvmScanning) ...<Widget>[
               const SizedBox(height: 16),
               _InventoryStats(),
             ],
             const SizedBox(height: 22),
-            const _SectionLabel('खाता'),
+            _SectionLabel(LocaleKeys.profileAccount.tr()),
             const SizedBox(height: 10),
             _GroupCard(
               children: <Widget>[
@@ -76,37 +97,6 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const _RowDivider(),
                 _RowTile(
-                  icon: Icons.key_rounded,
-                  color: AppColors.warning,
-                  title: LocaleKeys.profileChangePassword.tr(),
-                  subtitle: LocaleKeys.profileLastChanged.tr(args: ['30']),
-                  onTap: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 22),
-            const _SectionLabel('सेवाएँ'),
-            const SizedBox(height: 10),
-            _GroupCard(
-              children: <Widget>[
-                _RowTile(
-                  icon: Icons.settings_outlined,
-                  color: AppColors.primary,
-                  title: LocaleKeys.profileSettings.tr(),
-                  subtitle: LocaleKeys.profileSettingsSub.tr(),
-                  onTap: () => Get.toNamed<dynamic>(AppRoute.settings.path),
-                ),
-                const _RowDivider(),
-                _RowTile(
-                  icon: Icons.sync_rounded,
-                  color: AppColors.green,
-                  title: LocaleKeys.profileSync.tr(),
-                  subtitle: LocaleKeys.profileSyncSub.tr(),
-                  onTap: () =>
-                      Get.toNamed<dynamic>(AppRoute.syncManagement.path),
-                ),
-                const _RowDivider(),
-                _RowTile(
                   icon: Icons.notifications_none_rounded,
                   color: AppColors.teal,
                   title: LocaleKeys.profileNotifications.tr(),
@@ -114,14 +104,35 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () =>
                       Get.toNamed<dynamic>(AppRoute.notifications.path),
                 ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.cloud_off_outlined,
+                  color: AppColors.green,
+                  title: LocaleKeys.settingsOfflineStorage.tr(),
+                  subtitle: LocaleKeys.profileSyncSub.tr(),
+                  onTap: () => showOfflineStatusSheet(context),
+                ),
               ],
             ),
             const SizedBox(height: 28),
-            _SignOutButton(onTap: AppServices.auth.signOut),
+            _SignOutButton(onTap: () => _confirmSignOut(context)),
           ],
         ),
       );
     });
+  }
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final bool confirmed = await AppDialog.confirm(
+      context,
+      title: LocaleKeys.profileSignOutTitle.tr(),
+      message: LocaleKeys.profileSignOutMessage.tr(),
+      confirmLabel: LocaleKeys.profileSignOut.tr(),
+      cancelLabel: LocaleKeys.commonCancel.tr(),
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await AppServices.auth.signOut();
   }
 
   Future<void> _showLanguagePicker(BuildContext context) async {
@@ -135,6 +146,153 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
+class _ProfileViewData {
+  const _ProfileViewData({
+    required this.name,
+    required this.role,
+    required this.primaryId,
+    required this.location,
+    required this.detailRows,
+  });
+
+  factory _ProfileViewData.from({
+    required AuthUser? authUser,
+    required ServiceSession? session,
+  }) {
+    final bool hasSessionName =
+        session != null && session.name.trim().isNotEmpty;
+    final bool isGuest = authUser?.isGuest == true && !hasSessionName;
+
+    final String name = hasSessionName
+        ? session.name.trim()
+        : (isGuest
+              ? LocaleKeys.dashboardGuest.tr()
+              : (authUser?.fullName.trim().isNotEmpty == true
+                    ? authUser!.fullName.trim()
+                    : LocaleKeys.dashboardGuest.tr()));
+
+    final String role = () {
+      if (session?.section != null && session!.section!.trim().isNotEmpty) {
+        return session.section!.trim();
+      }
+      if (isGuest) return LocaleKeys.dashboardRole.tr();
+      if (authUser?.designation != null &&
+          authUser!.designation!.trim().isNotEmpty) {
+        return authUser.designation!.trim();
+      }
+      return LocaleKeys.dashboardRole.tr();
+    }();
+
+    final String primaryId = () {
+      if (isGuest) return '—';
+      if (authUser?.officerId.trim().isNotEmpty == true) {
+        return authUser!.officerId.trim();
+      }
+      if (session?.userId.trim().isNotEmpty == true) {
+        return session!.userId.trim();
+      }
+      return '—';
+    }();
+
+    final String location = () {
+      final String? districtName = session?.districtName?.trim();
+      if (districtName != null && districtName.isNotEmpty) return districtName;
+      final String? districtId = session?.districtId?.trim();
+      if (districtId != null && districtId.isNotEmpty) return districtId;
+      if (isGuest) return LocaleKeys.dashboardDistrictUnset.tr();
+      final String? authDistrict = authUser?.districtCode?.trim();
+      if (authDistrict != null && authDistrict.isNotEmpty) return authDistrict;
+      return LocaleKeys.dashboardDistrictUnset.tr();
+    }();
+
+    final List<_DetailItem> rows = <_DetailItem>[];
+
+    void add(String label, String? value) {
+      final String? trimmed = value?.trim();
+      if (trimmed == null || trimmed.isEmpty) return;
+      rows.add(_DetailItem(label: label, value: trimmed));
+    }
+
+    if (!isGuest) {
+      add(LocaleKeys.profileOfficerId.tr(), authUser?.officerId);
+    }
+    if (session?.userId != authUser?.officerId) {
+      add(LocaleKeys.profileUserId.tr(), session?.userId);
+    }
+    if (!isGuest) {
+      add(LocaleKeys.profileEmail.tr(), authUser?.email);
+    }
+    add(LocaleKeys.profileSection.tr(), session?.section);
+
+    final String? district = _firstNonEmpty(<String?>[
+      session?.districtName,
+      session?.districtId,
+      if (!isGuest) authUser?.districtCode,
+    ]);
+    add(LocaleKeys.profileDistrict.tr(), district);
+
+    add(LocaleKeys.profileBody.tr(), session?.bodyName);
+    if (!isGuest) {
+      add(LocaleKeys.profileState.tr(), authUser?.stateCode);
+    }
+
+    final String pollingStation = <String?>[
+      authUser?.pollingStationCode,
+      authUser?.pollingStationName,
+      authUser?.psId,
+    ]
+        .whereType<String>()
+        .map((String s) => s.trim())
+        .where((String s) => s.isNotEmpty)
+        .toSet()
+        .join(' · ');
+    if (!isGuest) {
+      add(
+        LocaleKeys.profilePollingStation.tr(),
+        pollingStation.isEmpty ? null : pollingStation,
+      );
+    }
+
+    final List<_DetailItem> unique = <_DetailItem>[];
+    for (final _DetailItem row in rows) {
+      if (unique.any(
+        (_DetailItem e) => e.label == row.label && e.value == row.value,
+      )) {
+        continue;
+      }
+      unique.add(row);
+    }
+
+    return _ProfileViewData(
+      name: name,
+      role: role,
+      primaryId: primaryId,
+      location: location,
+      detailRows: unique,
+    );
+  }
+
+  final String name;
+  final String role;
+  final String primaryId;
+  final String location;
+  final List<_DetailItem> detailRows;
+
+  static String? _firstNonEmpty(List<String?> values) {
+    for (final String? value in values) {
+      final String? trimmed = value?.trim();
+      if (trimmed != null && trimmed.isNotEmpty) return trimmed;
+    }
+    return null;
+  }
+}
+
+class _DetailItem {
+  const _DetailItem({required this.label, required this.value});
+  final String label;
+  final String value;
+}
+
 class _OfficerHero extends StatelessWidget {
   const _OfficerHero({
     required this.name,
@@ -142,6 +300,7 @@ class _OfficerHero extends StatelessWidget {
     required this.officerId,
     required this.initials,
     required this.location,
+    required this.isActive,
   });
 
   final String name;
@@ -149,6 +308,7 @@ class _OfficerHero extends StatelessWidget {
   final String officerId;
   final String initials;
   final String location;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
@@ -233,24 +393,25 @@ class _OfficerHero extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Positioned(
-                      right: -3,
-                      bottom: -3,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppColors.green,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          size: 11,
-                          color: Colors.white,
+                    if (isActive)
+                      Positioned(
+                        right: -3,
+                        bottom: -3,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppColors.green,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 11,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(width: 14),
@@ -297,7 +458,9 @@ class _OfficerHero extends StatelessWidget {
                           ),
                           _HeroChip(
                             icon: Icons.bolt_rounded,
-                            label: LocaleKeys.statsActive.tr(),
+                            label: isActive
+                                ? LocaleKeys.profileActiveSession.tr()
+                                : LocaleKeys.statsActive.tr(),
                           ),
                         ],
                       ),
@@ -327,9 +490,9 @@ class _InventoryStats extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appSurface,
           borderRadius: AppRadius.brXl,
-          border: Border.all(color: AppColors.outline),
+          border: Border.all(color: context.appOutline),
         ),
         child: Row(
           children: <Widget>[
@@ -378,7 +541,7 @@ class _Stat extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.slate500,
+              color: context.appMuted,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -442,7 +605,7 @@ class _SectionLabel extends StatelessWidget {
         Text(
           text,
           style: AppTextStyles.caption.copyWith(
-            color: AppColors.slate600,
+            color: context.appMutedStrong,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.3,
             fontSize: 12,
@@ -461,9 +624,9 @@ class _GroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: AppRadius.brXl,
-        border: Border.all(color: AppColors.outline),
+        border: Border.all(color: context.appOutline),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.05),
@@ -482,12 +645,50 @@ class _RowDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(
+    return Divider(
       height: 1,
       thickness: 1,
       indent: 68,
       endIndent: 16,
-      color: AppColors.slate100,
+      color: context.appDivider,
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: context.appMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: context.appOnSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -538,14 +739,14 @@ class _RowTile extends StatelessWidget {
                       title,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.appOnSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.slate500,
+                        color: context.appMuted,
                         fontSize: 11,
                       ),
                     ),
@@ -555,10 +756,10 @@ class _RowTile extends StatelessWidget {
               if (trailing != null)
                 trailing!
               else
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: AppColors.slate300,
+                  color: context.appMuted,
                 ),
             ],
           ),
@@ -575,7 +776,9 @@ class _SignOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.errorSurface,
+      color: AppColors.errorSurface.withValues(
+        alpha: context.isAppDark ? 0.2 : 1,
+      ),
       borderRadius: AppRadius.brXl,
       child: InkWell(
         onTap: onTap,

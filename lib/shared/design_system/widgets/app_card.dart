@@ -26,6 +26,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = color ?? Theme.of(context).colorScheme.surface;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
       color: surface,
@@ -34,12 +35,17 @@ class AppCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: surface,
           borderRadius: borderRadius,
-          border: border,
-          boxShadow: const [
+          border: border ??
+              Border.all(
+                color: isDark ? AppColors.darkOutline : AppColors.outline,
+              ),
+          boxShadow: [
             BoxShadow(
-              color: AppColors.cardShadow,
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.35)
+                  : AppColors.cardShadow,
               blurRadius: 16,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),

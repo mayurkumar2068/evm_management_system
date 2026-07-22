@@ -93,8 +93,7 @@ class _AppWebViewState extends State<AppWebView> {
     unawaited(Get.find<WebViewWarmer>().warm());
 
     final WebThemeMode theme =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark
+        AppServices.settings.themeMode.value == ThemeMode.dark
         ? WebThemeMode.dark
         : WebThemeMode.light;
 
@@ -151,15 +150,6 @@ class _AppWebViewState extends State<AppWebView> {
 
   /// Normalizes and safely encodes user-provided URLs.
   String _normalizeUrl(String rawUrl) => normalizeWebViewLaunchUrl(rawUrl);
-
-  /// Returns the current host for the header UI.
-  String get _host {
-    try {
-      return _normalizedUri.host;
-    } catch (_) {
-      return _config.url;
-    }
-  }
 
   /// Reloads the current page and resets transient error state.
   Future<void> _reload() async {
@@ -660,18 +650,17 @@ class _AppWebViewState extends State<AppWebView> {
         await _goBackOrClose();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: context.appBackground,
         body: Column(
           children: <Widget>[
             if (_config.showHeader)
               AppWebViewHeader(
                 title: _config.title,
-                host: _host,
                 icon: _favicon,
                 onBack: _goBackOrClose,
                 onReload: _reload,
               ),
-            if (_loading) _loadingBar(),
+            if (_loading) _loadingBar(context),
             Expanded(
               child: Stack(
                 children: <Widget>[
@@ -734,11 +723,11 @@ class _AppWebViewState extends State<AppWebView> {
   }
 
   /// Builds the top loading progress indicator.
-  Widget _loadingBar() {
+  Widget _loadingBar(BuildContext context) {
     return LinearProgressIndicator(
       value: _progress == 0 ? null : _progress,
       minHeight: 3,
-      backgroundColor: AppColors.slate100,
+      backgroundColor: context.appChip,
       valueColor: const AlwaysStoppedAnimation<Color>(AppColors.surveyPrimary),
     );
   }
@@ -748,10 +737,11 @@ class _AppWebViewState extends State<AppWebView> {
     if (_config.loadingBuilder != null) {
       return _config.loadingBuilder!(context);
     }
-    return const Center(
-      child: CircularProgressIndicator(
-        valueColor: const AlwaysStoppedAnimation<Color>(
-          AppColors.surveyPrimary,
+    return ColoredBox(
+      color: context.appBackground,
+      child: const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.surveyPrimary),
         ),
       ),
     );
@@ -763,7 +753,7 @@ class _AppWebViewState extends State<AppWebView> {
       return _config.errorBuilder!(context, _reload);
     }
     return Container(
-      color: Colors.white,
+      color: context.appBackground,
       alignment: Alignment.center,
       padding: const EdgeInsets.all(28),
       child: Column(
@@ -772,8 +762,10 @@ class _AppWebViewState extends State<AppWebView> {
           Container(
             width: 74,
             height: 74,
-            decoration: const BoxDecoration(
-              color: AppColors.errorSurface,
+            decoration: BoxDecoration(
+              color: context.isAppDark
+                  ? AppColors.error.withValues(alpha: 0.2)
+                  : AppColors.errorSurface,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -786,7 +778,7 @@ class _AppWebViewState extends State<AppWebView> {
           Text(
             'पेज लोड नहीं हो सका',
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.slate800,
+              color: context.appOnSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -794,7 +786,7 @@ class _AppWebViewState extends State<AppWebView> {
           Text(
             'Couldn\'t load this page. Check your connection and try again.',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate500),
+            style: AppTextStyles.bodyMedium.copyWith(color: context.appMuted),
           ),
           const SizedBox(height: 22),
           SizedBox(

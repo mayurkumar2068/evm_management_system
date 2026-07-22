@@ -11,9 +11,11 @@ class EnvironmentConfig {
     required this.flavor,
     required this.apiBaseUrl,
     required this.poElectionApiBaseUrl,
+    required this.olinApiBaseUrl,
     required this.surveyApiBaseUrl,
     required this.surveyWebBaseUrl,
     required this.voterSearchEngineUrl,
+    required this.candidateExpenditureUrl,
     required this.electionId,
     required this.devPoPsId,
     required this.devPoAreaType,
@@ -59,9 +61,12 @@ class EnvironmentConfig {
     final String apiBaseUrl = require('API_BASE_URL');
     final String? poElectionRaw = dotenv.env['PO_ELECTION_API_BASE_URL']
         ?.trim();
+    final String? olinApiRaw = dotenv.env['OLIN_API_BASE_URL']?.trim();
     final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
     final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
     final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']?.trim();
+    final String? candidateExpenditureRaw =
+        dotenv.env['CANDIDATE_EXPENDITURE_URL']?.trim();
 
     return EnvironmentConfig(
       flavor: flavor,
@@ -69,12 +74,15 @@ class EnvironmentConfig {
       poElectionApiBaseUrl: (poElectionRaw != null && poElectionRaw.isNotEmpty)
           ? poElectionRaw
           : _defaultPoElectionBaseUrl(apiBaseUrl),
+      olinApiBaseUrl: (olinApiRaw != null && olinApiRaw.isNotEmpty)
+          ? olinApiRaw
+          : 'http://10.115.197.192/OLINAPI',
       surveyApiBaseUrl: (surveyApiRaw != null && surveyApiRaw.isNotEmpty)
           ? surveyApiRaw
           : _localServiceDefault(
               flavor,
               'SURVEY_API_BASE_URL',
-              'http://localhost:3000/api',
+              'http://10.115.197.192/POElectionAPI/api',
             ),
       surveyWebBaseUrl: (surveyWebRaw != null && surveyWebRaw.isNotEmpty)
           ? surveyWebRaw
@@ -90,6 +98,11 @@ class EnvironmentConfig {
                   ? poElectionRaw
                   : _defaultPoElectionBaseUrl(apiBaseUrl),
             ),
+      candidateExpenditureUrl:
+          (candidateExpenditureRaw != null &&
+              candidateExpenditureRaw.isNotEmpty)
+          ? candidateExpenditureRaw
+          : 'http://10.115.197.192/CandidateExpenditure/Home.aspx',
       electionId: optionalInt('ELECTION_ID'),
       devPoPsId: optionalString('DEV_PO_PS_ID'),
       devPoAreaType: optionalString('DEV_PO_AREA_TYPE'),
@@ -117,7 +130,10 @@ class EnvironmentConfig {
   /// Base URL for PO Election APIs (`POElectionAPI v1` OpenAPI).
   final String poElectionApiBaseUrl;
 
-  /// Base URL for the survey Node API (`survey_api/`), including `/api` suffix.
+  /// Base URL for Online Nomination (OLINAPI) master lookups.
+  final String olinApiBaseUrl;
+
+  /// Base URL for survey / PSSurvey APIs (`POElectionAPI/api`).
   final String surveyApiBaseUrl;
 
   /// Base URL for the embedded Angular survey micro-app (`survey_web/`).
@@ -125,6 +141,9 @@ class EnvironmentConfig {
 
   /// Voter search engine portal opened from the dashboard grid.
   final String voterSearchEngineUrl;
+
+  /// Candidate expenditure portal opened from the dashboard grid.
+  final String candidateExpenditureUrl;
 
   /// Active election cycle ID sent with officer login (deployment config).
   final int? electionId;

@@ -9,29 +9,6 @@ abstract final class ApiEndpoints {
   static const String logout = '/auth/logout';
   static const String profile = '/auth/profile';
 
-  // Dashboard
-  static const String dashboardSummary = '/dashboard/summary';
-  static const String recentActivity = '/dashboard/recent-activity';
-
-  // Control / Ballot Units
-  static const String controlUnits = '/control-units';
-  static const String ballotUnits = '/ballot-units';
-  static String controlUnit(String id) => '/control-units/$id';
-  static String ballotUnit(String id) => '/ballot-units/$id';
-
-  // Stock register
-  static const String stockRegister = '/stock-register';
-
-  // Sync
-  static const String syncBatch = '/sync/batch';
-
-  // Notifications
-  static const String notifications = '/notifications';
-  static const String registerDevice = '/notifications/register-device';
-
-  // Audit
-  static const String auditTrail = '/audit-trail';
-
   // Survey service auth + masters
   // Base URL is expected to include `/api` (e.g. http://host/api)
   static const String surveyLoginPass = '/Account/login-survey-pass';
@@ -72,4 +49,18 @@ abstract final class PoElectionEndpoints {
       '/api/POElection/insert-machine-sealed';
   static const String insertMaterialSubmitted =
       '/api/POElection/insert-material-submitted';
+}
+
+/// Online Nomination (OLINAPI) urban master lookup paths.
+///
+/// Base URL: [EnvironmentConfig.olinApiBaseUrl] (`OLIN_API_BASE_URL`).
+abstract final class OlinEndpoints {
+  static const String getElectionUrban = '/Master/GetElectionUrban';
+  static const String getPostUrban = '/Master/GetPostUrban';
+  static const String getDistrictUrban = '/Master/GetDistrictUrban';
+
+  /// Spelling matches backend route (`GetUtbanBody`).
+  static const String getUtbanBody = '/Master/GetUtbanBody';
+  static const String getUrbanWard = '/Master/GetUrbanWard';
+  static const String getUbPresident = '/Master/Get_UB_President';
 }

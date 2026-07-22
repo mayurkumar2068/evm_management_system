@@ -32,49 +32,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final DashboardState state = controller.state.value;
 
       return ColoredBox(
-        color: AppColors.background,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 120),
-          children: <Widget>[
-            DashboardHeader(name: state.userName, pending: state.pendingCount),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: DashboardGap.page,
+        color: context.appBackground,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            controller.rebuildDashboard();
+            await Future<void>.delayed(const Duration(milliseconds: 300));
+          },
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 120),
+            children: <Widget>[
+              DashboardHeader(name: state.userName, pending: state.pendingCount),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DashboardGap.page,
+                ),
+                child: DashboardWelcomeCard(
+                  name: state.userName,
+                  designation: state.designation,
+                  district: state.district,
+                ),
               ),
-              child: DashboardWelcomeCard(
-                name: state.userName,
-                designation: state.designation,
-                district: state.district,
+              const SizedBox(height: DashboardGap.section),
+              DashboardStatStrip(stats: state.stats),
+              const SizedBox(height: DashboardGap.section),
+              DashboardSectionHeader(
+                title: LocaleKeys.dashboardMainServices.tr(),
               ),
-            ),
-            const SizedBox(height: DashboardGap.section),
-            DashboardStatStrip(stats: state.stats),
-            const SizedBox(height: DashboardGap.section),
-            DashboardSectionHeader(
-              title: LocaleKeys.dashboardMainServices.tr(),
-            ),
-            const SizedBox(height: DashboardGap.headerToContent),
-            DashboardServicesGrid(services: state.services),
-            const SizedBox(height: DashboardGap.section),
-            DashboardSectionHeader(
-              title: LocaleKeys.dashboardRecentActivity.tr(),
-              onViewAll: () =>
-                  Get.toNamed<dynamic>(AppRoute.activityHistory.path),
-            ),
-            const SizedBox(height: DashboardGap.headerToContent),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: DashboardGap.page,
+              const SizedBox(height: DashboardGap.headerToContent),
+              DashboardServicesGrid(services: state.services),
+              const SizedBox(height: DashboardGap.section),
+              DashboardSectionHeader(
+                title: LocaleKeys.dashboardRecentActivity.tr(),
+                onViewAll: () =>
+                    Get.toNamed<dynamic>(AppRoute.activityHistory.path),
               ),
-              child: DashboardActivityList(events: state.activity),
-            ),
-            const SizedBox(height: DashboardGap.section),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: DashboardGap.page),
-              child: DashboardAlertBanner(),
-            ),
-          ],
+              const SizedBox(height: DashboardGap.headerToContent),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DashboardGap.page,
+                ),
+                child: DashboardActivityList(events: state.activity),
+              ),
+              const SizedBox(height: DashboardGap.section),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: DashboardGap.page),
+                child: DashboardAlertBanner(),
+              ),
+            ],
+          ),
         ),
       );
     });

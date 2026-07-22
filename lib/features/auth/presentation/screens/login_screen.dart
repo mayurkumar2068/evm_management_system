@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final double top = MediaQuery.of(context).padding.top;
 
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.appBackground,
         body: Stack(
           children: <Widget>[
             const _SoftBackdrop(),
@@ -77,12 +77,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.appSurface,
                         borderRadius: AppRadius.brXl,
-                        border: Border.all(color: AppColors.outline),
+                        border: Border.all(color: context.appOutline),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.08),
+                            color: AppColors.primary.withValues(
+                              alpha: context.isAppDark ? 0.18 : 0.08,
+                            ),
                             blurRadius: 28,
                             offset: const Offset(0, 12),
                           ),
@@ -94,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'स्वागत है',
                             style: AppTextStyles.titleLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: context.appOnSurface,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -102,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'सेवा चुनें और आगे बढ़ें',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.slate500,
+                              color: context.appMuted,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -215,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       LocaleKeys.appCopyright.tr(),
                       textAlign: TextAlign.center,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.slate400,
+                        color: context.appMuted,
                         fontSize: 10,
                       ),
                     ),
@@ -252,7 +254,7 @@ class _NavTile extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : 0.55,
       child: Material(
-        color: AppColors.slate50,
+        color: context.appChip,
         borderRadius: AppRadius.brLg,
         child: InkWell(
           onTap: enabled ? onTap : null,
@@ -261,7 +263,7 @@ class _NavTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               borderRadius: AppRadius.brLg,
-              border: Border.all(color: AppColors.outline),
+              border: Border.all(color: context.appOutline),
             ),
             child: Row(
               children: <Widget>[
@@ -283,14 +285,14 @@ class _NavTile extends StatelessWidget {
                         title,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.appOnSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.slate500,
+                          color: context.appMuted,
                           fontSize: 11,
                         ),
                       ),

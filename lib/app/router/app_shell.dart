@@ -116,6 +116,7 @@ class AppShell extends StatelessWidget {
 
     return Scaffold(
       extendBody: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: child,
       bottomNavigationBar: AppBottomNav(
         items: items,

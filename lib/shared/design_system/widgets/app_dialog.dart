@@ -17,24 +17,37 @@ abstract final class AppDialog {
   }) async {
     final bool? result = await showDialog<bool>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
-        title: Text(title, style: AppTextStyles.titleLarge),
-        content: Text(message, style: AppTextStyles.bodyMedium),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(cancelLabel ?? LocaleKeys.commonCancel.tr()),
+      builder: (BuildContext ctx) {
+        final ColorScheme scheme = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          backgroundColor: scheme.surface,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+          title: Text(
+            title,
+            style: AppTextStyles.titleLarge.copyWith(color: scheme.onSurface),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: destructive
-                ? TextButton.styleFrom(foregroundColor: Colors.red)
-                : null,
-            child: Text(confirmLabel ?? LocaleKeys.commonOk.tr()),
+          content: Text(
+            message,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.8),
+            ),
           ),
-        ],
-      ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(cancelLabel ?? LocaleKeys.commonCancel.tr()),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: destructive ? Colors.red : scheme.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(confirmLabel ?? LocaleKeys.commonOk.tr()),
+            ),
+          ],
+        );
+      },
     );
     return result ?? false;
   }

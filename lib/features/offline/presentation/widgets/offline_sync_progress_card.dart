@@ -70,13 +70,15 @@ class _ProgressRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate600),
+            style: AppTextStyles.bodyMedium.copyWith(color: context.appMuted),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: MpSecTokens.purpleSurface,
+            color: context.isAppDark
+                ? AppColors.primary.withValues(alpha: 0.18)
+                : MpSecTokens.purpleSurface,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Text(

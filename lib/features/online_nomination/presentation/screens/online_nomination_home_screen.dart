@@ -3,9 +3,10 @@ import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/online_nomination/data/models/nomination_draft.dart';
 import 'package:evm_management_system/features/online_nomination/presentation/models/nomination_models.dart';
+import 'package:evm_management_system/features/online_nomination/presentation/widgets/nomination_start_sheet.dart';
+import 'package:evm_management_system/features/online_nomination/presentation/widgets/online_nomination_widgets.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/features/online_nomination/presentation/widgets/online_nomination_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
@@ -66,7 +67,7 @@ class _OnlineNominationHomeScreenState
     if (!mounted) {
       return;
     }
-    _showElectionTypeSheet(context);
+    await showNominationStartSheet(context);
   }
 
   @override
@@ -111,7 +112,7 @@ class _OnlineNominationHomeScreenState
                 NominationGovButton(
                   label: LocaleKeys.nominationActionStart.tr(),
                   icon: Icons.arrow_forward_rounded,
-                  onPressed: () => _showElectionTypeSheet(context),
+                  onPressed: () => showNominationStartSheet(context),
                 ),
                 AppSpacing.vGapSm,
                 NominationGovButton(
@@ -125,6 +126,12 @@ class _OnlineNominationHomeScreenState
                     ),
                   ),
                 ),
+                AppSpacing.vGapSm,
+                NominationGovButton(
+                  label: LocaleKeys.commonBack.tr(),
+                  icon: Icons.arrow_back,
+                  onPressed: () => Get.back<void>(),
+                ),
                 AppSpacing.vGapMd,
                 const NominationInfoNote(),
               ],
@@ -132,78 +139,6 @@ class _OnlineNominationHomeScreenState
           ),
         ],
       ),
-    );
-  }
-
-  void _showElectionTypeSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext ctx) {
-        final double bottomInset = MediaQuery.viewInsetsOf(ctx).bottom;
-        return Material(
-          color: AppColors.surface,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg + bottomInset,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    LocaleKeys.nominationWelcomeTitle.tr(),
-                    style: AppTextStyles.variant(
-                      AppTextStyles.titleMedium,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  AppSpacing.vGapXs,
-                  Text(
-                    LocaleKeys.nominationUrbanSelectSubtitle.tr(),
-                    style: AppTextStyles.variant(
-                      AppTextStyles.bodyMedium,
-                      color: AppColors.slate600,
-                    ),
-                  ),
-                  AppSpacing.vGapMd,
-                  NominationLargeOptionCard(
-                    featured: true,
-                    title: LocaleKeys.nominationUrbanTitle.tr(),
-                    subtitle: LocaleKeys.nominationUrbanSubtitle.tr(),
-                    icon: Icons.location_city_outlined,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Get.toNamed<void>(AppRoute.urbanNominationSelection.path);
-                    },
-                  ),
-                  AppSpacing.vGapMd,
-                  NominationLargeOptionCard(
-                    featured: true,
-                    title: LocaleKeys.nominationPanchayatTitle.tr(),
-                    subtitle: LocaleKeys.nominationPanchayatSubtitle.tr(),
-                    icon: Icons.account_balance_outlined,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Get.toNamed<void>(
-                        AppRoute.panchayatNominationSelection.path,
-                      );
-                    },
-                  ),
-                  AppSpacing.vGapLg,
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

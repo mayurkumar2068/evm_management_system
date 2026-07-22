@@ -56,14 +56,14 @@ class OfflineStatusCard extends StatelessWidget {
             value: connectionLabel,
             valueColor: AppColors.warning,
           ),
-          const Divider(height: 28),
+          Divider(height: 28, color: context.appDivider),
           _Row(
             label: LocaleKeys.offlineHubRecordsWaiting.tr(),
             value: '$pendingRecords',
           ),
-          const Divider(height: 28),
+          Divider(height: 28, color: context.appDivider),
           _Row(label: LocaleKeys.offlineHubLastSync.tr(), value: lastSync),
-          const Divider(height: 28),
+          Divider(height: 28, color: context.appDivider),
           _Row(
             label: LocaleKeys.offlineHubStorageUsed.tr(),
             value: LocaleKeys.offlineHubStorageMb.tr(
@@ -90,13 +90,13 @@ class _Row extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate600),
+            style: AppTextStyles.bodyMedium.copyWith(color: context.appMuted),
           ),
         ),
         Text(
           value,
           style: AppTextStyles.titleMedium.copyWith(
-            color: valueColor ?? AppColors.slate800,
+            color: valueColor ?? context.appOnSurface,
             fontWeight: FontWeight.w700,
           ),
         ),

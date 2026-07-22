@@ -1,13 +1,11 @@
-import 'dart:typed_data';
-
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Soft blue→mint WebView chrome — matches Booth Survey / login hero.
+/// Soft blue→mint WebView chrome — follows app light / dark theme.
 class AppWebViewHeader extends StatelessWidget {
   const AppWebViewHeader({
     required this.title,
-    required this.host,
     required this.onBack,
     required this.onReload,
     this.icon,
@@ -15,7 +13,6 @@ class AppWebViewHeader extends StatelessWidget {
   });
 
   final String title;
-  final String host;
   final Uint8List? icon;
   final VoidCallback onBack;
   final VoidCallback onReload;
@@ -23,128 +20,127 @@ class AppWebViewHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double top = MediaQuery.of(context).padding.top;
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        gradient: AppGradients.header,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(22)),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Color(0x383B82F6),
-            blurRadius: 22,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            right: -36,
-            top: -28,
-            child: Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
+    final bool isDark = context.isAppDark;
+    final Color titleColor = isDark ? context.appOnSurface : Colors.white;
+    final Color iconWell = isDark
+        ? context.appChip
+        : Colors.white.withValues(alpha: 0.18);
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.light,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          gradient: isDark ? null : AppGradients.header,
+          color: isDark ? context.appSurface : null,
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(22)),
+          border: isDark
+              ? Border(bottom: BorderSide(color: context.appOutline))
+              : null,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.35)
+                  : const Color(0x383B82F6),
+              blurRadius: 22,
+              offset: const Offset(0, 8),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(6, top + 6, 6, 14),
-            child: Row(
-              children: <Widget>[
-                _ChromeIconButton(
-                  icon: Icons.arrow_back_rounded,
-                  onPressed: onBack,
+          ],
+        ),
+        child: Stack(
+          children: <Widget>[
+            if (!isDark)
+              Positioned(
+                right: -36,
+                top: -28,
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
                 ),
-                if (icon != null) ...<Widget>[
-                  Container(
-                    width: 30,
-                    height: 30,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: MemoryImage(icon!),
-                        fit: BoxFit.contain,
+              ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(6, top + 6, 6, 14),
+              child: Row(
+                children: <Widget>[
+                  _ChromeIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    color: titleColor,
+                    background: iconWell,
+                    onPressed: onBack,
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  if (icon != null) ...<Widget>[
+                    Container(
+                      width: 30,
+                      height: 30,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: iconWell,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: context.appOutline),
+                        image: DecorationImage(
+                          image: MemoryImage(icon!),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.titleSmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Icon(
-                            Icons.lock_rounded,
-                            size: 11,
-                            color: Colors.white.withValues(alpha: 0.85),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              host,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.caption.copyWith(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  _ChromeIconButton(
+                    icon: Icons.refresh_rounded,
+                    color: titleColor,
+                    background: iconWell,
+                    onPressed: onReload,
                   ),
-                ),
-                _ChromeIconButton(
-                  icon: Icons.refresh_rounded,
-                  onPressed: onReload,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class _ChromeIconButton extends StatelessWidget {
-  const _ChromeIconButton({required this.icon, required this.onPressed});
+  const _ChromeIconButton({
+    required this.icon,
+    required this.color,
+    required this.background,
+    required this.onPressed,
+  });
 
   final IconData icon;
+  final Color color;
+  final Color background;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.18),
+      color: background,
       borderRadius: AppRadius.brMd,
       child: InkWell(
         onTap: onPressed,
         borderRadius: AppRadius.brMd,
         child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Icon(icon, color: Colors.white, size: 20),
+          width: 36,
+          height: 36,
+          child: Icon(icon, color: color, size: 20),
         ),
       ),
     );

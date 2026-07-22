@@ -1,14 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
+import 'package:evm_management_system/features/offline/presentation/widgets/offline_status_sheet.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/widgets/language_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Settings — grouped preference sections (appearance, security, notifications,
-/// data & sync) with inline toggles.
+/// Settings — language, theme, notifications, and offline only.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -18,9 +19,32 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifs = true;
-  bool _bio = true;
-  bool _autoSync = true;
-  bool _sound = true;
+  int _offlineCount = 0;
+  int _pendingCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOfflineCounts();
+  }
+
+  Future<void> _loadOfflineCounts() async {
+    final List<WebFormSubmission> all =
+        await AppServices.webSubmissionRepository.all();
+    if (!mounted) return;
+    int pending = 0;
+    for (final WebFormSubmission s in all) {
+      if (s.status == WebSubmissionStatus.pending ||
+          s.status == WebSubmissionStatus.syncing ||
+          s.status == WebSubmissionStatus.failed) {
+        pending++;
+      }
+    }
+    setState(() {
+      _offlineCount = all.length;
+      _pendingCount = pending;
+    });
+  }
 
   Future<void> _pickLanguage() async {
     final Locale currentLocale = AppServices.settings.locale.value;
@@ -37,10 +61,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final int recordCount = AppServices.deviceRecords.records.length;
       final Locale currentLocale = AppServices.settings.locale.value;
       final ThemeMode themeMode = AppServices.settings.themeMode.value;
       final bool isDark = themeMode == ThemeMode.dark;
+      final String offlineSub = _pendingCount > 0
+          ? LocaleKeys.settingsRecordsStored.tr(
+              args: <String>['$_offlineCount'],
+            )
+          : LocaleKeys.settingsRecordsStored.tr(
+              args: <String>['$_offlineCount'],
+            );
+
       final List<_Section> sections = <_Section>[
         _Section(LocaleKeys.settingsAppearance.tr(), <_Item>[
           _Item(
@@ -59,25 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _pickLanguage,
           ),
         ]),
-        _Section(LocaleKeys.settingsSecurity.tr(), <_Item>[
-          _Item(
-            Icons.fingerprint_rounded,
-            LocaleKeys.settingsBiometricAuth.tr(),
-            LocaleKeys.settingsBiometricSub.tr(),
-            value: _bio,
-            onChanged: (bool v) => setState(() => _bio = v),
-          ),
-          _Item(
-            Icons.key_rounded,
-            LocaleKeys.profileChangePassword.tr(),
-            LocaleKeys.settingsUpdatePassword.tr(),
-          ),
-          _Item(
-            Icons.history_rounded,
-            LocaleKeys.settingsLoginHistory.tr(),
-            LocaleKeys.settingsViewRecentLogins.tr(),
-          ),
-        ]),
         _Section(LocaleKeys.profileNotifications.tr(), <_Item>[
           _Item(
             Icons.notifications_none_rounded,
@@ -86,42 +98,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: _notifs,
             onChanged: (bool v) => setState(() => _notifs = v),
           ),
-          _Item(
-            Icons.volume_up_outlined,
-            LocaleKeys.settingsSoundEffects.tr(),
-            LocaleKeys.settingsSoundEffectsSub.tr(),
-            value: _sound,
-            onChanged: (bool v) => setState(() => _sound = v),
-          ),
         ]),
         _Section(LocaleKeys.settingsDataSync.tr(), <_Item>[
           _Item(
-            Icons.sync_rounded,
-            LocaleKeys.settingsAutoSync.tr(),
-            LocaleKeys.settingsAutoSyncSub.tr(),
-            value: _autoSync,
-            onChanged: (bool v) => setState(() => _autoSync = v),
-          ),
-          _Item(
-            Icons.archive_outlined,
+            Icons.cloud_off_outlined,
             LocaleKeys.settingsOfflineStorage.tr(),
-            LocaleKeys.settingsRecordsStored.tr(args: ['$recordCount']),
-          ),
-          _Item(
-            Icons.download_rounded,
-            LocaleKeys.settingsExportData.tr(),
-            LocaleKeys.settingsExportDataSub.tr(),
-          ),
-          _Item(
-            Icons.shield_outlined,
-            LocaleKeys.settingsPrivacy.tr(),
-            LocaleKeys.settingsPrivacySub.tr(),
+            offlineSub,
+            onTap: () => showOfflineStatusSheet(context),
           ),
         ]),
       ];
 
-      return Container(
-        color: AppColors.background,
+      return ColoredBox(
+        color: context.appBackground,
         child: ListView(
           padding: const EdgeInsets.only(bottom: 110),
           children: <Widget>[
@@ -142,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Text(
                         s.title.toUpperCase(),
                         style: AppTextStyles.overline.copyWith(
-                          color: AppColors.slate400,
+                          color: context.appMuted,
                           fontSize: 10,
                           letterSpacing: 1.2,
                         ),
@@ -150,6 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     AppCard(
                       padding: EdgeInsets.zero,
+                      border: Border.all(color: context.appOutline),
                       child: Column(
                         children: <Widget>[
                           for (int i = 0; i < s.items.length; i++)
@@ -205,11 +195,15 @@ class _SettingTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: item.isToggle ? null : item.onTap,
+        onTap: item.isToggle
+            ? (item.onChanged == null
+                  ? null
+                  : () => item.onChanged!(!item.value!))
+            : item.onTap,
         child: Container(
           decoration: BoxDecoration(
             border: showDivider
-                ? const Border(bottom: BorderSide(color: AppColors.slate50))
+                ? Border(bottom: BorderSide(color: context.appDivider))
                 : null,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -218,11 +212,11 @@ class _SettingTile extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
-                  color: AppColors.slate50,
+                decoration: BoxDecoration(
+                  color: context.appChip,
                   borderRadius: AppRadius.brSm,
                 ),
-                child: Icon(item.icon, size: 16, color: AppColors.slate500),
+                child: Icon(item.icon, size: 16, color: context.appMuted),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -233,7 +227,7 @@ class _SettingTile extends StatelessWidget {
                       item.label,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.slate700,
+                        color: context.appOnSurface,
                       ),
                     ),
                     Text(
@@ -241,7 +235,7 @@ class _SettingTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.slate400,
+                        color: context.appMuted,
                         fontSize: 10,
                       ),
                     ),
@@ -256,10 +250,10 @@ class _SettingTile extends StatelessWidget {
                   activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
                 )
               else
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 16,
-                  color: AppColors.slate300,
+                  color: context.appMuted,
                 ),
             ],
           ),

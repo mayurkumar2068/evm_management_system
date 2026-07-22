@@ -1,10 +1,32 @@
 import 'package:evm_management_system/localization/locale_keys.dart';
 
 class NominationOptionItem {
-  const NominationOptionItem({required this.id, required this.labelKey});
+  const NominationOptionItem({
+    required this.id,
+    this.labelKey = '',
+    this.label = '',
+    this.meta = const <String, String>{},
+  });
+
+  /// API-sourced option (display [label] as-is, no i18n lookup).
+  factory NominationOptionItem.api({
+    required String id,
+    required String label,
+    Map<String, String> meta = const <String, String>{},
+  }) => NominationOptionItem(id: id, label: label, meta: meta);
 
   final String id;
+
+  /// EasyLocalization key for static/hardcoded options.
   final String labelKey;
+
+  /// Raw display label from API (preferred when non-empty).
+  final String label;
+
+  /// Optional extra fields (e.g. typeId, wardNo).
+  final Map<String, String> meta;
+
+  bool get isApiLabel => label.isNotEmpty;
 }
 
 enum NominationElectionType { urban, panchayat }
@@ -68,6 +90,10 @@ class NominationFlowArgs {
     this.applicationNumber,
     this.submittedAt,
     this.resumeDraft = false,
+    this.urbanElectionId,
+    this.urbanElectionName,
+    this.urbanPostId,
+    this.urbanPostName,
   });
 
   final NominationElectionType electionType;
@@ -75,6 +101,21 @@ class NominationFlowArgs {
   final String? applicationNumber;
   final DateTime? submittedAt;
   final bool resumeDraft;
+
+  /// OLINAPI election id when urban masters are loaded from API.
+  final int? urbanElectionId;
+  final String? urbanElectionName;
+
+  /// OLINAPI post id when urban masters are loaded from API.
+  final int? urbanPostId;
+  final String? urbanPostName;
+
+  bool get usesUrbanMasterApi =>
+      electionType == NominationElectionType.urban &&
+      urbanElectionId != null &&
+      urbanElectionId! > 0 &&
+      urbanPostId != null &&
+      urbanPostId! > 0;
 }
 
 extension NominationElectionTypeKey on NominationElectionType {

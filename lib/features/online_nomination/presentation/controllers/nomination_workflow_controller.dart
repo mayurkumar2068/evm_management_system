@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
 import 'package:evm_management_system/features/online_nomination/data/models/nomination_draft.dart';
 import 'package:evm_management_system/features/online_nomination/data/repositories/nomination_draft_repository.dart';
+import 'package:evm_management_system/features/online_nomination/data/repositories/urban_nomination_master_repository.dart';
 import 'package:evm_management_system/features/online_nomination/presentation/models/nomination_form_state.dart';
 import 'package:evm_management_system/features/online_nomination/presentation/models/nomination_models.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:image_picker/image_picker.dart';
 
 class NominationWorkflowController extends GetxController {
@@ -14,18 +17,25 @@ class NominationWorkflowController extends GetxController {
     required this.args,
     AppImagePickerService? imagePickerService,
     NominationDraftRepository? draftRepository,
+    UrbanNominationMasterRepository? urbanMasterRepository,
   }) : _imagePickerService = imagePickerService ?? AppImagePickerService(),
        _draftRepository =
-           draftRepository ?? Get.find<NominationDraftRepository>();
+           draftRepository ?? Get.find<NominationDraftRepository>(),
+       _urbanMasters =
+           urbanMasterRepository ?? AppServices.urbanNominationMasters;
 
   final NominationFlowArgs args;
   final AppImagePickerService _imagePickerService;
   final NominationDraftRepository _draftRepository;
+  final UrbanNominationMasterRepository _urbanMasters;
 
   Timer? _draftSaveTimer;
   Map<String, String>? _pendingDraftFields;
+  int _urbanLoadToken = 0;
 
   final RxInt currentStep = 0.obs;
+  final RxBool mastersLoading = false.obs;
+  final RxnString mastersError = RxnString();
 
   final RxnString selectedDistrictId = RxnString();
   final RxnString selectedUrbanBodyTypeId = RxnString();
@@ -35,6 +45,7 @@ class NominationWorkflowController extends GetxController {
   final RxnString selectedWardId = RxnString();
   final RxnString selectedGenderId = RxnString();
   final RxnString selectedCategoryId = RxnString();
+  final RxnInt selectedUrbanBodyTypeIdMeta = RxnInt();
 
   final RxList<NominationOptionItem> districtOptions =
       <NominationOptionItem>[].obs;
@@ -461,11 +472,21 @@ class NominationWorkflowController extends GetxController {
         ],
       };
 
-  bool get showUrbanBodyType => args.postType.requiresUrbanBodyType;
-  bool get showUrbanBodyName => args.postType.requiresUrbanBodyName;
+  bool get useUrbanApi => args.usesUrbanMasterApi;
+
+  bool get showUrbanBodyType =>
+      !useUrbanApi && args.postType.requiresUrbanBodyType;
+
+  /// API urban flow always needs urban body after district.
+  bool get showUrbanBodyName =>
+      useUrbanApi || args.postType.requiresUrbanBodyName;
+
   bool get showJanpadPanchayat => args.postType.requiresJanpadPanchayat;
   bool get showGramPanchayat => args.postType.requiresGramPanchayat;
-  bool get showWard => args.postType.requiresWard;
+
+  bool get showWard =>
+      useUrbanApi ? args.postType.requiresWard : args.postType.requiresWard;
+
   String get municipalityFieldLabelKey =>
       args.postType.municipalityFieldLabelKey;
 
@@ -553,6 +574,17 @@ class NominationWorkflowController extends GetxController {
     required String? gramPanchayatId,
     required String? wardId,
   }) {
+    if (useUrbanApi) {
+      unawaited(
+        _restoreUrbanApiSelections(
+          districtId: districtId,
+          municipalityId: municipalityId,
+          wardId: wardId,
+        ),
+      );
+      return;
+    }
+
     districtOptions.assignAll(_districts);
     selectedDistrictId.value = districtId;
 
@@ -612,14 +644,129 @@ class NominationWorkflowController extends GetxController {
     }
   }
 
+  Future<void> _restoreUrbanApiSelections({
+    required String? districtId,
+    required String? municipalityId,
+    required String? wardId,
+  }) async {
+    await _loadUrbanDistricts();
+    selectedDistrictId.value = districtId;
+    if (districtId == null || districtId.isEmpty) return;
+    await _loadUrbanBodies(districtId);
+    selectedMunicipalityId.value = municipalityId;
+    if (municipalityId != null) {
+      for (final NominationOptionItem o in municipalityOptions) {
+        if (o.id == municipalityId) {
+          selectedUrbanBodyTypeIdMeta.value = int.tryParse(
+            o.meta['typeId'] ?? '',
+          );
+          break;
+        }
+      }
+    }
+    if (showWard &&
+        municipalityId != null &&
+        municipalityId.isNotEmpty) {
+      await _loadUrbanWards(dstId: districtId, ubId: municipalityId);
+      selectedWardId.value = wardId;
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
-    districtOptions.assignAll(_districts);
     selectedGenderId.value = genderOptions.first.id;
     selectedCategoryId.value = categoryOptions.first.id;
     for (final NominationOptionItem doc in requiredDocuments) {
       documentStates[doc.id] = const NominationDocumentUploadState();
+    }
+    if (useUrbanApi) {
+      unawaited(_loadUrbanDistricts());
+    } else {
+      districtOptions.assignAll(_districts);
+    }
+  }
+
+  Future<void> _loadUrbanDistricts() async {
+    final int electionId = args.urbanElectionId!;
+    final int postId = args.urbanPostId!;
+    final int token = ++_urbanLoadToken;
+    mastersLoading.value = true;
+    mastersError.value = null;
+    try {
+      final List<NominationOptionItem> rows = await _urbanMasters.fetchDistricts(
+        electionId: electionId,
+        postId: postId,
+      );
+      if (token != _urbanLoadToken || isClosed) return;
+      districtOptions.assignAll(rows);
+    } catch (e) {
+      if (token != _urbanLoadToken || isClosed) return;
+      mastersError.value = e.toString();
+      districtOptions.clear();
+    } finally {
+      if (token == _urbanLoadToken && !isClosed) {
+        mastersLoading.value = false;
+      }
+    }
+  }
+
+  Future<void> _loadUrbanBodies(String dstId) async {
+    final int postId = args.urbanPostId!;
+    final int token = ++_urbanLoadToken;
+    mastersLoading.value = true;
+    mastersError.value = null;
+    municipalityOptions.clear();
+    wardOptions.clear();
+    selectedMunicipalityId.value = null;
+    selectedWardId.value = null;
+    selectedUrbanBodyTypeIdMeta.value = null;
+    try {
+      final List<NominationOptionItem> rows = await _urbanMasters
+          .fetchUrbanBodyOptions(
+            postId: postId,
+            dstId: dstId,
+            postType: args.postType,
+          );
+      if (token != _urbanLoadToken || isClosed) return;
+      municipalityOptions.assignAll(rows);
+    } catch (e) {
+      if (token != _urbanLoadToken || isClosed) return;
+      mastersError.value = e.toString();
+      municipalityOptions.clear();
+    } finally {
+      if (token == _urbanLoadToken && !isClosed) {
+        mastersLoading.value = false;
+      }
+    }
+  }
+
+  Future<void> _loadUrbanWards({
+    required String dstId,
+    required String ubId,
+  }) async {
+    final int postId = args.urbanPostId!;
+    final int token = ++_urbanLoadToken;
+    mastersLoading.value = true;
+    mastersError.value = null;
+    wardOptions.clear();
+    selectedWardId.value = null;
+    try {
+      final List<NominationOptionItem> rows = await _urbanMasters.fetchWards(
+        postId: postId,
+        dstId: dstId,
+        ubId: ubId,
+      );
+      if (token != _urbanLoadToken || isClosed) return;
+      wardOptions.assignAll(rows);
+    } catch (e) {
+      if (token != _urbanLoadToken || isClosed) return;
+      mastersError.value = e.toString();
+      wardOptions.clear();
+    } finally {
+      if (token == _urbanLoadToken && !isClosed) {
+        mastersLoading.value = false;
+      }
     }
   }
 
@@ -630,10 +777,19 @@ class NominationWorkflowController extends GetxController {
     selectedJanpadPanchayatId.value = null;
     selectedGramPanchayatId.value = null;
     selectedWardId.value = null;
+    selectedUrbanBodyTypeIdMeta.value = null;
     municipalityOptions.clear();
     janpadPanchayatOptions.clear();
     gramPanchayatOptions.clear();
     wardOptions.clear();
+
+    if (useUrbanApi) {
+      urbanBodyTypeOptions.clear();
+      if (districtId != null && districtId.isNotEmpty) {
+        unawaited(_loadUrbanBodies(districtId));
+      }
+      return;
+    }
 
     if (showUrbanBodyType) {
       urbanBodyTypeOptions.assignAll(_urbanBodyTypes);
@@ -661,6 +817,8 @@ class NominationWorkflowController extends GetxController {
     municipalityOptions.clear();
     wardOptions.clear();
 
+    if (useUrbanApi) return;
+
     if (showUrbanBodyName) {
       municipalityOptions.assignAll(
         _municipalityOptionsFor(
@@ -684,6 +842,31 @@ class NominationWorkflowController extends GetxController {
 
   void onMunicipalityChanged(String? municipalityId) {
     selectedMunicipalityId.value = municipalityId;
+    selectedWardId.value = null;
+    wardOptions.clear();
+    selectedUrbanBodyTypeIdMeta.value = null;
+
+    if (municipalityId != null) {
+      for (final NominationOptionItem o in municipalityOptions) {
+        if (o.id == municipalityId) {
+          final String? typeRaw = o.meta['typeId'];
+          selectedUrbanBodyTypeIdMeta.value = int.tryParse(typeRaw ?? '');
+          break;
+        }
+      }
+    }
+
+    if (useUrbanApi &&
+        showWard &&
+        municipalityId != null &&
+        selectedDistrictId.value != null) {
+      unawaited(
+        _loadUrbanWards(
+          dstId: selectedDistrictId.value!,
+          ubId: municipalityId,
+        ),
+      );
+    }
   }
 
   void onJanpadPanchayatChanged(String? janpadPanchayatId) {
@@ -738,8 +921,19 @@ class NominationWorkflowController extends GetxController {
     if (showGramPanchayat && selectedGramPanchayatId.value == null) {
       return false;
     }
-    if (showWard && selectedWardId.value == null) {
-      return false;
+    if (showWard) {
+      // API may return empty ward list for some posts — only require when options exist
+      // or when post traditionally requires a ward.
+      if (useUrbanApi) {
+        if (wardOptions.isNotEmpty && selectedWardId.value == null) {
+          return false;
+        }
+        if (args.postType.requiresWard && selectedWardId.value == null) {
+          return false;
+        }
+      } else if (selectedWardId.value == null) {
+        return false;
+      }
     }
     return true;
   }
@@ -902,16 +1096,34 @@ class NominationWorkflowController extends GetxController {
       postType: args.postType,
       applicationNumber: applicationNumber.value,
       submittedAt: submittedAt.value,
+      urbanElectionId: args.urbanElectionId,
+      urbanElectionName: args.urbanElectionName,
+      urbanPostId: args.urbanPostId,
+      urbanPostName: args.urbanPostName,
     );
   }
 
-  String labelKeyFor(String? id, List<NominationOptionItem> options) {
+  String displayLabelFor(String? id, List<NominationOptionItem> options) {
     if (id == null) return '-';
-    final Iterable<NominationOptionItem> matched = options.where(
-      (NominationOptionItem option) => option.id == id,
-    );
-    if (matched.isEmpty) return '-';
-    return matched.first.labelKey;
+    for (final NominationOptionItem option in options) {
+      if (option.id != id) continue;
+      if (option.isApiLabel) return option.label;
+      if (option.labelKey.isEmpty) return option.id;
+      return option.labelKey.tr();
+    }
+    return '-';
+  }
+
+  String get postDisplayLabel {
+    final String? apiName = args.urbanPostName?.trim();
+    if (apiName != null && apiName.isNotEmpty) return apiName;
+    return args.postType.labelKey.tr();
+  }
+
+  String get electionDisplayLabel {
+    final String? apiName = args.urbanElectionName?.trim();
+    if (apiName != null && apiName.isNotEmpty) return apiName;
+    return args.electionType.labelKey.tr();
   }
 
   static const List<NominationStepItem> workflowSteps = <NominationStepItem>[

@@ -119,7 +119,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   Widget build(BuildContext context) {
     final double top = MediaQuery.of(context).padding.top;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.appBackground,
       body: Stack(
         children: <Widget>[
           const _SoftBackdrop(),
@@ -135,9 +135,11 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                     child: IconButton(
                       onPressed: _busy ? null : () => Get.back<void>(),
                       icon: const Icon(Icons.arrow_back_rounded),
-                      color: AppColors.textPrimary,
+                      color: context.appOnSurface,
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.72),
+                        backgroundColor: context.appSurface.withValues(
+                          alpha: 0.9,
+                        ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.brMd,
                         ),
@@ -161,12 +163,14 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                   Container(
                     padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.appSurface,
                       borderRadius: AppRadius.brXl,
-                      border: Border.all(color: AppColors.outline),
+                      border: Border.all(color: context.appOutline),
                       boxShadow: <BoxShadow>[
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.08),
+                          color: AppColors.primary.withValues(
+                            alpha: context.isAppDark ? 0.18 : 0.08,
+                          ),
                           blurRadius: 28,
                           offset: const Offset(0, 12),
                         ),
@@ -646,7 +650,7 @@ class _SoftField extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: focused ? AppColors.primaryDark : AppColors.slate600,
+            color: focused ? AppColors.primaryBright : context.appMutedStrong,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.2,
           ),
@@ -655,10 +659,10 @@ class _SoftField extends StatelessWidget {
         AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
-            color: focused ? Colors.white : AppColors.slate50,
+            color: focused ? context.appSurface : context.appChip,
             borderRadius: AppRadius.brLg,
             border: Border.all(
-              color: focused ? AppColors.primary : AppColors.slate200,
+              color: focused ? AppColors.primary : context.appOutline,
               width: focused ? 1.6 : 1,
             ),
             boxShadow: focused
@@ -684,18 +688,18 @@ class _SoftField extends StatelessWidget {
                     FilteringTextInputFormatter.deny(RegExp(r'\s')),
                   ],
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: context.appOnSurface,
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.slate400,
+                color: context.appMuted,
                 fontWeight: FontWeight.w500,
               ),
               prefixIcon: Icon(
                 icon,
-                color: focused ? AppColors.primary : AppColors.slate400,
+                color: focused ? AppColors.primary : context.appMuted,
                 size: 20,
               ),
               suffixIcon: suffix,

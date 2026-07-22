@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 
-/// Uploads a [WebFormSubmission] to the survey Node.js API.
+/// Uploads a [WebFormSubmission] to the survey / PSSurvey API (POElectionAPI).
 ///
-/// Uses a dedicated Dio instance (not the main EVM [ApiClient]) because the
-/// survey micro-app lives on a separate base URL and auth token.
+/// Uses a dedicated Dio instance (not the main EVM [ApiClient]) because survey
+/// traffic uses [EnvironmentConfig.surveyApiBaseUrl] and its own auth token.
 class SurveyApiUploadService {
   SurveyApiUploadService({
     required String baseUrl,

@@ -1,93 +1,153 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/core/utils/date_time_extensions.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/activity_event.dart';
-import 'package:evm_management_system/shared/models/device_record.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Notifications — alerts derived from inventory state and activity log.
-class NotificationsScreen extends StatelessWidget {
+/// Notifications — survey sync alerts and recent activity.
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  List<WebFormSubmission> _submissions = const <WebFormSubmission>[];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final List<WebFormSubmission> all =
+        await AppServices.webSubmissionRepository.all();
+    if (!mounted) return;
+    setState(() {
+      _submissions = all;
+      _loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return ColoredBox(
+        color: context.appBackground,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Obx(() {
       final List<ActivityEvent> activity = AppServices.activityLog.events;
-      final DeviceStats stats = AppServices.deviceRecords.statsFor(null);
-
       final List<_Notif> items = <_Notif>[];
 
-      if (stats.pending > 0) {
+      int pending = 0;
+      int failed = 0;
+      int syncedToday = 0;
+      final DateTime now = DateTime.now();
+      final DateTime today = DateTime(now.year, now.month, now.day);
+      for (final WebFormSubmission s in _submissions) {
+        switch (s.status) {
+          case WebSubmissionStatus.pending:
+          case WebSubmissionStatus.syncing:
+            pending++;
+          case WebSubmissionStatus.failed:
+            failed++;
+          case WebSubmissionStatus.synced:
+            final DateTime at = s.syncedAt ?? s.createdAt;
+            final DateTime day = DateTime(at.year, at.month, at.day);
+            if (day == today) syncedToday++;
+        }
+      }
+
+      if (pending > 0) {
         items.add(
           _Notif(
             _NotifType.alert,
-            'Sync Required', // These titles could be localized too if they were dynamic, but sticking to existing ones for now
-            '${stats.pending} record${stats.pending == 1 ? '' : 's'} pending — sync to the central server.',
+            LocaleKeys.dashboardStatSurveysPending.tr(),
+            LocaleKeys.dashboardNotifPendingSync.tr(
+              args: <String>['$pending'],
+            ),
             '',
             false,
           ),
         );
       }
-      if (stats.defective > 0) {
+      if (failed > 0) {
         items.add(
           _Notif(
             _NotifType.warning,
-            'Defective Devices',
-            '${stats.defective} device${stats.defective == 1 ? '' : 's'} marked defective need review.',
+            LocaleKeys.statsFailed.tr(),
+            LocaleKeys.dashboardNotifFailed.tr(args: <String>['$failed']),
             '',
             false,
           ),
         );
       }
-      if (stats.inTransit > 0) {
+      if (syncedToday > 0) {
         items.add(
           _Notif(
-            _NotifType.info,
-            'Devices In Transit',
-            '${stats.inTransit} device${stats.inTransit == 1 ? '' : 's'} currently in transit.',
+            _NotifType.success,
+            LocaleKeys.dashboardStatSurveysSynced.tr(),
+            LocaleKeys.dashboardNotifSyncedToday.tr(
+              args: <String>['$syncedToday'],
+            ),
             '',
             false,
           ),
         );
       }
 
-      // Most recent real actions become individual notifications.
       for (final ActivityEvent e in activity.take(8)) {
         items.add(
           _Notif(
-            e.type == ActivityType.registered
+            e.type == ActivityType.sync
                 ? _NotifType.success
                 : _NotifType.info,
             e.title,
             e.deviceId.isEmpty
-                ? 'by ${e.officer}'
-                : '${e.deviceId} • by ${e.officer}',
+                ? e.officer
+                : '${e.deviceId} • ${e.officer}',
             e.timestamp.relativeTime,
             false,
-            deviceId: e.deviceId,
           ),
         );
       }
 
-      final int unread = items.length;
-      return Container(
-        color: AppColors.background,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 110),
-          children: <Widget>[
-            AppTopBar(
-              title: LocaleKeys.notificationsTitle.tr(),
-              onBack: Get.key.currentState?.canPop() == true
-                  ? () => Get.back<void>()
-                  : null,
-            ),
-            if (items.isEmpty)
-              _empty()
-            else ...<Widget>[
+      if (items.isEmpty) {
+        items.add(
+          _Notif(
+            _NotifType.info,
+            LocaleKeys.notificationsTitle.tr(),
+            LocaleKeys.dashboardNotifNone.tr(),
+            '',
+            true,
+          ),
+        );
+      }
+
+      final int unread = items.where((_Notif n) => !n.read).length;
+      return ColoredBox(
+        color: context.appBackground,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 110),
+            children: <Widget>[
+              AppTopBar(
+                title: LocaleKeys.notificationsTitle.tr(),
+                onBack: Get.key.currentState?.canPop() == true
+                    ? () => Get.back<void>()
+                    : null,
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Container(
@@ -119,50 +179,13 @@ class NotificationsScreen extends StatelessWidget {
               for (final _Notif n in items)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: _NotifCard(
-                    notif: n,
-                    onTap: n.deviceId.isEmpty
-                        ? null
-                        : () => Get.toNamed<dynamic>(
-                            AppRoute.deviceDetail.path,
-                            arguments: n.deviceId,
-                          ),
-                  ),
+                  child: _NotifCard(notif: n),
                 ),
             ],
-          ],
+          ),
         ),
       );
     });
-  }
-
-  Widget _empty() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
-      child: Column(
-        children: <Widget>[
-          const Icon(
-            Icons.notifications_none_rounded,
-            size: 48,
-            color: AppColors.slate300,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            LocaleKeys.notificationsEmpty.tr(),
-            style: const TextStyle(
-              color: AppColors.slate500,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            LocaleKeys.notificationsEmptySub.tr(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.slate400, fontSize: 12),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -174,21 +197,18 @@ class _Notif {
     this.title,
     this.body,
     this.time,
-    this.read, {
-    this.deviceId = '',
-  });
+    this.read,
+  );
   final _NotifType type;
   final String title;
   final String body;
   final String time;
   final bool read;
-  final String deviceId;
 }
 
 class _NotifCard extends StatelessWidget {
-  const _NotifCard({required this.notif, this.onTap});
+  const _NotifCard({required this.notif});
   final _Notif notif;
-  final VoidCallback? onTap;
 
   ({IconData icon, Color bg, Color fg}) get _cfg => switch (notif.type) {
     _NotifType.alert => (
@@ -218,7 +238,6 @@ class _NotifCard extends StatelessWidget {
     final ({IconData icon, Color bg, Color fg}) c = _cfg;
     return AppCard(
       padding: EdgeInsets.zero,
-      onTap: onTap,
       border: notif.read
           ? null
           : Border(left: BorderSide(color: c.fg, width: 3)),

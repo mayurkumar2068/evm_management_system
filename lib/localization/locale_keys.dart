@@ -138,6 +138,25 @@ abstract final class LocaleKeys {
   static const String dashboardStatExpenditure = 'dashboard.stat_expenditure';
   static const String dashboardStatInspections = 'dashboard.stat_inspections';
   static const String dashboardStatEms = 'dashboard.stat_ems';
+  static const String dashboardStatSurveysTotal = 'dashboard.stat_surveys_total';
+  static const String dashboardStatSurveysToday = 'dashboard.stat_surveys_today';
+  static const String dashboardStatSurveysSynced =
+      'dashboard.stat_surveys_synced';
+  static const String dashboardStatSurveysPending =
+      'dashboard.stat_surveys_pending';
+  static const String dashboardActEmptyHint = 'dashboard.act_empty_hint';
+  static const String dashboardActSurveySubmitted =
+      'dashboard.act_survey_submitted';
+  static const String dashboardActSurveySynced = 'dashboard.act_survey_synced';
+  static const String dashboardActSurveyFailed = 'dashboard.act_survey_failed';
+  static const String dashboardActSurveyDefault =
+      'dashboard.act_survey_default';
+  static const String dashboardNotifPendingSync =
+      'dashboard.notif_pending_sync';
+  static const String dashboardNotifSyncedToday =
+      'dashboard.notif_synced_today';
+  static const String dashboardNotifFailed = 'dashboard.notif_failed';
+  static const String dashboardNotifNone = 'dashboard.notif_none';
   static const String dashboardAlertTitle = 'dashboard.alert_title';
   static const String dashboardAlertSubtitle = 'dashboard.alert_subtitle';
   static const String dashboardActInspection = 'dashboard.act_inspection';
@@ -197,9 +216,23 @@ abstract final class LocaleKeys {
   static const String profileChangePassword = 'profile.change_password';
   static const String profileLastChanged = 'profile.last_changed';
   static const String profileSignOut = 'profile.sign_out';
+  static const String profileSignOutTitle = 'profile.sign_out_title';
+  static const String profileSignOutMessage = 'profile.sign_out_message';
   static const String profileThisWeek = 'profile.this_week';
   static const String profileRegisteredBy = 'profile.registered_by';
   static const String profileTimeline = 'profile.timeline';
+  static const String profileAccount = 'profile.account';
+  static const String profileServices = 'profile.services';
+  static const String profileDetails = 'profile.details';
+  static const String profileOfficerId = 'profile.officer_id';
+  static const String profileUserId = 'profile.user_id';
+  static const String profileSection = 'profile.section';
+  static const String profileDistrict = 'profile.district';
+  static const String profileBody = 'profile.body';
+  static const String profileEmail = 'profile.email';
+  static const String profilePollingStation = 'profile.polling_station';
+  static const String profileState = 'profile.state';
+  static const String profileActiveSession = 'profile.active_session';
 
   // Audit
   static const String auditTitle = 'audit.title';
@@ -281,9 +314,35 @@ abstract final class LocaleKeys {
   static const String reportsWeeklyTrend = 'reports.weekly_trend';
   static const String reportsLast6Weeks = 'reports.last_6_weeks';
   static const String reportsDeviceStatus = 'reports.device_status';
+  static const String reportsSurveyStatus = 'reports.survey_status';
+  static const String reportsSurveyList = 'reports.survey_list';
+  static const String reportsRefId = 'reports.ref_id';
+  static const String reportsUrban = 'reports.urban';
+  static const String reportsRural = 'reports.rural';
+  static const String reportsUnknownArea = 'reports.unknown_area';
+  static const String reportsByAreaType = 'reports.by_area_type';
+  static const String reportsDetailTitle = 'reports.detail_title';
+  static const String reportsDetailSub = 'reports.detail_sub';
+  static const String reportsDistrictMeta = 'reports.district_meta';
+  static const String reportsPollingStations = 'reports.polling_stations';
+  static const String reportsSurveyCount = 'reports.survey_count';
   static const String reportsByDistrict = 'reports.by_district';
+  static const String reportsByFormType = 'reports.by_form_type';
   static const String reportsEmpty = 'reports.empty';
   static const String reportsEmptySub = 'reports.empty_sub';
+  static const String reportsMonth = 'reports.month';
+  static const String reportsQuarter = 'reports.quarter';
+  static const String reportsThisPeriod = 'reports.this_period';
+  static const String reportsExportOk = 'reports.export_ok';
+  static const String reportsExportEmpty = 'reports.export_empty';
+  static const String reportsDayMon = 'reports.day_mon';
+  static const String reportsDayTue = 'reports.day_tue';
+  static const String reportsDayWed = 'reports.day_wed';
+  static const String reportsDayThu = 'reports.day_thu';
+  static const String reportsDayFri = 'reports.day_fri';
+  static const String reportsDaySat = 'reports.day_sat';
+  static const String reportsDaySun = 'reports.day_sun';
+  static const String reportsWeekLabel = 'reports.week_label';
 
   // Time
   static const String timeJustNow = 'time.just_now';
@@ -356,6 +415,12 @@ abstract final class LocaleKeys {
   static const String nominationWorkflowSubtitle =
       'nomination.workflow_subtitle';
   static const String nominationElectionType = 'nomination.election_type';
+  static const String nominationFieldElection = 'nomination.field_election';
+  static const String nominationSelectElectionHint =
+      'nomination.select_election_hint';
+  static const String nominationNoPostsFound = 'nomination.no_posts_found';
+  static const String nominationMastersLoading = 'nomination.masters_loading';
+  static const String nominationMastersEmpty = 'nomination.masters_empty';
   static const String nominationPost = 'nomination.post';
   static const String nominationAreaSelection =
       'nomination.steps.area_selection';
@@ -567,6 +632,15 @@ abstract final class LocaleKeys {
   static const String nominationActionDownloadPdf =
       'nomination.actions.download_pdf';
   static const String nominationActionStart = 'nomination.actions.start';
+  static const String nominationEntryTitle = 'nomination.entry.title';
+  static const String nominationEntrySubtitle = 'nomination.entry.subtitle';
+  static const String nominationEntryLoginTitle = 'nomination.entry.login_title';
+  static const String nominationEntryLoginSubtitle =
+      'nomination.entry.login_subtitle';
+  static const String nominationEntryRegisterTitle =
+      'nomination.entry.register_title';
+  static const String nominationEntryRegisterSubtitle =
+      'nomination.entry.register_subtitle';
   static const String nominationDraftResumeTitle =
       'nomination.draft.resume_title';
   static const String nominationDraftResumeSubtitle =

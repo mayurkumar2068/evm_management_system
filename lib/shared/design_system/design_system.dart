@@ -4,6 +4,7 @@ library;
 export 'responsive/app_responsive.dart';
 export 'theme/app_theme.dart';
 export 'tokens/app_colors.dart';
+export 'tokens/app_theme_colors.dart';
 export 'tokens/app_gradients.dart';
 export 'tokens/app_icons.dart';
 export 'tokens/app_radius.dart';

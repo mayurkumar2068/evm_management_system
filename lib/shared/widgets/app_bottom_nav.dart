@@ -44,9 +44,9 @@ class AppBottomNav extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.97),
+          color: context.appNavBar,
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: AppColors.slate100),
+          border: Border.all(color: context.appNavBorder),
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: _navAccent.withValues(alpha: 0.14),

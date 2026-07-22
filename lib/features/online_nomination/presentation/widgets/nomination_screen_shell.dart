@@ -11,10 +11,10 @@ class NominationScreenShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.appBackground,
       body: Material(
         type: MaterialType.transparency,
-        color: AppColors.background,
+        color: context.appBackground,
         child: body,
       ),
     );

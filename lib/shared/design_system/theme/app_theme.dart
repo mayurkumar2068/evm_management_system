@@ -29,10 +29,28 @@ abstract final class AppTheme {
       onPrimary: AppColors.onPrimary,
       secondary: AppColors.secondary,
       surface: AppColors.darkSurface,
+      onSurface: AppColors.darkTextPrimary,
       error: AppColors.error,
+      outline: AppColors.darkOutline,
     );
     return _base(scheme).copyWith(
       scaffoldBackgroundColor: AppColors.darkBackground,
+      dividerTheme: const DividerThemeData(
+        color: AppColors.darkOutline,
+        space: 1,
+        thickness: 1,
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: AppColors.darkSurface,
+        elevation: 4,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.brMd,
+          side: BorderSide(color: AppColors.darkOutline),
+        ),
+        textStyle: AppTextStyles.bodyLarge.copyWith(
+          color: AppColors.darkTextPrimary,
+        ),
+      ),
       textTheme: _textTheme(
         AppColors.darkTextPrimary,
         AppColors.darkTextSecondary,

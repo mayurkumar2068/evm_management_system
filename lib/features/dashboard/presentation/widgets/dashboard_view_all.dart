@@ -98,7 +98,10 @@ class _ActivityTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${event.deviceId.isNotEmpty ? "${event.deviceId} • " : ""}${event.officer}',
+                  [
+                    if (event.deviceId.isNotEmpty) event.deviceId,
+                    if (event.officer.isNotEmpty) event.officer,
+                  ].join(' • '),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -149,7 +152,7 @@ class _EmptyHistoryView extends StatelessWidget {
           Icon(Icons.history_rounded, size: 64, color: AppColors.slate200),
           const SizedBox(height: 16),
           Text(
-            'No history found',
+            LocaleKeys.dashboardActEmptyHint.tr(),
             style: AppTextStyles.bodyLarge.copyWith(color: AppColors.slate400),
           ),
         ],

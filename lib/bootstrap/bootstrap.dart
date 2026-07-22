@@ -74,9 +74,10 @@ Future<void> bootstrap(Flavor flavor) async {
       final AppSettingsService settingsService = AppSettingsService(
         secureStorage,
       );
-      // App is Hindi-first for field officers — lock locale to Hindi for now.
-      const Locale appLocale = Locale('hi');
-      await settingsService.saveLocale(appLocale);
+      // Hindi-first default; respect the officer's last chosen language.
+      final Locale appLocale = _resolveStartupLocale(
+        await settingsService.loadLocale(),
+      );
       AppLocaleHolder.code = appLocale.languageCode;
       final ThemeMode savedTheme = await settingsService.loadThemeMode();
 
@@ -94,7 +95,7 @@ Future<void> bootstrap(Flavor flavor) async {
         EasyLocalization(
           supportedLocales: const <Locale>[Locale('hi'), Locale('en')],
           path: 'assets/translations',
-          fallbackLocale: appLocale,
+          fallbackLocale: const Locale('hi'),
           startLocale: appLocale,
           saveLocale: false,
           child: const EvmApp(),
@@ -105,4 +106,10 @@ Future<void> bootstrap(Flavor flavor) async {
       AppLogger.e('Uncaught zone error', error: error, stackTrace: stack);
     },
   );
+}
+
+Locale _resolveStartupLocale(Locale? saved) {
+  final String code = saved?.languageCode ?? 'hi';
+  if (code == 'en' || code == 'hi') return Locale(code);
+  return const Locale('hi');
 }

@@ -51,6 +51,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout() async {
-    await _apiClient.post<void>(ApiEndpoints.logout);
+    await _apiClient.post<void>(
+      ApiEndpoints.logout,
+      options: Options(
+        receiveTimeout: const Duration(seconds: 3),
+        sendTimeout: const Duration(seconds: 3),
+      ),
+    );
   }
 }

@@ -25,7 +25,10 @@ class AppTopBar extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
+              style: AppTextStyles.titleMedium.copyWith(
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ),
           if (trailing != null) trailing!,

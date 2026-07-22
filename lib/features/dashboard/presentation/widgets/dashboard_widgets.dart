@@ -56,8 +56,9 @@ class DashboardHeader extends StatelessWidget {
             height: 40,
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.appSurface,
               borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: context.appOutline),
               boxShadow: const <BoxShadow>[
                 BoxShadow(
                   color: Color(0x14000000),
@@ -79,7 +80,7 @@ class DashboardHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: DashboardBrand.ink,
+                    color: context.appOnSurface,
                     fontWeight: FontWeight.w900,
                     fontSize: 15,
                     height: 1.1,
@@ -90,7 +91,7 @@ class DashboardHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.slate500,
+                    color: context.appMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -174,9 +175,9 @@ class _RoundIcon extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.appSurface,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: AppColors.slate100),
+              border: Border.all(color: context.appOutline),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x08101E17),
@@ -185,7 +186,7 @@ class _RoundIcon extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, size: 22, color: AppColors.slate700),
+            child: Icon(icon, size: 22, color: context.appOnSurface),
           ),
           if (badge > 0)
             Positioned(
@@ -294,7 +295,7 @@ class DashboardWelcomeCard extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: <Widget>[
-                  _Chip(icon: Icons.location_on_outlined, label: name),
+                  _Chip(icon: Icons.location_on_outlined, label: district),
                   const _StatusPill(),
                 ],
               ),
@@ -389,12 +390,18 @@ class DashboardStatStrip extends StatelessWidget {
   const DashboardStatStrip({required this.stats, super.key});
   final List<DashboardStat> stats;
 
-  static BoxDecoration cardDecoration() => BoxDecoration(
-    color: Colors.white,
+  static BoxDecoration cardDecoration(BuildContext context) => BoxDecoration(
+    color: context.appSurface,
     borderRadius: AppRadius.brLg,
-    border: Border.all(color: AppColors.slate100.withValues(alpha: 0.5)),
-    boxShadow: const <BoxShadow>[
-      BoxShadow(color: Color(0x08101E17), blurRadius: 16, offset: Offset(0, 6)),
+    border: Border.all(color: context.appOutline.withValues(alpha: 0.85)),
+    boxShadow: <BoxShadow>[
+      BoxShadow(
+        color: context.isAppDark
+            ? Colors.black.withValues(alpha: 0.35)
+            : const Color(0x08101E17),
+        blurRadius: 16,
+        offset: const Offset(0, 6),
+      ),
     ],
   );
 
@@ -423,7 +430,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       width: 116,
       padding: const EdgeInsets.all(14),
-      decoration: DashboardStatStrip.cardDecoration(),
+      decoration: DashboardStatStrip.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -445,7 +452,7 @@ class _StatCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.titleLarge.copyWith(
-                  color: DashboardBrand.ink,
+                  color: context.appOnSurface,
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                 ),
@@ -455,7 +462,7 @@ class _StatCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.slate500,
+                  color: context.appMuted,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -557,7 +564,7 @@ class _ServiceCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(18),
-        decoration: DashboardStatStrip.cardDecoration().copyWith(
+        decoration: DashboardStatStrip.cardDecoration(context).copyWith(
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -593,7 +600,7 @@ class _ServiceCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.titleSmall.copyWith(
-                    color: DashboardBrand.ink,
+                    color: context.appOnSurface,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                     height: 1.2,
@@ -608,7 +615,7 @@ class _ServiceCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.slate400,
+                          color: context.appMuted,
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -642,11 +649,12 @@ class DashboardActivityList extends StatelessWidget {
     final List<Widget> tiles = events.isEmpty
         ? _fallbackTiles()
         : <Widget>[
-            for (final ActivityEvent e in events.take(3))
+            for (final ActivityEvent e in events.take(5))
               _ActivityTile(
                 icon: _cfg(e.type).icon,
                 color: _cfg(e.type).color,
                 title: e.title,
+                subtitle: e.officer,
                 time: e.timestamp.relativeTime,
               ),
           ];
@@ -657,20 +665,9 @@ class DashboardActivityList extends StatelessWidget {
     _ActivityTile(
       icon: Icons.assignment_turned_in_outlined,
       color: AppColors.primary,
-      title: LocaleKeys.dashboardActInspection.tr(),
-      time: LocaleKeys.timeJustNow.tr(),
-    ),
-    _ActivityTile(
-      icon: Icons.verified_outlined,
-      color: AppColors.green,
-      title: LocaleKeys.dashboardActExpenditure.tr(),
-      time: LocaleKeys.timeHours.tr(args: const <String>['2']),
-    ),
-    _ActivityTile(
-      icon: Icons.location_on_outlined,
-      color: AppColors.primaryBright,
-      title: LocaleKeys.dashboardActBooth.tr(),
-      time: LocaleKeys.timeYesterday.tr(),
+      title: LocaleKeys.dashboardActEmptyHint.tr(),
+      subtitle: '',
+      time: '',
     ),
   ];
 
@@ -705,11 +702,13 @@ class _ActivityTile extends StatelessWidget {
     required this.color,
     required this.title,
     required this.time,
+    this.subtitle = '',
   });
 
   final IconData icon;
   final Color color;
   final String title;
+  final String subtitle;
   final String time;
 
   @override
@@ -717,7 +716,7 @@ class _ActivityTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: DashboardStatStrip.cardDecoration(),
+      decoration: DashboardStatStrip.cardDecoration(context),
       child: Row(
         children: <Widget>[
           Container(
@@ -731,25 +730,44 @@ class _ActivityTile extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.slate700,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: context.appOnSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                if (subtitle.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption.copyWith(
+                      color: context.appMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (time.isNotEmpty) ...<Widget>[
+            const SizedBox(width: 10),
+            Text(
+              time,
+              style: AppTextStyles.caption.copyWith(
+                color: context.appMuted,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            time,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.slate400,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -845,7 +863,7 @@ class DashboardSectionHeader extends StatelessWidget {
             child: Text(
               title,
               style: AppTextStyles.titleMedium.copyWith(
-                color: DashboardBrand.ink,
+                color: context.appOnSurface,
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
               ),

@@ -65,11 +65,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void>> logout() async {
-    try {
-      await _remote.logout();
-    } catch (e, s) {
-      AppLogger.w('Remote logout failed (continuing)', error: e, stackTrace: s);
-    }
+    // Local-only logout — remote revoke is unreliable on this network and must
+    // never block or crash the UI after the user confirms sign-out.
     try {
       await _local.clearSession();
       await _presidingElectionContextStore.clear();

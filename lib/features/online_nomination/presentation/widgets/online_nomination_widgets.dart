@@ -3,7 +3,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-import 'nomination_components.dart';
 import 'nomination_theme.dart';
 
 export 'nomination_components.dart';
@@ -32,7 +31,25 @@ class OnlineNominationHeader extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          const BrandLogo(width: 44),
+          Container(
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: context.appSurface,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: context.appOutline),
+              boxShadow: const <BoxShadow>[
+                BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const BrandLogo(width: 44),
+          ),
+          const SizedBox(width: 12),
           AppSpacing.gapSm,
           Expanded(
             child: Column(
@@ -44,7 +61,7 @@ class OnlineNominationHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.variant(
                     AppTextStyles.caption,
-                    color: AppColors.slate500,
+                    color: context.appMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -52,7 +69,7 @@ class OnlineNominationHeader extends StatelessWidget {
                   LocaleKeys.nominationTitle.tr(),
                   style: AppTextStyles.variant(
                     AppTextStyles.titleMedium,
-                    color: AppColors.slate900,
+                    color: context.appOnSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -87,7 +104,7 @@ class NominationActionIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: context.appSurface,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -95,71 +112,22 @@ class NominationActionIconButton extends StatelessWidget {
         child: Ink(
           width: 40,
           height: 40,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.surface,
+            color: context.appSurface,
+            border: Border.all(color: context.appOutline),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: AppColors.cardShadow,
+                color: context.isAppDark
+                    ? Colors.black.withValues(alpha: 0.35)
+                    : AppColors.cardShadow,
                 blurRadius: 10,
-                offset: Offset(0, 4),
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(icon, color: AppColors.slate700, size: 20),
+          child: Icon(icon, color: context.appOnSurface, size: 20),
         ),
-      ),
-    );
-  }
-}
-
-class NominationBannerCard extends StatelessWidget {
-  const NominationBannerCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      borderRadius: AppRadius.brXl,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              color: AppColors.greenExtraLight,
-              borderRadius: AppRadius.brLg,
-            ),
-            child: const Icon(
-              Icons.verified_user_outlined,
-              size: 36,
-              color: AppColors.greenDark,
-            ),
-          ),
-          AppSpacing.gapMd,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  LocaleKeys.nominationWelcomeTitle.tr(),
-                  style: AppTextStyles.variant(
-                    AppTextStyles.titleMedium,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.slate900,
-                  ),
-                ),
-                AppSpacing.vGapXs,
-                Text(
-                  LocaleKeys.nominationWelcomeSubtitle.tr(),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.slate600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -186,16 +154,19 @@ class NominationLargeOptionCard extends StatelessWidget {
     if (featured) {
       return AppCard(
         onTap: onTap,
+        color: context.appChip,
         borderRadius: AppRadius.brXl,
         padding: const EdgeInsets.all(AppSpacing.xl),
-        border: Border.all(color: AppColors.slate200),
+        border: Border.all(color: context.appOutline),
         child: Column(
           children: <Widget>[
             Container(
               width: double.infinity,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.35),
+                color: AppColors.primary.withValues(
+                  alpha: context.isAppDark ? 0.18 : 0.12,
+                ),
                 borderRadius: AppRadius.brLg,
               ),
               child: Icon(icon, size: 56, color: AppColors.primary),
@@ -214,7 +185,7 @@ class NominationLargeOptionCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTextStyles.variant(
                 AppTextStyles.bodyMedium,
-                color: AppColors.slate600,
+                color: context.appMuted,
               ),
             ),
           ],
@@ -229,7 +200,7 @@ class NominationLargeOptionCard extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
-      border: Border.all(color: AppColors.slate200),
+      border: Border.all(color: context.appOutline),
       child: Row(
         children: <Widget>[
           NominationGradientIcon(icon: icon, size: 44, iconSize: 22),
@@ -242,7 +213,7 @@ class NominationLargeOptionCard extends StatelessWidget {
                   title,
                   style: AppTextStyles.variant(
                     AppTextStyles.titleSmall,
-                    color: AppColors.slate900,
+                    color: context.appOnSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -251,7 +222,7 @@ class NominationLargeOptionCard extends StatelessWidget {
                   subtitle,
                   style: AppTextStyles.variant(
                     AppTextStyles.bodyMedium,
-                    color: AppColors.slate600,
+                    color: context.appMuted,
                   ),
                 ),
               ],
@@ -277,15 +248,21 @@ class NominationInfoNote extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.4),
+        color: AppColors.primary.withValues(
+          alpha: context.isAppDark ? 0.16 : 0.1,
+        ),
         borderRadius: AppRadius.brMd,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+        ),
       ),
       child: Text(
         LocaleKeys.nominationSubtitle.tr(),
         style: AppTextStyles.variant(
           AppTextStyles.bodyMedium,
-          color: AppColors.primaryDeep,
+          color: context.isAppDark
+              ? AppColors.primaryBright
+              : AppColors.primaryDeep,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -314,7 +291,7 @@ class NominationPostSelectionBody extends StatelessWidget {
       children: <Widget>[
         Text(
           subtitle,
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate600),
+          style: AppTextStyles.bodyMedium.copyWith(color: context.appMuted),
         ),
         AppSpacing.vGapLg,
         for (final ({
@@ -338,6 +315,3 @@ class NominationPostSelectionBody extends StatelessWidget {
     );
   }
 }
-
-// Backward-compatible alias.
-typedef NominationWorkflowStepper = NominationHorizontalStepper;

@@ -19,7 +19,22 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget image = Image.asset(asset, width: width, fit: BoxFit.contain);
+    final Widget image = Container(
+      padding: EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Image.asset(
+          asset,
+          width: width,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
     if (!cropCaption) {
       return SizedBox(width: width, child: image);
     }
@@ -28,7 +43,7 @@ class BrandLogo extends StatelessWidget {
       child: ClipRect(
         child: Align(
           alignment: Alignment.topCenter,
-          heightFactor: 0.80,
+          heightFactor: 0.96,
           child: image,
         ),
       ),

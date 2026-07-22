@@ -234,15 +234,29 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
     return Obx(
       () => Column(
         children: <Widget>[
+          if (_controller.mastersLoading.value)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
+          if (_controller.mastersError.value != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                _controller.mastersError.value!,
+                style: AppTextStyles.caption.copyWith(color: AppColors.error),
+              ),
+            ),
           AppDropdown<String>(
             label: LocaleKeys.nominationFieldDistrict.tr(),
             items: _controller.districtOptions.map((e) => e.id).toList(),
             value: _controller.selectedDistrictId.value,
             isRequired: true,
             prefixIcon: Icons.location_city_outlined,
-            labelBuilder: (String value) => _controller
-                .labelKeyFor(value, _controller.districtOptions)
-                .tr(),
+            labelBuilder: (String value) => _controller.displayLabelFor(
+              value,
+              _controller.districtOptions,
+            ),
             onChanged: _dropdownSaver<String?>(_controller.onDistrictChanged),
             enabled: _controller.districtOptions.isNotEmpty,
           ),
@@ -254,9 +268,10 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               value: _controller.selectedUrbanBodyTypeId.value,
               isRequired: true,
               prefixIcon: Icons.account_balance_outlined,
-              labelBuilder: (String value) => _controller
-                  .labelKeyFor(value, _controller.urbanBodyTypeOptions)
-                  .tr(),
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                _controller.urbanBodyTypeOptions,
+              ),
               onChanged: _dropdownSaver<String?>(
                 _controller.onUrbanBodyTypeChanged,
               ),
@@ -271,13 +286,15 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               value: _controller.selectedMunicipalityId.value,
               isRequired: true,
               prefixIcon: Icons.apartment_outlined,
-              labelBuilder: (String value) => _controller
-                  .labelKeyFor(value, _controller.municipalityOptions)
-                  .tr(),
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                _controller.municipalityOptions,
+              ),
               onChanged: _dropdownSaver<String?>(
                 _controller.onMunicipalityChanged,
               ),
-              enabled: _controller.municipalityOptions.isNotEmpty,
+              enabled: _controller.municipalityOptions.isNotEmpty &&
+                  !_controller.mastersLoading.value,
             ),
           ],
           if (_controller.showJanpadPanchayat) ...<Widget>[
@@ -290,9 +307,10 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               value: _controller.selectedJanpadPanchayatId.value,
               isRequired: true,
               prefixIcon: Icons.account_tree_outlined,
-              labelBuilder: (String value) => _controller
-                  .labelKeyFor(value, _controller.janpadPanchayatOptions)
-                  .tr(),
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                _controller.janpadPanchayatOptions,
+              ),
               onChanged: _dropdownSaver<String?>(
                 _controller.onJanpadPanchayatChanged,
               ),
@@ -307,9 +325,10 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               value: _controller.selectedGramPanchayatId.value,
               isRequired: true,
               prefixIcon: Icons.holiday_village_outlined,
-              labelBuilder: (String value) => _controller
-                  .labelKeyFor(value, _controller.gramPanchayatOptions)
-                  .tr(),
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                _controller.gramPanchayatOptions,
+              ),
               onChanged: _dropdownSaver<String?>(
                 _controller.onGramPanchayatChanged,
               ),
@@ -324,10 +343,13 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
               value: _controller.selectedWardId.value,
               isRequired: true,
               prefixIcon: Icons.pin_drop_outlined,
-              labelBuilder: (String value) =>
-                  _controller.labelKeyFor(value, _controller.wardOptions).tr(),
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                _controller.wardOptions,
+              ),
               onChanged: _dropdownSaver<String?>(_controller.onWardChanged),
-              enabled: _controller.wardOptions.isNotEmpty,
+              enabled: _controller.wardOptions.isNotEmpty &&
+                  !_controller.mastersLoading.value,
             ),
           ],
         ],
@@ -384,9 +406,7 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
             value: _controller.selectedGenderId.value,
             isRequired: true,
             prefixIcon: Icons.wc_outlined,
-            labelBuilder: (String value) => _controller
-                .labelKeyFor(value, NominationWorkflowController.genderOptions)
-                .tr(),
+            labelBuilder: (String value) => _controller.displayLabelFor(value, NominationWorkflowController.genderOptions),
             onChanged: _dropdownSaver<String?>(_controller.onGenderChanged),
           ),
         ),
@@ -400,12 +420,10 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
             value: _controller.selectedCategoryId.value,
             isRequired: true,
             prefixIcon: Icons.badge_outlined,
-            labelBuilder: (String value) => _controller
-                .labelKeyFor(
+            labelBuilder: (String value) => _controller.displayLabelFor(
                   value,
                   NominationWorkflowController.categoryOptions,
-                )
-                .tr(),
+                ),
             onChanged: _dropdownSaver<String?>(_controller.onCategoryChanged),
           ),
         ),
@@ -507,70 +525,58 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
         children: <Widget>[
           NominationSummaryRow(
             label: LocaleKeys.nominationElectionType.tr(),
-            value: widget.args.electionType.labelKey.tr(),
+            value: _controller.electionDisplayLabel,
           ),
           NominationSummaryRow(
             label: LocaleKeys.nominationPost.tr(),
-            value: widget.args.postType.labelKey.tr(),
+            value: _controller.postDisplayLabel,
           ),
           NominationSummaryRow(
             label: LocaleKeys.nominationFieldDistrict.tr(),
-            value: _controller
-                .labelKeyFor(
+            value: _controller.displayLabelFor(
                   _controller.selectedDistrictId.value,
                   _controller.districtOptions,
-                )
-                .tr(),
+                ),
           ),
           if (_controller.showUrbanBodyType)
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldBodyType.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedUrbanBodyTypeId.value,
-                    _controller.urbanBodyTypeOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedUrbanBodyTypeId.value,
+                  _controller.urbanBodyTypeOptions,
+                ),
             ),
           if (_controller.showUrbanBodyName)
             NominationSummaryRow(
               label: _controller.municipalityFieldLabelKey.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedMunicipalityId.value,
-                    _controller.municipalityOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedMunicipalityId.value,
+                  _controller.municipalityOptions,
+                ),
             ),
           if (_controller.showJanpadPanchayat)
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldJanpadPanchayat.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedJanpadPanchayatId.value,
-                    _controller.janpadPanchayatOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedJanpadPanchayatId.value,
+                  _controller.janpadPanchayatOptions,
+                ),
             ),
           if (_controller.showGramPanchayat)
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldGramPanchayat.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedGramPanchayatId.value,
-                    _controller.gramPanchayatOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedGramPanchayatId.value,
+                  _controller.gramPanchayatOptions,
+                ),
             ),
           if (_controller.showWard)
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldWard.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedWardId.value,
-                    _controller.wardOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedWardId.value,
+                  _controller.wardOptions,
+                ),
             ),
         ],
       ),
@@ -661,20 +667,18 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
           children: <Widget>[
             NominationSummaryRow(
               label: LocaleKeys.nominationElectionType.tr(),
-              value: widget.args.electionType.labelKey.tr(),
+              value: _controller.electionDisplayLabel,
             ),
             NominationSummaryRow(
               label: LocaleKeys.nominationPost.tr(),
-              value: widget.args.postType.labelKey.tr(),
+              value: _controller.postDisplayLabel,
             ),
             NominationSummaryRow(
               label: LocaleKeys.nominationFieldDistrict.tr(),
-              value: _controller
-                  .labelKeyFor(
-                    _controller.selectedDistrictId.value,
-                    _controller.districtOptions,
-                  )
-                  .tr(),
+              value: _controller.displayLabelFor(
+                  _controller.selectedDistrictId.value,
+                  _controller.districtOptions,
+                ),
             ),
           ],
         ),

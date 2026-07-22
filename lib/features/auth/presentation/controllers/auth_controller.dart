@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/config/app_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
@@ -12,6 +12,7 @@ import 'package:evm_management_system/features/auth/domain/entities/auth_user.da
 import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
 import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
+import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:get/get.dart' hide Trans;
 
 /// GetX controller that owns authentication state and exposes the only
@@ -45,6 +46,15 @@ class AuthController extends GetxController {
         onFailure: (_) => const AuthState.unauthenticated(),
       );
       if (restored.isAuthenticated) {
+        final AuthUser? user = restored.user;
+        // Replace legacy hardcoded guest identity ("राजेश शर्मा").
+        if (user != null &&
+            (user.isGuest ||
+                user.fullName.trim() == 'राजेश शर्मा' ||
+                user.officerId == 'MP-OBS-2026-0001')) {
+          await continueAsGuest();
+          return;
+        }
         authState.value = restored;
         return;
       }
@@ -57,20 +67,19 @@ class AuthController extends GetxController {
     }
   }
 
-  static const AuthUser _guestUser = AuthUser(
+  AuthUser _guestUser() => AuthUser(
     id: 'guest-mp-001',
-    officerId: 'MP-OBS-2026-0001',
-    fullName: 'राजेश शर्मा',
-    role: UserRole.districtOfficer,
-    designation: 'जिला पर्यवेक्षक',
-    stateCode: 'MP',
-    districtCode: 'MP-BHOPAL',
+    officerId: 'GUEST',
+    fullName: LocaleKeys.dashboardGuest.tr(),
+    role: UserRole.unknown,
+    designation: LocaleKeys.dashboardRole.tr(),
   );
 
   /// Enters the app without a login by establishing a local guest session.
   Future<void> continueAsGuest() async {
-    await AuthModule.repository.establishLocalSession(_guestUser);
-    authState.value = const AuthState.authenticated(_guestUser);
+    final AuthUser guest = _guestUser();
+    await AuthModule.repository.establishLocalSession(guest);
+    authState.value = AuthState.authenticated(guest);
   }
 
   static const String _devOfficerId = 'admin';
@@ -121,8 +130,10 @@ class AuthController extends GetxController {
   }
 
   Future<void> signOut() async {
-    // Survey / PO officer session (shared secure storage + token vault).
-    await AppServices.serviceAuth.signOut();
+    // Clear local session / tokens only. Do not await remote logout.
+    try {
+      await AppServices.serviceAuth.signOut();
+    } catch (_) {}
     try {
       await Get.find<WebViewCookieService>().clearSessionCookiesFor(
         AppServices.config,
@@ -130,12 +141,13 @@ class AuthController extends GetxController {
     } catch (_) {
       // WebView cookie manager may be unavailable during teardown.
     }
-    await AuthModule.logout(const NoParams());
+    try {
+      await AuthModule.logout(const NoParams());
+    } catch (_) {}
+
+    // Single navigation via auth worker → AuthNavigationGuard (avoid double
+    // Get.offAllNamed which disposes routes mid-update and crashes).
     authState.value = const AuthState.unauthenticated();
-    AuthNavigationGuard.apply();
-    if (Get.currentRoute != AppRoute.login.path) {
-      await Get.offAllNamed<dynamic>(AppRoute.login.path);
-    }
   }
 
   /// Invoked when the session is invalidated externally (e.g. 401 / timeout).

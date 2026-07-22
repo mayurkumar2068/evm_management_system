@@ -35,7 +35,7 @@ class MpSecEnterpriseCard extends StatelessWidget {
             Text(
               title!,
               style: AppTextStyles.titleMedium.copyWith(
-                color: MpSecTokens.softBlueDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
