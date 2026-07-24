@@ -733,12 +733,16 @@ class NominationSuccessCard extends StatelessWidget {
     required this.applicationNumber,
     required this.onCopy,
     this.submittedAt,
+    this.userId,
+    this.password,
     super.key,
   });
 
   final String applicationNumber;
   final VoidCallback onCopy;
   final DateTime? submittedAt;
+  final String? userId;
+  final String? password;
 
   String get _formattedDate {
     if (submittedAt != null) {
@@ -831,6 +835,68 @@ class NominationSuccessCard extends StatelessWidget {
                 ),
               ),
               AppSpacing.vGapMd,
+              if (userId != null && userId!.trim().isNotEmpty) ...<Widget>[
+                Text(
+                  LocaleKeys.profileUserId.tr(),
+                  style: AppTextStyles.variant(
+                    AppTextStyles.label,
+                    color: AppColors.slate500,
+                  ),
+                ),
+                AppSpacing.vGapSm,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.infoSurface,
+                    borderRadius: AppRadius.brMd,
+                    border: Border.all(color: AppColors.slate200),
+                  ),
+                  child: Text(
+                    userId!,
+                    style: AppTextStyles.variant(
+                      AppTextStyles.titleSmall,
+                      color: AppColors.slate900,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                AppSpacing.vGapMd,
+              ],
+              if (password != null && password!.trim().isNotEmpty) ...<Widget>[
+                Text(
+                  LocaleKeys.authPassword.tr(),
+                  style: AppTextStyles.variant(
+                    AppTextStyles.label,
+                    color: AppColors.slate500,
+                  ),
+                ),
+                AppSpacing.vGapSm,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.infoSurface,
+                    borderRadius: AppRadius.brMd,
+                    border: Border.all(color: AppColors.slate200),
+                  ),
+                  child: Text(
+                    password!,
+                    style: AppTextStyles.variant(
+                      AppTextStyles.titleSmall,
+                      color: AppColors.slate900,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                AppSpacing.vGapMd,
+              ],
               Row(
                 children: <Widget>[
                   Expanded(

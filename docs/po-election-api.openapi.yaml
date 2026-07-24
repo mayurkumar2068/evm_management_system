@@ -176,6 +176,38 @@ paths:
       responses:
         '200': { description: Question list }
 
+  /api/PSSurvey/survey_reports:
+    get:
+      tags: [PSSurvey]
+      summary: Aggregated survey reports (district / PS / urban-rural)
+      description: |
+        Powers the Flutter Reports screen KPIs, charts, and district detail list.
+        Full contract: docs/SURVEY_REPORTS_API.md
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/tokenQuery'
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: districtId
+          in: query
+          schema: { type: string }
+        - name: areaType
+          in: query
+          schema: { type: string, enum: [U, R, urban, rural, all] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Overview + byDistrict + daily/weekly series
+
   /api/PSSurvey/save_survey_answer:
     post:
       tags: [PSSurvey]

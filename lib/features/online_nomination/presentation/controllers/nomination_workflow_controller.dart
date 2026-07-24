@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
 import 'package:evm_management_system/features/online_nomination/data/models/nomination_draft.dart';
+import 'package:evm_management_system/features/online_nomination/data/models/urban_master_dtos.dart';
 import 'package:evm_management_system/features/online_nomination/data/repositories/nomination_draft_repository.dart';
 import 'package:evm_management_system/features/online_nomination/data/repositories/urban_nomination_master_repository.dart';
 import 'package:evm_management_system/features/online_nomination/presentation/models/nomination_form_state.dart';
@@ -65,6 +66,10 @@ class NominationWorkflowController extends GetxController {
   final RxBool declarationAccepted = false.obs;
   final RxnString applicationNumber = RxnString();
   final Rxn<DateTime> submittedAt = Rxn<DateTime>();
+
+  final RxBool isSubmitting = false.obs;
+  final RxnString regUserId = RxnString();
+  final RxnString regPassword = RxnString();
 
   static const List<NominationOptionItem> genderOptions =
       <NominationOptionItem>[
@@ -484,8 +489,9 @@ class NominationWorkflowController extends GetxController {
   bool get showJanpadPanchayat => args.postType.requiresJanpadPanchayat;
   bool get showGramPanchayat => args.postType.requiresGramPanchayat;
 
-  bool get showWard =>
-      useUrbanApi ? args.postType.requiresWard : args.postType.requiresWard;
+  bool get showWard => useUrbanApi
+      ? args.urbanApiRequiresWard
+      : args.postType.requiresWard;
 
   String get municipalityFieldLabelKey =>
       args.postType.municipalityFieldLabelKey;
@@ -726,7 +732,7 @@ class NominationWorkflowController extends GetxController {
           .fetchUrbanBodyOptions(
             postId: postId,
             dstId: dstId,
-            postType: args.postType,
+            electionId: args.urbanElectionId,
           );
       if (token != _urbanLoadToken || isClosed) return;
       municipalityOptions.assignAll(rows);
@@ -923,12 +929,12 @@ class NominationWorkflowController extends GetxController {
     }
     if (showWard) {
       // API may return empty ward list for some posts — only require when options exist
-      // or when post traditionally requires a ward.
+      // or when postId == 3 requires a ward.
       if (useUrbanApi) {
         if (wardOptions.isNotEmpty && selectedWardId.value == null) {
           return false;
         }
-        if (args.postType.requiresWard && selectedWardId.value == null) {
+        if (args.urbanApiRequiresWard && selectedWardId.value == null) {
           return false;
         }
       } else if (selectedWardId.value == null) {
@@ -1090,6 +1096,68 @@ class NominationWorkflowController extends GetxController {
     return 'NOM/$year/IND/$seq';
   }
 
+  Future<bool> submitUrbanRegistration({
+    required String name,
+    required String email,
+    required String mobile,
+  }) async {
+    if (!useUrbanApi) {
+      applicationNumber.value = generateApplicationNumber();
+      submittedAt.value = DateTime.now();
+      return true;
+    }
+
+    final int? eid = args.urbanElectionId;
+    final int? postId = args.urbanPostId;
+    final String? dstId = selectedDistrictId.value;
+    final String? ubId = selectedMunicipalityId.value;
+    final String? wardId = selectedWardId.value;
+
+    if (eid == null ||
+        postId == null ||
+        dstId == null ||
+        dstId.isEmpty ||
+        ubId == null ||
+        ubId.isEmpty) {
+      mastersError.value = 'Please complete area selection.';
+      return false;
+    }
+    if (args.urbanApiRequiresWard && (wardId == null || wardId.isEmpty)) {
+      mastersError.value = 'Please select ward.';
+      return false;
+    }
+
+    isSubmitting.value = true;
+    mastersError.value = null;
+    try {
+      final UrbanRegistrationResponse res = await _urbanMasters.registerUrban(
+        UrbanRegistrationRequest(
+          eid: eid,
+          dstID: dstId,
+          ubid: ubId,
+          name: name.trim(),
+          email: email.trim(),
+          mobileNumber: mobile.trim(),
+          postID: postId,
+          status: 1,
+          wardID: args.urbanApiRequiresWard ? wardId : null,
+        ),
+      );
+
+      applicationNumber.value = res.regID;
+      regUserId.value = res.userId;
+      regPassword.value = res.password;
+      submittedAt.value = DateTime.now();
+      await clearSavedDraft();
+      return true;
+    } catch (e) {
+      mastersError.value = e.toString();
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
   NominationFlowArgs buildSubmissionArgs() {
     return NominationFlowArgs(
       electionType: args.electionType,
@@ -1100,6 +1168,8 @@ class NominationWorkflowController extends GetxController {
       urbanElectionName: args.urbanElectionName,
       urbanPostId: args.urbanPostId,
       urbanPostName: args.urbanPostName,
+      regUserId: regUserId.value,
+      regPassword: regPassword.value,
     );
   }
 
@@ -1126,30 +1196,48 @@ class NominationWorkflowController extends GetxController {
     return args.electionType.labelKey.tr();
   }
 
-  static const List<NominationStepItem> workflowSteps = <NominationStepItem>[
-    NominationStepItem(
-      id: 'area_selection',
-      labelKey: LocaleKeys.nominationAreaSelection,
-    ),
-    NominationStepItem(
-      id: 'candidate_details',
-      labelKey: LocaleKeys.nominationCandidateDetails,
-    ),
-    NominationStepItem(id: 'address', labelKey: LocaleKeys.nominationAddress),
-    NominationStepItem(
-      id: 'summary',
-      labelKey: LocaleKeys.nominationElectionSummary,
-    ),
-    NominationStepItem(
-      id: 'documents',
-      labelKey: LocaleKeys.nominationDocumentUpload,
-    ),
-    NominationStepItem(id: 'preview', labelKey: LocaleKeys.nominationPreview),
-    NominationStepItem(
-      id: 'declaration',
-      labelKey: LocaleKeys.nominationDeclaration,
-    ),
-  ];
+  static const List<NominationStepItem> _urbanRegistrationSteps =
+      <NominationStepItem>[
+        NominationStepItem(
+          id: 'area_selection',
+          labelKey: LocaleKeys.nominationAreaSelection,
+        ),
+        NominationStepItem(
+          id: 'candidate_details',
+          labelKey: LocaleKeys.nominationCandidateDetails,
+        ),
+      ];
+
+  static const List<NominationStepItem> _fullWorkflowSteps =
+      <NominationStepItem>[
+        NominationStepItem(
+          id: 'area_selection',
+          labelKey: LocaleKeys.nominationAreaSelection,
+        ),
+        NominationStepItem(
+          id: 'candidate_details',
+          labelKey: LocaleKeys.nominationCandidateDetails,
+        ),
+        NominationStepItem(id: 'address', labelKey: LocaleKeys.nominationAddress),
+        NominationStepItem(
+          id: 'summary',
+          labelKey: LocaleKeys.nominationElectionSummary,
+        ),
+        NominationStepItem(
+          id: 'documents',
+          labelKey: LocaleKeys.nominationDocumentUpload,
+        ),
+        NominationStepItem(id: 'preview', labelKey: LocaleKeys.nominationPreview),
+        NominationStepItem(
+          id: 'declaration',
+          labelKey: LocaleKeys.nominationDeclaration,
+        ),
+      ];
+
+  /// Urban API registration: area + name/email/mobile only.
+  /// Panchayat / offline: full multi-step form.
+  List<NominationStepItem> get workflowSteps =>
+      useUrbanApi ? _urbanRegistrationSteps : _fullWorkflowSteps;
 
   static const List<NominationOptionItem> requiredDocuments =
       <NominationOptionItem>[

@@ -518,7 +518,7 @@ class DashboardServicesGrid extends StatelessWidget {
           arguments: s.title,
         );
         session = AppServices.serviceAuth.session.value;
-        if (session == null) return; // User cancelled or failed login
+        if (session == null) return; 
       }
     }
 

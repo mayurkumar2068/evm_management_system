@@ -170,6 +170,23 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
 
   bool _validateCurrentStep() {
     final int step = _controller.currentStep.value;
+    if (_controller.useUrbanApi) {
+      switch (step) {
+        case 0:
+          if (!_controller.validateAreaStep()) {
+            AppSnackbar.warning(
+              context,
+              LocaleKeys.nominationValidationDropdown.tr(),
+            );
+            return false;
+          }
+          return true;
+        case 1:
+          return _formKey.currentState?.validate() ?? false;
+        default:
+          return true;
+      }
+    }
     switch (step) {
       case 0:
         if (!_controller.validateAreaStep()) {
@@ -209,20 +226,32 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
     }
   }
 
-  void _onPrimaryAction() {
+  Future<void> _onPrimaryAction() async {
     if (!_validateCurrentStep()) return;
+    if (_controller.isSubmitting.value) return;
 
     final int step = _controller.currentStep.value;
-    final bool isLast =
-        step == NominationWorkflowController.workflowSteps.length - 1;
+    final bool isLast = step == _controller.workflowSteps.length - 1;
     if (isLast) {
-      _controller.applicationNumber.value = _controller
-          .generateApplicationNumber();
-      _controller.submittedAt.value = DateTime.now();
-      unawaited(_controller.clearSavedDraft());
-      Get.toNamed<void>(
-        AppRoute.nominationSuccess.path,
-        arguments: _controller.buildSubmissionArgs(),
+      final bool ok = await _controller.submitUrbanRegistration(
+        name: _fullNameCtrl.text,
+        email: _emailCtrl.text,
+        mobile: _mobileCtrl.text,
+      );
+      if (!ok) {
+        if (!mounted) return;
+        AppSnackbar.warning(
+          context,
+          _controller.mastersError.value ??
+              LocaleKeys.commonSomethingWentWrong.tr(),
+        );
+        return;
+      }
+      unawaited(
+        Get.toNamed<void>(
+          AppRoute.nominationSuccess.path,
+          arguments: _controller.buildSubmissionArgs(),
+        ),
       );
       return;
     }
@@ -358,6 +387,7 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
   }
 
   Widget _buildCandidateDetails() {
+    final bool urbanReg = _controller.useUrbanApi;
     return Column(
       children: <Widget>[
         AppTextField(
@@ -369,63 +399,7 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
           textInputAction: TextInputAction.next,
           textCapitalization: TextCapitalization.words,
           validator: Validators.required,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_parentNameFocus),
-        ),
-        AppSpacing.vGapMd,
-        AppTextField(
-          controller: _parentNameCtrl,
-          focusNode: _parentNameFocus,
-          label: LocaleKeys.nominationFieldParentName.tr(),
-          isRequired: true,
-          prefixIcon: Icons.family_restroom_outlined,
-          textInputAction: TextInputAction.next,
-          textCapitalization: TextCapitalization.words,
-          validator: Validators.required,
-          onSubmitted: (_) => FocusScope.of(context).requestFocus(_dobFocus),
-        ),
-        AppSpacing.vGapMd,
-        AppTextField(
-          controller: _dobCtrl,
-          focusNode: _dobFocus,
-          label: LocaleKeys.nominationFieldDob.tr(),
-          isRequired: true,
-          readOnly: true,
-          prefixIcon: Icons.calendar_today_outlined,
-          suffixIcon: Icons.arrow_drop_down,
-          validator: Validators.ageMin25,
-          onTap: _pickDob,
-        ),
-        AppSpacing.vGapMd,
-        Obx(
-          () => AppDropdown<String>(
-            label: LocaleKeys.nominationFieldGender.tr(),
-            items: NominationWorkflowController.genderOptions
-                .map((e) => e.id)
-                .toList(),
-            value: _controller.selectedGenderId.value,
-            isRequired: true,
-            prefixIcon: Icons.wc_outlined,
-            labelBuilder: (String value) => _controller.displayLabelFor(value, NominationWorkflowController.genderOptions),
-            onChanged: _dropdownSaver<String?>(_controller.onGenderChanged),
-          ),
-        ),
-        AppSpacing.vGapMd,
-        Obx(
-          () => AppDropdown<String>(
-            label: LocaleKeys.nominationFieldCategory.tr(),
-            items: NominationWorkflowController.categoryOptions
-                .map((e) => e.id)
-                .toList(),
-            value: _controller.selectedCategoryId.value,
-            isRequired: true,
-            prefixIcon: Icons.badge_outlined,
-            labelBuilder: (String value) => _controller.displayLabelFor(
-                  value,
-                  NominationWorkflowController.categoryOptions,
-                ),
-            onChanged: _dropdownSaver<String?>(_controller.onCategoryChanged),
-          ),
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_mobileFocus),
         ),
         AppSpacing.vGapMd,
         AppTextField(
@@ -451,36 +425,97 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
           isRequired: true,
           prefixIcon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
+          textInputAction: urbanReg ? TextInputAction.done : TextInputAction.next,
           validator: Validators.email,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_aadhaarFocus),
+          onSubmitted: urbanReg
+              ? null
+              : (_) => FocusScope.of(context).requestFocus(_parentNameFocus),
         ),
-        AppSpacing.vGapMd,
-        AppTextField(
-          controller: _aadhaarCtrl,
-          focusNode: _aadhaarFocus,
-          label: LocaleKeys.nominationFieldAadhaar.tr(),
-          isRequired: true,
-          prefixIcon: Icons.fingerprint_outlined,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          inputFormatters: <TextInputFormatter>[AadhaarInputFormatter()],
-          validator: Validators.aadhaar,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_voterIdFocus),
-        ),
-        AppSpacing.vGapMd,
-        AppTextField(
-          controller: _voterIdCtrl,
-          focusNode: _voterIdFocus,
-          label: LocaleKeys.nominationFieldVoterId.tr(),
-          isRequired: true,
-          prefixIcon: Icons.how_to_vote_outlined,
-          textInputAction: TextInputAction.done,
-          textCapitalization: TextCapitalization.characters,
-          validator: Validators.voterId,
-        ),
+        if (!urbanReg) ...<Widget>[
+          AppSpacing.vGapMd,
+          AppTextField(
+            controller: _parentNameCtrl,
+            focusNode: _parentNameFocus,
+            label: LocaleKeys.nominationFieldParentName.tr(),
+            isRequired: true,
+            prefixIcon: Icons.family_restroom_outlined,
+            textInputAction: TextInputAction.next,
+            textCapitalization: TextCapitalization.words,
+            validator: Validators.required,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_dobFocus),
+          ),
+          AppSpacing.vGapMd,
+          AppTextField(
+            controller: _dobCtrl,
+            focusNode: _dobFocus,
+            label: LocaleKeys.nominationFieldDob.tr(),
+            isRequired: true,
+            readOnly: true,
+            prefixIcon: Icons.calendar_today_outlined,
+            suffixIcon: Icons.arrow_drop_down,
+            validator: Validators.ageMin25,
+            onTap: _pickDob,
+          ),
+          AppSpacing.vGapMd,
+          Obx(
+            () => AppDropdown<String>(
+              label: LocaleKeys.nominationFieldGender.tr(),
+              items: NominationWorkflowController.genderOptions
+                  .map((e) => e.id)
+                  .toList(),
+              value: _controller.selectedGenderId.value,
+              isRequired: true,
+              prefixIcon: Icons.wc_outlined,
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                NominationWorkflowController.genderOptions,
+              ),
+              onChanged: _dropdownSaver<String?>(_controller.onGenderChanged),
+            ),
+          ),
+          AppSpacing.vGapMd,
+          Obx(
+            () => AppDropdown<String>(
+              label: LocaleKeys.nominationFieldCategory.tr(),
+              items: NominationWorkflowController.categoryOptions
+                  .map((e) => e.id)
+                  .toList(),
+              value: _controller.selectedCategoryId.value,
+              isRequired: true,
+              prefixIcon: Icons.badge_outlined,
+              labelBuilder: (String value) => _controller.displayLabelFor(
+                value,
+                NominationWorkflowController.categoryOptions,
+              ),
+              onChanged: _dropdownSaver<String?>(_controller.onCategoryChanged),
+            ),
+          ),
+          AppSpacing.vGapMd,
+          AppTextField(
+            controller: _aadhaarCtrl,
+            focusNode: _aadhaarFocus,
+            label: LocaleKeys.nominationFieldAadhaar.tr(),
+            isRequired: true,
+            prefixIcon: Icons.fingerprint_outlined,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            inputFormatters: <TextInputFormatter>[AadhaarInputFormatter()],
+            validator: Validators.aadhaar,
+            onSubmitted: (_) =>
+                FocusScope.of(context).requestFocus(_voterIdFocus),
+          ),
+          AppSpacing.vGapMd,
+          AppTextField(
+            controller: _voterIdCtrl,
+            focusNode: _voterIdFocus,
+            label: LocaleKeys.nominationFieldVoterId.tr(),
+            isRequired: true,
+            prefixIcon: Icons.how_to_vote_outlined,
+            textInputAction: TextInputAction.done,
+            textCapitalization: TextCapitalization.characters,
+            validator: Validators.voterId,
+          ),
+        ],
       ],
     );
   }
@@ -752,9 +787,10 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
           Expanded(
             child: Obx(() {
               final int step = _controller.currentStep.value;
-              final bool isLast =
-                  step == NominationWorkflowController.workflowSteps.length - 1;
+              final List<NominationStepItem> steps = _controller.workflowSteps;
+              final bool isLast = step == steps.length - 1;
               final bool showSave = step == 1;
+              final bool submitting = _controller.isSubmitting.value;
 
               return Form(
                 key: _formKey,
@@ -762,7 +798,7 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                   padding: AppSpacing.page,
                   children: <Widget>[
                     NominationHorizontalStepper(
-                      steps: NominationWorkflowController.workflowSteps,
+                      steps: steps,
                       currentStep: step,
                     ),
                     AppSpacing.vGapLg,
@@ -772,10 +808,7 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            NominationWorkflowController
-                                .workflowSteps[step]
-                                .labelKey
-                                .tr(),
+                            steps[step].labelKey.tr(),
                             style: AppTextStyles.titleMedium.copyWith(
                               color: AppColors.slate900,
                               fontWeight: FontWeight.w800,
@@ -787,6 +820,11 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                       ),
                     ),
                     AppSpacing.vGapLg,
+                    if (submitting)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: LinearProgressIndicator(minHeight: 2),
+                      ),
                     LayoutBuilder(
                       builder:
                           (BuildContext context, BoxConstraints constraints) {
@@ -797,40 +835,43 @@ class _NominationWorkflowScreenState extends State<NominationWorkflowScreen> {
                                 label: LocaleKeys.nominationPrevious.tr(),
                                 outlined: true,
                                 expanded: !stackButtons,
-                                onPressed: step == 0
+                                onPressed: step == 0 || submitting
                                     ? null
                                     : () {
                                         _controller.previousStep();
                                         _persistDraft();
                                       },
                               ),
-                              if (showSave)
+                              if (showSave && !_controller.useUrbanApi)
                                 NominationGovButton(
                                   label: LocaleKeys.nominationActionSave.tr(),
                                   outlined: true,
                                   expanded: !stackButtons,
-                                  onPressed: () async {
-                                    if (_formKey.currentState?.validate() ??
-                                        false) {
-                                      await _controller.persistDraft(
-                                        _draftTextFields(),
-                                      );
-                                      if (!context.mounted) {
-                                        return;
-                                      }
-                                      AppSnackbar.success(
-                                        context,
-                                        LocaleKeys.commonSaved.tr(),
-                                      );
-                                    }
-                                  },
+                                  onPressed: submitting
+                                      ? null
+                                      : () async {
+                                          if (_formKey.currentState
+                                                  ?.validate() ??
+                                              false) {
+                                            await _controller.persistDraft(
+                                              _draftTextFields(),
+                                            );
+                                            if (!context.mounted) {
+                                              return;
+                                            }
+                                            AppSnackbar.success(
+                                              context,
+                                              LocaleKeys.commonSaved.tr(),
+                                            );
+                                          }
+                                        },
                                 ),
                               NominationGovButton(
                                 label: isLast
                                     ? LocaleKeys.nominationSubmitAction.tr()
                                     : LocaleKeys.nominationNext.tr(),
                                 expanded: !stackButtons,
-                                onPressed: _onPrimaryAction,
+                                onPressed: submitting ? null : _onPrimaryAction,
                               ),
                             ];
 

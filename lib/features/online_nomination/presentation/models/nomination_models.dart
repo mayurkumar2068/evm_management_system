@@ -94,6 +94,8 @@ class NominationFlowArgs {
     this.urbanElectionName,
     this.urbanPostId,
     this.urbanPostName,
+    this.regUserId,
+    this.regPassword,
   });
 
   final NominationElectionType electionType;
@@ -110,12 +112,20 @@ class NominationFlowArgs {
   final int? urbanPostId;
   final String? urbanPostName;
 
+  /// Credentials from Insert_Urban_Reg.
+  final String? regUserId;
+  final String? regPassword;
+
   bool get usesUrbanMasterApi =>
       electionType == NominationElectionType.urban &&
       urbanElectionId != null &&
       urbanElectionId! > 0 &&
       urbanPostId != null &&
       urbanPostId! > 0;
+
+  /// OLIN urban Ward API is required only for postId == 3.
+  /// postId 1 and 2 must skip Ward entirely.
+  bool get urbanApiRequiresWard => urbanPostId == 3;
 }
 
 extension NominationElectionTypeKey on NominationElectionType {

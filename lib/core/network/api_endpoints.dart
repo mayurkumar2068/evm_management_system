@@ -63,4 +63,5 @@ abstract final class OlinEndpoints {
   static const String getUtbanBody = '/Master/GetUtbanBody';
   static const String getUrbanWard = '/Master/GetUrbanWard';
   static const String getUbPresident = '/Master/Get_UB_President';
+  static const String insertUrbanReg = '/Master/Insert_Urban_Reg';
 }

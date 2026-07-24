@@ -46,32 +46,24 @@ class UrbanNominationMasterRepository {
   Future<List<UrbanBodyDto>> fetchUrbanBodies({
     required int postId,
     required String dstId,
-    required NominationPostType postType,
-  }) async {
-    if (postType == NominationPostType.adhyaksh ||
-        postType == NominationPostType.mahapaur) {
-      try {
-        final List<UrbanBodyDto> president = await _remote.getUbPresident(
-          dstId: dstId,
-          postId: '$postId',
-        );
-        if (president.isNotEmpty) return president;
-      } catch (_) {
-        // Fall through to general urban-body list.
-      }
-    }
-    return _remote.getUrbanBodies(postId: postId, dstId: dstId);
+    int? electionId,
+  }) {
+    return _remote.getUrbanBodies(
+      postId: postId,
+      dstId: dstId,
+      electionId: electionId,
+    );
   }
 
   Future<List<NominationOptionItem>> fetchUrbanBodyOptions({
     required int postId,
     required String dstId,
-    required NominationPostType postType,
+    int? electionId,
   }) async {
     final List<UrbanBodyDto> rows = await fetchUrbanBodies(
       postId: postId,
       dstId: dstId,
-      postType: postType,
+      electionId: electionId,
     );
     return rows
         .where((UrbanBodyDto b) => b.ubId.isNotEmpty)
@@ -109,7 +101,18 @@ class UrbanNominationMasterRepository {
         .toList(growable: false);
   }
 
-  /// Maps API post display name → existing cascade rules enum.
+  /// Maps OLIN numeric postId → cascade enum (for draft / non-API compatibility).
+  /// Ward API gating must use [postId] directly, not this enum.
+  static NominationPostType mapPostTypeById(int postId) {
+    return switch (postId) {
+      1 => NominationPostType.mahapaur,
+      2 => NominationPostType.adhyaksh,
+      3 => NominationPostType.parshad,
+      _ => NominationPostType.adhyaksh,
+    };
+  }
+
+  /// Prefer [mapPostTypeById] for urban API flow. Kept for backward compatibility.
   static NominationPostType mapPostType(String postName) {
     final String n = postName.toLowerCase().trim();
     if (n.contains('mayor') ||
@@ -133,7 +136,10 @@ class UrbanNominationMasterRepository {
         n.contains('member')) {
       return NominationPostType.parshad;
     }
-    // Default: body required, ward optional (president/chair style).
     return NominationPostType.adhyaksh;
   }
+
+  Future<UrbanRegistrationResponse> registerUrban(
+    UrbanRegistrationRequest request,
+  ) => _remote.insertUrbanRegistration(request);
 }

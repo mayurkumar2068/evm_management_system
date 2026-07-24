@@ -101,7 +101,7 @@ class _UrbanNominationSelectionScreenState
       AppRoute.nominationWorkflow.path,
       arguments: NominationFlowArgs(
         electionType: NominationElectionType.urban,
-        postType: UrbanNominationMasterRepository.mapPostType(post.postName),
+        postType: UrbanNominationMasterRepository.mapPostTypeById(post.postId),
         urbanElectionId: parsedElectionId,
         urbanElectionName: electionName,
         urbanPostId: post.postId,
@@ -213,7 +213,7 @@ class _UrbanNominationSelectionScreenState
                     (
                       title: post.postName,
                       subtitle: LocaleKeys.nominationApplyOnline.tr(),
-                      icon: _iconForPost(post.postName),
+                      icon: _iconForPostId(post.postId),
                       onTap: () => _openWorkflow(post),
                     ),
                 ],
@@ -225,9 +225,9 @@ class _UrbanNominationSelectionScreenState
     );
   }
 
-  IconData _iconForPost(String postName) {
+  IconData _iconForPostId(int postId) {
     final NominationPostType type =
-        UrbanNominationMasterRepository.mapPostType(postName);
+        UrbanNominationMasterRepository.mapPostTypeById(postId);
     return switch (type) {
       NominationPostType.mahapaur => Icons.apartment_rounded,
       NominationPostType.adhyaksh => Icons.account_balance_rounded,

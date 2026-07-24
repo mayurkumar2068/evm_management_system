@@ -16,6 +16,13 @@ class NominationSuccessScreen extends StatelessWidget {
   String get _applicationNumber =>
       args.applicationNumber ?? 'NOM/2026/IND/000123';
 
+  void _goToLogin() {
+    Get.offAllNamed<void>(
+      AppRoute.nominationTrackStatus.path,
+      arguments: args,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return NominationScreenShell(
@@ -32,8 +39,19 @@ class NominationSuccessScreen extends StatelessWidget {
                 NominationSuccessCard(
                   applicationNumber: _applicationNumber,
                   submittedAt: args.submittedAt,
+                  userId: args.regUserId,
+                  password: args.regPassword,
                   onCopy: () {
-                    Clipboard.setData(ClipboardData(text: _applicationNumber));
+                    final String copyText = <String>[
+                      _applicationNumber,
+                      if (args.regUserId != null &&
+                          args.regUserId!.trim().isNotEmpty)
+                        'User ID: ${args.regUserId}',
+                      if (args.regPassword != null &&
+                          args.regPassword!.trim().isNotEmpty)
+                        'Password: ${args.regPassword}',
+                    ].join('\n');
+                    Clipboard.setData(ClipboardData(text: copyText));
                     AppSnackbar.success(
                       context,
                       LocaleKeys.nominationCopiedId.tr(),
@@ -41,39 +59,17 @@ class NominationSuccessScreen extends StatelessWidget {
                   },
                 ),
                 AppSpacing.vGapLg,
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: NominationGovButton(
-                        label: LocaleKeys.nominationActionDownloadPdf.tr(),
-                        outlined: true,
-                        expanded: false,
-                        icon: Icons.picture_as_pdf_outlined,
-                        onPressed: () => Get.toNamed<void>(
-                          AppRoute.nominationReceipt.path,
-                          arguments: args,
-                        ),
-                      ),
-                    ),
-                    AppSpacing.gapSm,
-                    Expanded(
-                      child: NominationGovButton(
-                        label: LocaleKeys.nominationBackHome.tr(),
-                        expanded: false,
-                        onPressed: () =>
-                            Get.offAllNamed<void>(AppRoute.dashboard.path),
-                      ),
-                    ),
-                  ],
+                NominationGovButton(
+                  label: LocaleKeys.nominationEntryLoginTitle.tr(),
+                  icon: Icons.login_rounded,
+                  onPressed: _goToLogin,
                 ),
                 AppSpacing.vGapSm,
                 NominationGovButton(
-                  label: LocaleKeys.nominationTrackStatusCta.tr(),
+                  label: LocaleKeys.nominationBackHome.tr(),
                   outlined: true,
-                  onPressed: () => Get.toNamed<void>(
-                    AppRoute.nominationTrackStatus.path,
-                    arguments: args,
-                  ),
+                  onPressed: () =>
+                      Get.offAllNamed<void>(AppRoute.dashboard.path),
                 ),
               ],
             ),
