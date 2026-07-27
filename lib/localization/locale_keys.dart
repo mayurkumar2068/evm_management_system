@@ -74,6 +74,35 @@ abstract final class LocaleKeys {
   static const String authTrustNic = 'auth.trust.nic';
   static const String authTrustGovt = 'auth.trust.govt';
   static const String authTrustEncrypted = 'auth.trust.encrypted';
+  static const String authGatewayWelcome = 'auth.gateway_welcome';
+  static const String authGatewaySubtitle = 'auth.gateway_subtitle';
+  static const String authGatewayDashboardSub = 'auth.gateway_dashboard_sub';
+  static const String authGatewayReportsSub = 'auth.gateway_reports_sub';
+  static const String authGatewayProfileSub = 'auth.gateway_profile_sub';
+  static const String authGatewayInventorySub = 'auth.gateway_inventory_sub';
+
+  // Service auth
+  static const String serviceAuthTitle = 'service_auth.title';
+  static const String serviceAuthSubtitleForService =
+      'service_auth.subtitle_for_service';
+  static const String serviceAuthSubtitleDefault =
+      'service_auth.subtitle_default';
+  static const String serviceAuthUserId = 'service_auth.user_id';
+  static const String serviceAuthUsername = 'service_auth.username';
+  static const String serviceAuthUserIdHint = 'service_auth.user_id_hint';
+  static const String serviceAuthUsernameHint = 'service_auth.username_hint';
+  static const String serviceAuthPassword = 'service_auth.password';
+  static const String serviceAuthPasswordHint = 'service_auth.password_hint';
+  static const String serviceAuthUserIdRequired =
+      'service_auth.user_id_required';
+  static const String serviceAuthUsernameRequired =
+      'service_auth.username_required';
+  static const String serviceAuthPasswordRequired =
+      'service_auth.password_required';
+  static const String serviceAuthHintStrip = 'service_auth.hint_strip';
+  static const String serviceAuthSignInButton = 'service_auth.sign_in_button';
+  static const String serviceAuthSecureBadge = 'service_auth.secure_badge';
+  static const String serviceAuthGenericError = 'service_auth.generic_error';
 
   // Onboarding
   static const String onboardingSecurityTag = 'onboarding.security.tag';
@@ -87,6 +116,14 @@ abstract final class LocaleKeys {
   static const String onboardingAnalyticsTag = 'onboarding.analytics.tag';
   static const String onboardingAnalyticsTitle = 'onboarding.analytics.title';
   static const String onboardingAnalyticsDesc = 'onboarding.analytics.desc';
+  static const String onboardingLanguageTitle = 'onboarding.language_title';
+  static const String onboardingLanguageSubtitle =
+      'onboarding.language_subtitle';
+  static const String onboardingLanguageContinue =
+      'onboarding.language_continue';
+  static const String onboardingLanguageHindi = 'onboarding.language_hindi';
+  static const String onboardingLanguageEnglish = 'onboarding.language_english';
+  static const String onboardingLanguageSoon = 'onboarding.language_soon';
 
   // Registration
   static const String regControlUnit = 'registration.control_unit';
@@ -133,6 +170,8 @@ abstract final class LocaleKeys {
   static const String dashboardDistrictUnset = 'dashboard.district_unset';
   static const String dashboardStatusActive = 'dashboard.status_active';
   static const String dashboardMainServices = 'dashboard.main_services';
+  static const String dashboardVoterServices = 'dashboard.voter_services';
+  static const String dashboardAboutElections = 'dashboard.about_elections';
   static const String dashboardViewAll = 'dashboard.view_all';
   static const String dashboardStatObservers = 'dashboard.stat_observers';
   static const String dashboardStatExpenditure = 'dashboard.stat_expenditure';
@@ -226,9 +265,14 @@ abstract final class LocaleKeys {
   static const String profileDetails = 'profile.details';
   static const String profileOfficerId = 'profile.officer_id';
   static const String profileUserId = 'profile.user_id';
+  static const String profileUserName = 'profile.user_name';
   static const String profileSection = 'profile.section';
+  static const String profileUrban = 'profile.urban';
+  static const String profileRural = 'profile.rural';
   static const String profileDistrict = 'profile.district';
   static const String profileBody = 'profile.body';
+  static const String profileBodyJanpad = 'profile.body_janpad';
+  static const String profilePresidingOfficer = 'profile.presiding_officer';
   static const String profileEmail = 'profile.email';
   static const String profilePollingStation = 'profile.polling_station';
   static const String profileState = 'profile.state';
@@ -363,6 +407,10 @@ abstract final class LocaleKeys {
       'services.voter_search_engine.title';
   static const String serviceVoterSearchEngineDesc =
       'services.voter_search_engine.desc';
+  static const String serviceVoterRegistrationTitle =
+      'services.voter_registration.title';
+  static const String serviceVoterRegistrationDesc =
+      'services.voter_registration.desc';
   static const String serviceEmsTitle = 'services.ems.title';
   static const String serviceEmsDesc = 'services.ems.desc';
   static const String serviceBoothTitle = 'services.booth.title';
@@ -706,7 +754,9 @@ abstract final class LocaleKeys {
       'presiding.polling_station_number';
   static const String presidingLastUpdate = 'presiding.last_update';
   static const String presidingIncreaseByOne = 'presiding.increase_by_one';
+  static const String presidingDecreaseByOne = 'presiding.decrease_by_one';
   static const String presidingTotalVotes = 'presiding.total_votes';
+  static const String presidingTotalPercent = 'presiding.total_percent';
   static const String presidingTurnoutSharePercent =
       'presiding.turnout_share_percent';
   static const String presidingLivePollNote = 'presiding.live_poll_note';
@@ -725,6 +775,35 @@ abstract final class LocaleKeys {
       'presiding.total_votes_summary';
   static const String presidingSaveFailed = 'presiding.save_failed';
   static const String presidingUpdateFailed = 'presiding.update_failed';
+  static const String presidingBoothPollingStation =
+      'presiding.booth_polling_station';
+  static const String presidingBoothLocationTitle =
+      'presiding.booth_location_title';
+  static const String presidingBoothNoCoords = 'presiding.booth_no_coords';
+  static const String presidingBoothCurrentLocation =
+      'presiding.booth_current_location';
+  static const String presidingBoothNavigate = 'presiding.booth_navigate';
+  static const String presidingBoothOpenMap = 'presiding.booth_open_map';
+  static const String presidingBoothMapError = 'presiding.booth_map_error';
+
+  // WebView
+  static const String webviewLoadFailedTitle = 'webview.load_failed_title';
+  static const String webviewLoadFailedSubtitle =
+      'webview.load_failed_subtitle';
+  static const String webviewErrorNetworkTitle = 'webview.error_network_title';
+  static const String webviewErrorNetworkSub = 'webview.error_network_sub';
+  static const String webviewErrorHttpTitle = 'webview.error_http_title';
+  static const String webviewErrorHttpSub = 'webview.error_http_sub';
+  static const String webviewErrorSslTitle = 'webview.error_ssl_title';
+  static const String webviewErrorSslSub = 'webview.error_ssl_sub';
+  static const String webviewErrorTimeoutTitle = 'webview.error_timeout_title';
+  static const String webviewErrorTimeoutSub = 'webview.error_timeout_sub';
+  static const String webviewErrorDnsTitle = 'webview.error_dns_title';
+  static const String webviewErrorDnsSub = 'webview.error_dns_sub';
+  static const String webviewErrorGenericTitle = 'webview.error_generic_title';
+  static const String webviewErrorGenericSub = 'webview.error_generic_sub';
+  static const String webviewErrorDetailsLabel = 'webview.error_details_label';
+  static const String webviewErrorGoBack = 'webview.error_go_back';
 
   // Offline hub
   static const String offlineHubTitle = 'offline_hub.title';
@@ -756,6 +835,7 @@ abstract final class LocaleKeys {
   static const String offlineHubTipEncrypted = 'offline_hub.tip_encrypted';
   static const String offlineHubTipAutoSync = 'offline_hub.tip_auto_sync';
   static const String offlineHubBanner = 'offline_hub.banner';
+  static const String offlineHubBlockedService = 'offline_hub.blocked_service';
 
   // Menu
   static const String menuDashboard = 'menu.dashboard';

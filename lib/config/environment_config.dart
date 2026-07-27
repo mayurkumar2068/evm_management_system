@@ -15,6 +15,7 @@ class EnvironmentConfig {
     required this.surveyApiBaseUrl,
     required this.surveyWebBaseUrl,
     required this.voterSearchEngineUrl,
+    required this.voterRegistrationUrl,
     required this.candidateExpenditureUrl,
     required this.electionId,
     required this.devPoPsId,
@@ -65,6 +66,8 @@ class EnvironmentConfig {
     final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
     final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
     final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']?.trim();
+    final String? voterRegistrationRaw =
+        dotenv.env['VOTER_REGISTRATION_URL']?.trim();
     final String? candidateExpenditureRaw =
         dotenv.env['CANDIDATE_EXPENDITURE_URL']?.trim();
 
@@ -98,6 +101,10 @@ class EnvironmentConfig {
                   ? poElectionRaw
                   : _defaultPoElectionBaseUrl(apiBaseUrl),
             ),
+      voterRegistrationUrl:
+          (voterRegistrationRaw != null && voterRegistrationRaw.isNotEmpty)
+          ? voterRegistrationRaw
+          : 'https://mpsecerms.mp.gov.in/secforms',
       candidateExpenditureUrl:
           (candidateExpenditureRaw != null &&
               candidateExpenditureRaw.isNotEmpty)
@@ -141,6 +148,9 @@ class EnvironmentConfig {
 
   /// Voter search engine portal opened from the dashboard grid.
   final String voterSearchEngineUrl;
+
+  /// Voter registration portal opened from the dashboard grid.
+  final String voterRegistrationUrl;
 
   /// Candidate expenditure portal opened from the dashboard grid.
   final String candidateExpenditureUrl;

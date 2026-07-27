@@ -37,13 +37,8 @@ class _EvmAppState extends State<EvmApp> {
       _idleTimeout = SessionTimeoutManager(timeout: config.sessionTimeout);
 
       Get.find<ScreenSecurityService>().enableSecureMode();
-      unawaited(_requestRuntimePermissions());
+      unawaited(_runSplashBootstrap());
       unawaited(Get.find<WebViewWarmer>().warm());
-
-      Future<void>.delayed(const Duration(seconds: 3), () {
-        if (!mounted) return;
-        AppServices.auth.restoreSession();
-      });
       AppServices.syncManager.start();
       AppServices.offlineSync.start();
       AppServices.sessionBus.events.listen((SessionEvent event) {
@@ -63,14 +58,44 @@ class _EvmAppState extends State<EvmApp> {
     });
   }
 
-  Future<void> _requestRuntimePermissions() async {
+  Future<void> _runSplashBootstrap() async {
+    // Location prompt as soon as the splash UI is visible.
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    await _requestLocationPermission();
+
+    unawaited(AppServices.auth.restoreSession());
+    await Future<void>.delayed(const Duration(seconds: 5));
+    if (!mounted) return;
+    if (AppServices.auth.authState.value.status == AuthStatus.unknown) {
+      if (AppServices.onboarding.seen) {
+        await AppServices.auth.continueAsGuest();
+      } else {
+        AppServices.auth.authState.value = const AuthState.unauthenticated();
+      }
+    }
+
+    // Camera can follow after the user lands in the app.
+    unawaited(_requestCameraPermission());
+  }
+
+  Future<void> _requestLocationPermission() async {
     try {
-      await <Permission>[
-        Permission.locationWhenInUse,
-        Permission.camera,
-      ].request();
+      final PermissionStatus current = await Permission.locationWhenInUse.status;
+      if (current.isGranted || current.isLimited) return;
+      await Permission.locationWhenInUse.request();
     } on Exception catch (e) {
-      debugPrint('Runtime permission request failed: $e');
+      debugPrint('Location permission request failed: $e');
+    }
+  }
+
+  Future<void> _requestCameraPermission() async {
+    try {
+      final PermissionStatus current = await Permission.camera.status;
+      if (current.isGranted) return;
+      await Permission.camera.request();
+    } on Exception catch (e) {
+      debugPrint('Camera permission request failed: $e');
     }
   }
 

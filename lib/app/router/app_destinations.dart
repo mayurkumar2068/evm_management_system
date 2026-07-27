@@ -1,4 +1,5 @@
 import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/tokens/app_icons.dart';
@@ -56,11 +57,12 @@ abstract final class AppDestinations {
       labelKey: LocaleKeys.menuScanner,
       icon: AppIcons.scanner,
     ),
-    AppDestination(
-      route: AppRoute.reports,
-      labelKey: LocaleKeys.menuReports,
-      icon: AppIcons.reports,
-    ),
+    if (!kHideReports)
+      AppDestination(
+        route: AppRoute.reports,
+        labelKey: LocaleKeys.menuReports,
+        icon: AppIcons.reports,
+      ),
     AppDestination(
       route: AppRoute.notifications,
       labelKey: LocaleKeys.menuNotifications,

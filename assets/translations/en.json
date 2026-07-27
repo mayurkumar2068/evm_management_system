@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "EVM Management System",
+    "name": "MPSeCNet",
     "tagline": "Election Commission of India",
     "full_name": "ELECTION COMMISSION OF INDIA",
     "system": "System",
@@ -64,7 +64,31 @@
       "nic": "NIC Secured",
       "govt": "Govt. Verified",
       "encrypted": "Encrypted"
-    }
+    },
+    "gateway_welcome": "Welcome",
+    "gateway_subtitle": "Choose a service and continue",
+    "gateway_dashboard_sub": "Main services and surveys",
+    "gateway_reports_sub": "Reports and summaries",
+    "gateway_profile_sub": "Account and settings",
+    "gateway_inventory_sub": "EVM inventory"
+  },
+  "service_auth": {
+    "title": "Service Login",
+    "subtitle_for_service": "Sign in to open \"{}\"",
+    "subtitle_default": "Sign in to continue",
+    "user_id": "User ID",
+    "username": "User name",
+    "user_id_hint": "Enter user ID",
+    "username_hint": "Enter user name",
+    "password": "Password",
+    "password_hint": "Enter password",
+    "user_id_required": "Enter User ID.",
+    "username_required": "Enter user name.",
+    "password_required": "Enter the password.",
+    "hint_strip": "Sign in unlocks after you enter your details.",
+    "sign_in_button": "Sign in",
+    "secure_badge": "Secure government service",
+    "generic_error": "Something went wrong. Please try again."
   },
   "onboarding": {
     "security": {
@@ -81,7 +105,13 @@
       "tag": "Analytics",
       "title": "Real-Time Monitoring",
       "desc": "Get instant insights with live dashboards, automated alerts and comprehensive analytics across all districts in real time."
-    }
+    },
+    "language_title": "Choose language",
+    "language_subtitle": "Please select your preferred language",
+    "language_continue": "Continue",
+    "language_hindi": "Hindi",
+    "language_english": "English",
+    "language_soon": "Soon"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -91,19 +121,21 @@
     "pending_sync": "Pending Sync",
     "scanned_today": "Scanned Today",
     "inventory_overview": "Inventory Overview",
-    "recent_activity": "Recent Activity",
+    "recent_activity": "Work History",
     "quick_actions": "Quick Actions",
-    "brand_title": "Madhya Pradesh",
-    "brand_subtitle": "Election Management System",
+    "brand_title": "MP State Election Commission",
+    "brand_subtitle": "Every vote is precious • Every local body matters",
     "greeting": "Namaste, {}",
     "guest": "Guest Officer",
     "role": "Not signed in",
     "district_unset": "No district selected",
     "status_active": "Election Live",
     "main_services": "Main Services",
+    "voter_services": "Voter Services",
+    "about_elections": "About Elections",
     "view_all": "View all →",
     "stat_observers": "Total Observers",
-    "stat_expenditure": "Expenditure Reports",
+    "stat_expenditure": "Expenditure Accounts",
     "stat_inspections": "Booth Survey",
     "stat_ems": "EMS Reports",
     "stat_surveys_total": "Total Surveys",
@@ -111,7 +143,7 @@
     "stat_surveys_synced": "Synced",
     "stat_surveys_pending": "Pending Sync",
     "alert_title": "Secure, Transparent & Fair Elections",
-    "alert_subtitle": "For every citizen of Madhya Pradesh",
+    "alert_subtitle": "For every citizen of the state",
     "act_inspection": "Booth survey submitted",
     "act_expenditure": "Survey synced to server",
     "act_booth": "New survey notification",
@@ -140,24 +172,28 @@
       "desc": "Field observers & duty roster"
     },
     "expenditure": {
-      "title": "Candidate Expenditure",
-      "desc": "Spend reports & limits"
+      "title": "Election Expenditure Accounts",
+      "desc": ""
     },
     "voter": {
       "title": "Voter Information",
       "desc": "Search electoral records"
     },
     "voter_search_engine": {
-      "title": "Voter Search Engine",
-      "desc": "Search MP electoral roll records"
+      "title": "Find Voter",
+      "desc": ""
+    },
+    "voter_registration": {
+      "title": "Claim / Objection Application",
+      "desc": ""
     },
     "ems": {
       "title": "EMS Monitoring",
       "desc": "Live stock & status"
     },
     "booth": {
-      "title": "Booth survey",
-      "desc": "Scan & inspect booths"
+      "title": "Polling Station Survey",
+      "desc": ""
     },
     "presiding": {
       "title": "Presiding Officer",
@@ -279,7 +315,7 @@
       "st": "ST",
       "obc": "OBC",
       "women": "Women",
-      "state_mp": "Madhya Pradesh",
+      "state_mp": "MP State Election",
       "district_bhopal": "Bhopal",
       "district_indore": "Indore",
       "district_sagar": "Sagar",
@@ -517,9 +553,14 @@
     "details": "Officer details",
     "officer_id": "Officer ID",
     "user_id": "User ID",
-    "section": "Section",
+    "user_name": "User name",
+    "section": "Area",
+    "urban": "Urban",
+    "rural": "Rural",
     "district": "District",
-    "body": "Local body",
+    "body": "Urban local body",
+    "body_janpad": "Janpad",
+    "presiding_officer": "Presiding Officer",
     "email": "Email",
     "polling_station": "Polling station",
     "state": "State",
@@ -594,7 +635,7 @@
     "evening": "Good evening"
   },
   "splash": {
-    "title": "Madhya Pradesh Election",
+    "title": "MP State Election",
     "tagline": "Empowered Democracy,\nYour Participation",
     "loading": "Loading..."
   },
@@ -666,11 +707,11 @@
   },
   "presiding": {
     "officer_title": "Presiding Officer",
-    "polling_station": "Polling Station: {} — {}",
+    "polling_station": "Polling station no./name: {} — {}",
     "enter_info": "Enter presiding officer information",
     "default_station": "Primary School Building Agra",
     "section_arrival": "Arrival at polling station",
-    "section_pre_poll": "Pre-polling information",
+    "section_pre_poll": "Pre-poll information",
     "section_during_poll": "Information during polling",
     "section_post_poll": "Post-polling information",
     "male": "Male",
@@ -698,11 +739,13 @@
     "live_poll_title": "Live poll count",
     "live_poll_subtitle": "Real-time turnout information",
     "live_badge": "LIVE",
-    "latest_turnout_status": "Latest turnout status",
+    "latest_turnout_status": "Live voting status",
     "polling_station_number": "Polling station no.: {}",
     "last_update": "Last update",
     "increase_by_one": "+1 increase",
-    "total_votes": "Total votes",
+    "decrease_by_one": "-1 decrease",
+    "total_votes": "Total voting",
+    "total_percent": "Total percentage",
     "turnout_share_percent": "{} share",
     "live_poll_note": "Percentages show each gender's share of current turnout. Please save after every update.",
     "turnout_intro_title": "Enter voter turnout for each time slot",
@@ -713,21 +756,46 @@
     "queue_hint": "Enter the approximate number of people in queue",
     "enter_number": "Enter number",
     "queue_summary": "Queue: {}",
-    "total_votes_summary": "Total votes: {}",
+    "total_votes_summary": "Total voting: {}",
     "save_failed": "Save failed: {}",
     "update_failed": "Update failed: {}",
     "milestones": {
-      "left_material_center": "Left material distribution centre",
+      "left_material_center": "Reached material distribution centre",
       "reached_polling_station": "Reached polling station",
       "material_received": "Election material received",
       "mock_poll": "Mock poll",
       "poll_start": "Poll started",
-      "two_hourly_info": "Two-hourly information",
+      "two_hourly_info": "2-2 hourly information",
       "live_poll_info": "Live polling information",
       "poll_end": "Poll ended",
       "machine_sealed": "Machine sealed",
-      "material_handed_over": "Material handed over in district"
-    }
+      "material_handed_over": "Information submitted at polling station"
+    },
+    "booth_polling_station": "Polling station",
+    "booth_location_title": "Polling station location",
+    "booth_no_coords": "Coordinates not found in login — search via map button",
+    "booth_current_location": "Your current location: {}",
+    "booth_navigate": "Find route to polling station",
+    "booth_open_map": "Open on map",
+    "booth_map_error": "Could not open map — install Google Maps"
+  },
+  "webview": {
+    "load_failed_title": "Page could not load",
+    "load_failed_subtitle": "Couldn't load this page. Check your connection and try again.",
+    "error_network_title": "No internet connection",
+    "error_network_sub": "Check your mobile data or Wi‑Fi, then try again.",
+    "error_http_title": "Server returned an error",
+    "error_http_sub": "The page could not be opened (HTTP {}).",
+    "error_ssl_title": "Secure connection failed",
+    "error_ssl_sub": "Could not verify the server security certificate.",
+    "error_timeout_title": "Connection timed out",
+    "error_timeout_sub": "The server took too long to respond.",
+    "error_dns_title": "Server not found",
+    "error_dns_sub": "Could not reach the server. Check the URL or network.",
+    "error_generic_title": "Unable to load page",
+    "error_generic_sub": "Something went wrong while opening this page.",
+    "error_details_label": "Error details",
+    "error_go_back": "Go back"
   },
   "offline_hub": {
     "title": "Offline",
@@ -755,6 +823,7 @@
     "tip_uninstall": "Do not uninstall the application.",
     "tip_encrypted": "Data is encrypted locally.",
     "tip_auto_sync": "Synchronization will happen automatically.",
-    "banner": "Offline Mode Active"
+    "banner": "Offline Mode Active",
+    "blocked_service": "Could not open \"{}\" — no internet connection."
   }
 }

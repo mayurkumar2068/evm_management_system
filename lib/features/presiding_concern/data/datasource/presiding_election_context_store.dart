@@ -61,6 +61,13 @@ final class PresidingElectionContextStore {
         'polling_station_name': context.pollingStationName,
       if (context.boothLat != null) 'booth_lat': context.boothLat,
       if (context.boothLong != null) 'booth_long': context.boothLong,
+      if (context.maleElectors != null) 'male_electors': context.maleElectors,
+      if (context.femaleElectors != null)
+        'female_electors': context.femaleElectors,
+      if (context.otherElectors != null)
+        'other_electors': context.otherElectors,
+      if (context.totalElectors != null)
+        'total_electors': context.totalElectors,
     };
   }
 
@@ -84,6 +91,18 @@ final class PresidingElectionContextStore {
               ?.toString(),
       boothLat: _parseCoord(json['booth_lat'] ?? json['boothLat']),
       boothLong: _parseCoord(json['booth_long'] ?? json['boothLong']),
+      maleElectors: _parseElectors(
+        json['male_electors'] ?? json['MaleElectors'],
+      ),
+      femaleElectors: _parseElectors(
+        json['female_electors'] ?? json['FemaleElectors'],
+      ),
+      otherElectors: _parseElectors(
+        json['other_electors'] ?? json['OtherElectors'],
+      ),
+      totalElectors: _parseElectors(
+        json['total_electors'] ?? json['TotalElectors'],
+      ),
     );
   }
 
@@ -91,6 +110,13 @@ final class PresidingElectionContextStore {
     if (raw == null) return null;
     if (raw is num) return raw.toDouble();
     return double.tryParse(raw.toString().trim());
+  }
+
+  static int? _parseElectors(Object? raw) {
+    if (raw == null) return null;
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    return int.tryParse(raw.toString().trim());
   }
 
   static int _parseElectionId(Object? raw) {

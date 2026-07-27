@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
@@ -13,23 +14,23 @@ import 'package:flutter/material.dart';
 Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
   final String? code = await AppSelectionSheet.show<String>(
     context,
-    title: 'भाषा चुनें',
-    subtitle: 'कृपया अपनी पसंदीदा भाषा चुनें',
+    title: LocaleKeys.onboardingLanguageTitle.tr(),
+    subtitle: LocaleKeys.onboardingLanguageSubtitle.tr(),
     headerIcon: Icons.language_rounded,
-    confirmLabel: 'जारी रखें',
+    confirmLabel: LocaleKeys.onboardingLanguageContinue.tr(),
     initialValue: 'hi',
     isDismissible: false,
-    options: const <AppSelectionOption<String>>[
+    options: <AppSelectionOption<String>>[
       AppSelectionOption<String>(
         value: 'hi',
-        title: 'हिन्दी',
-        subtitle: 'Hindi',
+        title: LocaleKeys.onboardingLanguageHindi.tr(),
+        subtitle: LocaleKeys.onboardingLanguageHindi.tr(),
         leadingText: 'अ',
       ),
       AppSelectionOption<String>(
         value: 'en',
-        title: 'English',
-        subtitle: 'English',
+        title: LocaleKeys.onboardingLanguageEnglish.tr(),
+        subtitle: LocaleKeys.onboardingLanguageEnglish.tr(),
         leadingText: 'A',
       ),
       AppSelectionOption<String>(
@@ -38,7 +39,7 @@ Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
         subtitle: 'Marathi',
         leadingText: 'म',
         enabled: false,
-        badge: 'Soon',
+        badge: LocaleKeys.onboardingLanguageSoon.tr(),
       ),
       AppSelectionOption<String>(
         value: 'gu',
@@ -46,7 +47,7 @@ Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
         subtitle: 'Gujarati',
         leadingText: 'અ',
         enabled: false,
-        badge: 'Soon',
+        badge: LocaleKeys.onboardingLanguageSoon.tr(),
       ),
       AppSelectionOption<String>(
         value: 'bn',
@@ -54,7 +55,7 @@ Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
         subtitle: 'Bangla',
         leadingText: 'ব',
         enabled: false,
-        badge: 'Soon',
+        badge: LocaleKeys.onboardingLanguageSoon.tr(),
       ),
       AppSelectionOption<String>(
         value: 'ta',
@@ -62,7 +63,7 @@ Future<Locale?> showLanguageSelectionSheet(BuildContext context) async {
         subtitle: 'Tamil',
         leadingText: 'த',
         enabled: false,
-        badge: 'Soon',
+        badge: LocaleKeys.onboardingLanguageSoon.tr(),
       ),
     ],
   );

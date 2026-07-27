@@ -3,3 +3,13 @@
 /// Set [kHideEvmScanning] to `false` to restore inventory + scanner tabs
 /// and profile device stats.
 const bool kHideEvmScanning = true;
+
+/// Hides the dashboard stat strip (total surveys / sync counts).
+const bool kHideDashboardStats = true;
+
+/// Hides the reports screen and all navigation entry points.
+const bool kHideReports = true;
+
+/// Skips green onboarding slides + first-run language bottomsheet.
+/// Splash continues as guest straight to the home/dashboard.
+const bool kSkipOnboarding = true;

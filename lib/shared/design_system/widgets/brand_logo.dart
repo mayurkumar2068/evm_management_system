@@ -1,45 +1,53 @@
 import 'package:flutter/material.dart';
 
-/// The Madhya Pradesh State Election Commission emblem.
-///
-/// Shared so the splash, onboarding and any future branded surface render the
-/// exact same mark. By default the baked-in caption at the bottom of the asset
-/// is cropped so only the sun + tricolor emblem shows (the styled title is
-/// rendered separately by the caller).
 class BrandLogo extends StatelessWidget {
-  const BrandLogo({super.key, this.width = 168, this.cropCaption = true});
+  const BrandLogo({
+    super.key,
+    this.width = 168,
+    this.height = 168,
+    this.cropCaption = true,
+    this.padding = 4,
+    this.borderRadius = 30,
+    this.backgroundColor = Colors.white,
+  });
 
   static const String asset = 'assets/images/mp_election_logo.png';
 
-  /// Rendered width of the emblem.
   final double width;
-
-  /// When true, crops the asset's baked-in "म.प्र. राज्य निर्वाचन आयोग" caption.
   final bool cropCaption;
+  final double height;
+
+  // New customizable parameters
+  final double padding;
+  final double borderRadius;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final Widget image = Container(
-      padding: EdgeInsets.all(4),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(borderRadius),
         child: Image.asset(
           asset,
           width: width,
-          fit: BoxFit.contain,
+          height: height,
+          fit: BoxFit.fitWidth,
         ),
       ),
     );
+
     if (!cropCaption) {
       return SizedBox(width: width, child: image);
     }
+
     return SizedBox(
       width: width,
+      height: height,
       child: ClipRect(
         child: Align(
           alignment: Alignment.topCenter,

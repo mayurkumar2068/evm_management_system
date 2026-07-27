@@ -33,9 +33,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   bool get _isPoLogin =>
       widget.serviceTitle == LocaleKeys.servicePresidingTitle.tr();
 
-  /// App is Hindi-first — keep officer-facing copy in Hindi.
-  String _t(String hi, String en) => hi;
-
   String _localizedAuthMessage(String message) {
     if (message.startsWith('auth.') ||
         message.startsWith('error.') ||
@@ -69,13 +66,15 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     if (userId.isEmpty) {
       setState(
         () => _error = _isPoLogin
-            ? _t('यूज़र आईडी दर्ज करें।', 'Enter User ID.')
-            : _t('यूज़रनेम दर्ज करें।', 'Enter username.'),
+            ? LocaleKeys.serviceAuthUserIdRequired.tr()
+            : LocaleKeys.serviceAuthUsernameRequired.tr(),
       );
       return;
     }
     if (password.isEmpty) {
-      setState(() => _error = _t('पासवर्ड दर्ज करें।', 'Enter the password.'));
+      setState(
+        () => _error = LocaleKeys.serviceAuthPasswordRequired.tr(),
+      );
       return;
     }
 
@@ -110,7 +109,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = _t('कुछ गलत हुआ। पुनः प्रयास करें।', 'Something went wrong.');
+        _error = LocaleKeys.serviceAuthGenericError.tr();
       });
     }
   }
@@ -148,16 +147,9 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                   ),
                   const SizedBox(height: 10),
                   _LoginHero(
-                    title: _t('सेवा लॉगिन', 'Service Login'),
-                    subtitle: widget.serviceTitle != null
-                        ? _t(
-                            '"${widget.serviceTitle}" खोलने के लिए लॉगिन करें',
-                            'Sign in to open "${widget.serviceTitle}"',
-                          )
-                        : _t(
-                            'सेवा तक पहुँचने के लिए लॉगिन करें',
-                            'Sign in to access the service',
-                          ),
+                    title: widget.serviceTitle ??
+                        LocaleKeys.serviceAuthSignInButton.tr(),
+                    subtitle: LocaleKeys.serviceAuthSubtitleDefault.tr(),
                   ),
                   const SizedBox(height: 20),
                   Container(
@@ -183,11 +175,11 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                           controller: _userCtrl,
                           focusNode: _userFocus,
                           label: _isPoLogin
-                              ? _t('यूज़र आईडी', 'User ID')
-                              : _t('यूज़रनेम', 'Username'),
+                              ? LocaleKeys.serviceAuthUserId.tr()
+                              : LocaleKeys.serviceAuthUsername.tr(),
                           hint: _isPoLogin
-                              ? _t('आईडी दर्ज करें', 'Enter user ID')
-                              : _t('यूज़रनेम दर्ज करें', 'Enter username'),
+                              ? LocaleKeys.serviceAuthUserIdHint.tr()
+                              : LocaleKeys.serviceAuthUsernameHint.tr(),
                           icon: Icons.person_outline_rounded,
                           enabled: !_busy,
                           textInputAction: TextInputAction.next,
@@ -197,8 +189,8 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                         _SoftField(
                           controller: _passCtrl,
                           focusNode: _passFocus,
-                          label: _t('पासवर्ड', 'Password'),
-                          hint: _t('पासवर्ड दर्ज करें', 'Enter password'),
+                          label: LocaleKeys.serviceAuthPassword.tr(),
+                          hint: LocaleKeys.serviceAuthPasswordHint.tr(),
                           icon: Icons.lock_outline_rounded,
                           enabled: !_busy,
                           obscure: _obscure,
@@ -222,25 +214,15 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                         ],
                         const SizedBox(height: 16),
                         _HintStrip(
-                          text: _t(
-                            'सही विवरण भरने के बाद लॉगिन सक्रिय होगा।',
-                            'Sign in unlocks after you enter your details.',
-                          ),
+                          text: LocaleKeys.serviceAuthHintStrip.tr(),
                         ),
                         const SizedBox(height: 20),
                         _SubmitButton(
                           busy: _busy,
                           onPressed: _submit,
-                          text: _t('लॉगिन करें', 'Sign in'),
+                          text: LocaleKeys.serviceAuthSignInButton.tr(),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _SecureBadge(
-                    text: _t(
-                      'सुरक्षित सरकारी सेवा',
-                      'Secure government service',
                     ),
                   ),
                 ],
@@ -391,56 +373,7 @@ class _LoginHero extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: <Widget>[
-                    _HeroChip(label: LocaleKeys.authTrustNic.tr()),
-                    _HeroChip(label: LocaleKeys.authTrustGovt.tr()),
-                    _HeroChip(label: LocaleKeys.authTrustEncrypted.tr()),
-                  ],
-                ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeroChip extends StatelessWidget {
-  const _HeroChip({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: AppRadius.brPill,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 9,
             ),
           ),
         ],
@@ -584,33 +517,6 @@ class _SubmitButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SecureBadge extends StatelessWidget {
-  const _SecureBadge({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        const Icon(
-          Icons.verified_user_outlined,
-          size: 15,
-          color: AppColors.greenDark,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.greenDark,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }

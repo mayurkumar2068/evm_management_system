@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'स्वागत है',
+                            LocaleKeys.authGatewayWelcome.tr(),
                             style: AppTextStyles.titleLarge.copyWith(
                               color: context.appOnSurface,
                               fontWeight: FontWeight.w800,
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'सेवा चुनें और आगे बढ़ें',
+                            LocaleKeys.authGatewaySubtitle.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: context.appMuted,
                             ),
@@ -112,25 +112,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: AppIcons.dashboard,
                             color: AppColors.primary,
                             title: LocaleKeys.menuDashboard.tr(),
-                            subtitle: 'मुख्य सेवाएँ और सर्वे',
+                            subtitle: LocaleKeys.authGatewayDashboardSub.tr(),
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.dashboard),
                           ),
-                          const SizedBox(height: 10),
-                          _NavTile(
-                            icon: AppIcons.reports,
-                            color: AppColors.green,
-                            title: LocaleKeys.regReports.tr(),
-                            subtitle: 'रिपोर्ट और सारांश',
-                            enabled: !loading,
-                            onTap: () => _enter(AppRoute.reports),
-                          ),
+                          if (!kHideReports) ...<Widget>[
+                            const SizedBox(height: 10),
+                            _NavTile(
+                              icon: AppIcons.reports,
+                              color: AppColors.green,
+                              title: LocaleKeys.regReports.tr(),
+                              subtitle: LocaleKeys.authGatewayReportsSub.tr(),
+                              enabled: !loading,
+                              onTap: () => _enter(AppRoute.reports),
+                            ),
+                          ],
                           const SizedBox(height: 10),
                           _NavTile(
                             icon: AppIcons.profile,
                             color: AppColors.primaryDark,
                             title: LocaleKeys.profileTitle.tr(),
-                            subtitle: 'खाता और सेटिंग्स',
+                            subtitle: LocaleKeys.authGatewayProfileSub.tr(),
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.profile),
                           ),
@@ -140,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: AppIcons.stockRegister,
                               color: AppColors.teal,
                               title: LocaleKeys.regInventory.tr(),
-                              subtitle: 'ईवीएम सूची',
+                              subtitle: LocaleKeys.authGatewayInventorySub.tr(),
                               enabled: !loading,
                               onTap: () => _enter(AppRoute.masterStockRegister),
                             ),
@@ -434,64 +436,7 @@ class _SoftLoginHero extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: <Widget>[
-                    _TrustBadge(
-                      label: LocaleKeys.authTrustNic.tr(),
-                      color: Colors.white,
-                    ),
-                    _TrustBadge(
-                      label: LocaleKeys.authTrustGovt.tr(),
-                      color: Colors.white,
-                    ),
-                    _TrustBadge(
-                      label: LocaleKeys.authTrustEncrypted.tr(),
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrustBadge extends StatelessWidget {
-  const _TrustBadge({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
-        borderRadius: AppRadius.brPill,
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-              fontSize: 9,
             ),
           ),
         ],

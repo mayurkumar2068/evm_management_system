@@ -113,6 +113,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   ],
 })
 export class AppHeaderComponent {
-  @Input() title = 'मध्य प्रदेश राज्य निर्वाचन आयोग';
+  @Input() title = 'राज्य निर्वाचन आयोग';
   @Input() subtitle = 'मतदान केंद्र चेकलिस्ट';
 }

@@ -138,6 +138,16 @@ class _OfflineBody extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onSync;
 
+  String _blockedServiceHeadline(BuildContext context) {
+    final Object? args = Get.arguments;
+    if (args is String && args.trim().isNotEmpty) {
+      return LocaleKeys.offlineHubBlockedService.tr(
+        args: <String>[args.trim()],
+      );
+    }
+    return LocaleKeys.offlineHubHeadline.tr();
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -153,7 +163,7 @@ class _OfflineBody extends StatelessWidget {
               const Center(child: OfflineIllustration()),
               const SizedBox(height: 24),
               Text(
-                LocaleKeys.offlineHubHeadline.tr(),
+                _blockedServiceHeadline(context),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.w800,

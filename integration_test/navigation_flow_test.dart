@@ -29,7 +29,7 @@ void main() {
     );
 
     await tester.pump();
-    await Future<void>.delayed(const Duration(seconds: 4));
+    await Future<void>.delayed(const Duration(seconds: 6));
     await tester.pumpAndSettle();
 
     expect(

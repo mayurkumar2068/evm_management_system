@@ -404,6 +404,7 @@ final class PresidingConcernRepositoryImpl
   Future<PresidingElectionContext?> _resolveContext(
     PresidingSession session,
   ) async {
+    final PresidingElectionContext? stored = await _contextStore.read();
     if (session.hasElectionContext) {
       return PresidingElectionContext(
         electionId: session.electionId!,
@@ -411,9 +412,16 @@ final class PresidingConcernRepositoryImpl
         areaType: session.areaType!,
         pollingStationCode: session.pollingStationCode,
         pollingStationName: session.pollingStationName,
+        userId: stored?.userId,
+        boothLat: stored?.boothLat,
+        boothLong: stored?.boothLong,
+        maleElectors: stored?.maleElectors,
+        femaleElectors: stored?.femaleElectors,
+        otherElectors: stored?.otherElectors,
+        totalElectors: stored?.totalElectors,
       );
     }
-    return _contextStore.read();
+    return stored;
   }
 
   Future<String?> _resolveUserId(PresidingSession session) async {
@@ -432,28 +440,61 @@ final class PresidingConcernRepositoryImpl
   }
 
   PresidingSession _ensureMilestoneCatalog(PresidingSession session) {
-    final bool hasMaterialReceived = session.milestones.any(
-      (PresidingMilestone m) => m.id == PresidingMilestoneIds.materialReceived,
-    );
-    if (hasMaterialReceived) return session;
+    final List<PresidingMilestone> source = session.milestones;
+    final Map<String, PresidingMilestone> byId = <String, PresidingMilestone>{
+      for (final PresidingMilestone m in source) m.id: m,
+    };
 
-    final List<PresidingMilestone> updated = <PresidingMilestone>[];
-    for (final PresidingMilestone milestone in session.milestones) {
-      updated.add(milestone);
-      if (milestone.id == PresidingMilestoneIds.reachedPollingStation) {
-        updated.add(
-          const PresidingMilestone(
-            id: PresidingMilestoneIds.materialReceived,
-            sectionId: PresidingSectionIds.prePoll,
-            labelKey: PresidingMilestoneLabelKeys.materialReceived,
-            state: PresidingMilestoneState.pending,
-          ),
+    final PresidingMilestone existing =
+        byId[PresidingMilestoneIds.materialReceived] ??
+        const PresidingMilestone(
+          id: PresidingMilestoneIds.materialReceived,
+          sectionId: PresidingSectionIds.arrival,
+          labelKey: PresidingMilestoneLabelKeys.materialReceived,
+          state: PresidingMilestoneState.pending,
         );
+    final PresidingMilestone material = PresidingMilestone(
+      id: existing.id,
+      sectionId: PresidingSectionIds.arrival,
+      labelKey: PresidingMilestoneLabelKeys.materialReceived,
+      state: existing.state,
+      completedAt: existing.completedAt,
+      opensTurnout: existing.opensTurnout,
+      pendingSync: existing.pendingSync,
+    );
+
+    final List<PresidingMilestone> ordered = <PresidingMilestone>[];
+    bool insertedMaterial = false;
+    for (final PresidingMilestone milestone in source) {
+      if (milestone.id == PresidingMilestoneIds.materialReceived) {
+        continue;
+      }
+      if (milestone.id == PresidingMilestoneIds.reachedPollingStation &&
+          !insertedMaterial) {
+        ordered.add(material);
+        insertedMaterial = true;
+      }
+      ordered.add(milestone);
+    }
+    if (!insertedMaterial) {
+      final int leftIndex = ordered.indexWhere(
+        (PresidingMilestone m) =>
+            m.id == PresidingMilestoneIds.leftMaterialCenter,
+      );
+      if (leftIndex >= 0) {
+        ordered.insert(leftIndex + 1, material);
+      } else {
+        ordered.insert(0, material);
       }
     }
-    return updated.length == session.milestones.length
-        ? session
-        : session.copyWith(milestones: updated);
+
+    final bool sameOrder = ordered.length == source.length &&
+        List<int>.generate(ordered.length, (int i) => i).every(
+          (int i) =>
+              ordered[i].id == source[i].id &&
+              ordered[i].sectionId == source[i].sectionId,
+        );
+    return sameOrder ? session : session.copyWith(milestones: ordered);
   }
 
   Future<PresidingConcernRemoteDatasource?> _activeRemote() async {

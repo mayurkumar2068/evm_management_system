@@ -23,14 +23,14 @@ class AppShell extends StatelessWidget {
     AppRoute.dashboard,
     AppRoute.masterStockRegister,
     AppRoute.scanner,
-    AppRoute.reports,
+    if (!kHideReports) AppRoute.reports,
     AppRoute.profile,
   ];
 
   /// Slim tab set while EVM scanning is temporarily hidden.
   static const List<AppRoute> _slimTabRoutes = <AppRoute>[
     AppRoute.dashboard,
-    AppRoute.reports,
+    if (!kHideReports) AppRoute.reports,
     AppRoute.profile,
   ];
 
@@ -73,11 +73,12 @@ class AppShell extends StatelessWidget {
               label: LocaleKeys.menuDashboard.tr(),
               onTap: () => Get.offNamed<dynamic>(AppRoute.dashboard.path),
             ),
-            BottomNavItem(
-              icon: AppIcons.reports,
-              label: LocaleKeys.regReports.tr(),
-              onTap: () => Get.offNamed<dynamic>(AppRoute.reports.path),
-            ),
+            if (!kHideReports)
+              BottomNavItem(
+                icon: AppIcons.reports,
+                label: LocaleKeys.regReports.tr(),
+                onTap: () => Get.offNamed<dynamic>(AppRoute.reports.path),
+              ),
             BottomNavItem(
               icon: AppIcons.profile,
               label: LocaleKeys.profileTitle.tr(),
@@ -102,11 +103,12 @@ class AppShell extends StatelessWidget {
               isCenter: true,
               onTap: () => _scanAndRegister(context),
             ),
-            BottomNavItem(
-              icon: AppIcons.reports,
-              label: LocaleKeys.regReports.tr(),
-              onTap: () => Get.offNamed<dynamic>(AppRoute.reports.path),
-            ),
+            if (!kHideReports)
+              BottomNavItem(
+                icon: AppIcons.reports,
+                label: LocaleKeys.regReports.tr(),
+                onTap: () => Get.offNamed<dynamic>(AppRoute.reports.path),
+              ),
             BottomNavItem(
               icon: AppIcons.profile,
               label: LocaleKeys.profileTitle.tr(),

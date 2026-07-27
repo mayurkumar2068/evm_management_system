@@ -49,6 +49,18 @@ class DashboardController extends GetxController {
     activity: <ActivityEvent>[],
   ).obs;
 
+  final Rx<DashboardCategory> activeCategory =
+      DashboardCategory.voterServices.obs;
+
+  List<DashboardService> get filteredServices => state.value.services
+      .where((DashboardService s) => s.category == activeCategory.value)
+      .toList();
+
+  void setCategory(DashboardCategory category) {
+    if (activeCategory.value == category) return;
+    activeCategory.value = category;
+  }
+
   int _rebuildToken = 0;
   StreamSubscription<int>? _submissionWatch;
 
@@ -83,6 +95,7 @@ class DashboardController extends GetxController {
   Future<void> _rebuildAsync(int token) async {
     final String surveyWebUrl = AppServices.config.surveyWebBaseUrl;
     final String voterSearchUrl = AppServices.config.voterSearchEngineUrl;
+    final String voterRegistrationUrl = AppServices.config.voterRegistrationUrl;
     final String expenditureUrl = AppServices.config.candidateExpenditureUrl;
     final ServiceSession? session = AppServices.serviceAuth.session.value;
 
@@ -192,20 +205,47 @@ class DashboardController extends GetxController {
     final List<DashboardService> services = <DashboardService>[
       DashboardService(
         title: LocaleKeys.serviceVoterSearchEngineTitle.tr(),
-        desc: LocaleKeys.serviceVoterSearchEngineDesc.tr(),
+        desc: '',
         icon: Icons.manage_search_outlined,
         color: AppColors.primary,
         url: voterSearchUrl,
+        category: DashboardCategory.voterServices,
         requiresServiceLogin: false,
         passSessionContext: false,
         openAsExternalPortal: true,
       ),
       DashboardService(
         title: LocaleKeys.serviceBoothTitle.tr(),
-        desc: LocaleKeys.serviceBoothDesc.tr(),
+        desc: '',
         icon: Icons.location_on_outlined,
         color: AppColors.primaryBright,
         url: surveyWebUrl,
+        category: DashboardCategory.voterServices,
+        requiredLoginKind: ServiceLoginKind.survey,
+      ),
+      DashboardService(
+        title: LocaleKeys.serviceExpenditureTitle.tr(),
+        desc: '',
+        icon: Icons.account_balance_wallet_outlined,
+        color: AppColors.saffron,
+        url: expenditureUrl,
+        category: DashboardCategory.voterServices,
+        // Same officer login gate as booth survey; then open ASPX in WebView.
+        requiresServiceLogin: true,
+        passSessionContext: false,
+        openAsExternalPortal: true,
+        requiredLoginKind: ServiceLoginKind.survey,
+      ),
+      DashboardService(
+        title: LocaleKeys.serviceVoterRegistrationTitle.tr(),
+        desc: '',
+        icon: Icons.app_registration_rounded,
+        color: AppColors.teal,
+        url: voterRegistrationUrl,
+        category: DashboardCategory.voterServices,
+        requiresServiceLogin: false,
+        passSessionContext: false,
+        openAsExternalPortal: true,
       ),
       DashboardService(
         title: LocaleKeys.servicePresidingTitle.tr(),
@@ -213,7 +253,10 @@ class DashboardController extends GetxController {
         icon: Icons.how_to_vote_rounded,
         color: MpSecTokens.softBlueDark,
         url: '',
+        category: DashboardCategory.aboutElections,
         routeName: AppRoute.presidingDashboard.path,
+        forceFreshLogin: true,
+        requiredLoginKind: ServiceLoginKind.presiding,
       ),
       DashboardService(
         title: LocaleKeys.serviceOnlineNominationTitle.tr(),
@@ -221,19 +264,9 @@ class DashboardController extends GetxController {
         icon: Icons.how_to_reg_rounded,
         color: AppColors.green,
         url: '',
+        category: DashboardCategory.aboutElections,
         routeName: AppRoute.onlineNominationHome.path,
         requiresServiceLogin: false,
-      ),
-      DashboardService(
-        title: LocaleKeys.serviceExpenditureTitle.tr(),
-        desc: LocaleKeys.serviceExpenditureDesc.tr(),
-        icon: Icons.account_balance_wallet_outlined,
-        color: AppColors.saffron,
-        url: expenditureUrl,
-        // Same officer login gate as booth survey; then open ASPX in WebView.
-        requiresServiceLogin: true,
-        passSessionContext: false,
-        openAsExternalPortal: true,
       ),
     ];
 

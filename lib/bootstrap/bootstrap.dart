@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/app.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/database/json_local_database.dart';
 import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/app/app.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/settings/settings_service.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
@@ -54,13 +55,20 @@ Future<void> bootstrap(Flavor flavor) async {
       await database.init();
 
       final SecureStorageService secureStorage = SecureStorageService();
-      bool onboardingSeen = false;
-      try {
-        onboardingSeen =
-            (await secureStorage.read(SecureStorageKeys.onboardingSeen)) ==
-            'true';
-      } catch (_) {
-        onboardingSeen = false;
+      bool onboardingSeen = kSkipOnboarding;
+      if (!onboardingSeen) {
+        try {
+          onboardingSeen =
+              (await secureStorage.read(SecureStorageKeys.onboardingSeen)) ==
+              'true';
+        } catch (_) {
+          onboardingSeen = false;
+        }
+      } else {
+        // Persist so storage stays consistent if the flag is later turned off.
+        try {
+          await secureStorage.write(SecureStorageKeys.onboardingSeen, 'true');
+        } catch (_) {}
       }
 
       FlutterError.onError = (FlutterErrorDetails details) {

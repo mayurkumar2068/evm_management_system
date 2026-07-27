@@ -1,3 +1,9 @@
+/// Which officer login produced the current [ServiceSession].
+enum ServiceLoginKind {
+  survey,
+  presiding,
+}
+
 /// Session granted by the survey API (`/api/Account/login-survey-pass`) when an officer logs in
 /// to open a government web service. The [token] is forwarded to the WebView as
 /// `?token=` and attached to every Angular API call.
@@ -6,6 +12,7 @@ class ServiceSession {
     required this.token,
     required this.userId,
     required this.name,
+    this.kind = ServiceLoginKind.survey,
     this.section,
     this.ttlHours,
     this.districtId,
@@ -21,6 +28,7 @@ class ServiceSession {
     token: json['token'] as String,
     userId: json['userId'] as String,
     name: json['name'] as String,
+    kind: _kindFromJson(json['kind']),
     section: json['section'] as String?,
     ttlHours: json['ttlHours'] as int?,
     districtId: json['districtId'] as String?,
@@ -37,6 +45,7 @@ class ServiceSession {
   final String token;
   final String userId;
   final String name;
+  final ServiceLoginKind kind;
   final String? section;
   final int? ttlHours;
 
@@ -58,6 +67,7 @@ class ServiceSession {
     'token': token,
     'userId': userId,
     'name': name,
+    'kind': kind.name,
     'section': section,
     'ttlHours': ttlHours,
     'districtId': districtId,
@@ -72,5 +82,12 @@ class ServiceSession {
   bool get isExpired {
     if (createdAt == null || ttlHours == null) return false;
     return DateTime.now().isAfter(createdAt!.add(Duration(hours: ttlHours!)));
+  }
+
+  static ServiceLoginKind _kindFromJson(Object? raw) {
+    if (raw == ServiceLoginKind.presiding.name || raw == 'presiding') {
+      return ServiceLoginKind.presiding;
+    }
+    return ServiceLoginKind.survey;
   }
 }

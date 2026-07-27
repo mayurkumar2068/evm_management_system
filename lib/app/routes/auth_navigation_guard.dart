@@ -1,5 +1,6 @@
 import 'package:evm_management_system/app/router/app_destinations.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:flutter/scheduler.dart';
@@ -11,7 +12,7 @@ abstract final class AuthNavigationGuard {
     final String? redirect = _computeRedirect(
       AppServices.auth.authState.value,
       Get.currentRoute,
-      AppServices.onboarding.seen,
+      kSkipOnboarding || AppServices.onboarding.seen,
     );
     if (redirect == null) return;
     final String current = Get.currentRoute;
@@ -32,6 +33,10 @@ abstract final class AuthNavigationGuard {
     final bool atSplash = location == AppRoute.splash.path;
     final bool atLogin = location == AppRoute.login.path;
     final bool atOnboarding = location == AppRoute.onboarding.path;
+
+    if (kHideReports && location.startsWith(AppRoute.reports.path)) {
+      return AppRoute.dashboard.path;
+    }
 
     switch (auth.status) {
       case AuthStatus.unknown:

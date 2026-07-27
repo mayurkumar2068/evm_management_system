@@ -102,6 +102,15 @@ abstract final class PoLoginResponseFields {
   static const String psNo = 'PSNo';
   static const String psName = 'PSName';
   static const String distName = 'DistName';
+  static const String gpName = 'GPName';
+  static const String blockName = 'BlockName';
+  static const String ubName = 'UBName';
+  static const String wardNo = 'WardNo';
+  static const String wardName = 'WardName';
   static const String lat = 'Lat';
   static const String long = 'Long';
+  static const String maleElectors = 'MaleElectors';
+  static const String femaleElectors = 'FemaleElectors';
+  static const String otherElectors = 'OtherElectors';
+  static const String totalElectors = 'TotalElectors';
 }

@@ -1,9 +1,10 @@
 /**
- * LAN / IIS fallback: http://10.115.197.192/pssurvey/
- * GitHub Pages uses environment.pages.ts (mpsec live API).
+ * Default production build.
+ * UI:  https://mplocalelection.mp.gov.in/pssurvey/
+ * API: https://mplocalelection.mp.gov.in/POElectionAPI
  */
 export const environment = {
   production: true,
-  apiBaseUrl: 'http://10.115.197.192/POElectionAPI',
+  apiBaseUrl: 'https://mplocalelection.mp.gov.in/POElectionAPI',
   useMockData: false,
 };

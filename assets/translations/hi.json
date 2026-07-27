@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "ईवीएम प्रबंधन प्रणाली",
+    "name": "MPSeCNet",
     "tagline": "भारत निर्वाचन आयोग",
     "full_name": "भारत निर्वाचन आयोग",
     "system": "प्रणाली",
@@ -64,7 +64,31 @@
       "nic": "एनआईसी सुरक्षित",
       "govt": "सरकार द्वारा सत्यापित",
       "encrypted": "एन्क्रिप्टेड"
-    }
+    },
+    "gateway_welcome": "स्वागत है",
+    "gateway_subtitle": "सेवा चुनें और आगे बढ़ें",
+    "gateway_dashboard_sub": "मुख्य सेवाएँ और सर्वे",
+    "gateway_reports_sub": "रिपोर्ट और सारांश",
+    "gateway_profile_sub": "खाता और सेटिंग्स",
+    "gateway_inventory_sub": "ईवीएम सूची"
+  },
+  "service_auth": {
+    "title": "सेवा लॉगिन",
+    "subtitle_for_service": "\"{}\" खोलने के लिए लॉगिन करें",
+    "subtitle_default": "आगे बढ़ने के लिए लॉगिन करें",
+    "user_id": "यूज़र आईडी",
+    "username": "यूज़र नेम",
+    "user_id_hint": "आईडी दर्ज करें",
+    "username_hint": "यूज़र नेम दर्ज करें",
+    "password": "पासवर्ड",
+    "password_hint": "पासवर्ड दर्ज करें",
+    "user_id_required": "यूज़र आईडी दर्ज करें।",
+    "username_required": "यूज़र नेम दर्ज करें।",
+    "password_required": "पासवर्ड दर्ज करें।",
+    "hint_strip": "सही विवरण दर्ज करने के बाद लॉगिन सक्रिय होगा।",
+    "sign_in_button": "लॉगिन करें",
+    "secure_badge": "सुरक्षित सरकारी सेवा",
+    "generic_error": "कुछ गलत हुआ। पुनः प्रयास करें।"
   },
   "onboarding": {
     "security": {
@@ -81,7 +105,13 @@
       "tag": "विश्लेषण",
       "title": "रीयल-टाइम निगरानी",
       "desc": "लाइव डैशबोर्ड, स्वचालित अलर्ट और वास्तविक समय में सभी जिलों में व्यापक विश्लेषण के साथ त्वरित अंतर्दृष्टि प्राप्त करें।"
-    }
+    },
+    "language_title": "भाषा चुनें",
+    "language_subtitle": "कृपया अपनी पसंदीदा भाषा चुनें",
+    "language_continue": "जारी रखें",
+    "language_hindi": "हिन्दी",
+    "language_english": "English",
+    "language_soon": "जल्द"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -91,27 +121,29 @@
     "pending_sync": "लंबित समन्वयन",
     "scanned_today": "आज स्कैन किए गए",
     "inventory_overview": "सूची अवलोकन",
-    "recent_activity": "हालिया गतिविधि",
+    "recent_activity": "कार्य इतिहास",
     "quick_actions": "त्वरित क्रियाएँ",
-    "brand_title": "मध्यप्रदेश",
-    "brand_subtitle": "निर्वाचन प्रबंधन प्रणाली",
+    "brand_title": "म.प्र. राज्य निर्वाचन आयोग",
+    "brand_subtitle": "हर वोट कीमती • हर निकाय महत्वपूर्ण",
     "greeting": "नमस्ते, {}",
     "guest": "अतिथि अधिकारी",
     "role": "साइन इन नहीं किया",
     "district_unset": "ज़िला चयनित नहीं",
     "status_active": "निर्वाचन सक्रिय",
     "main_services": "मुख्य सेवाएँ",
+    "voter_services": "मतदाता सेवाएँ",
+    "about_elections": "निर्वाचन के बारे में",
     "view_all": "सभी देखें →",
     "stat_observers": "कुल पर्यवेक्षक",
-    "stat_expenditure": "व्यय रिपोर्ट",
-    "stat_inspections": "बूथ निरीक्षण",
+    "stat_expenditure": "व्यय लेखा",
+    "stat_inspections": "बूथ सर्वे",
     "stat_ems": "ईएमएस रिपोर्ट",
     "stat_surveys_total": "कुल सर्वे",
     "stat_surveys_today": "आज",
     "stat_surveys_synced": "सिंक हुए",
     "stat_surveys_pending": "लंबित सिंक",
     "alert_title": "सुरक्षित, पारदर्शी और निष्पक्ष निर्वाचन",
-    "alert_subtitle": "मध्यप्रदेश के हर नागरिक के लिए",
+    "alert_subtitle": "राज्य के हर नागरिक के लिए",
     "act_inspection": "बूथ सर्वे जमा हुआ",
     "act_expenditure": "सर्वे सर्वर पर सिंक हुआ",
     "act_booth": "नई सर्वे सूचना",
@@ -140,24 +172,28 @@
       "desc": "क्षेत्र पर्यवेक्षक एवं ड्यूटी सूची"
     },
     "expenditure": {
-      "title": "उम्मीदवार व्यय",
-      "desc": "व्यय रिपोर्ट एवं सीमाएँ"
+      "title": "निर्वाचन व्यय लेखा",
+      "desc": ""
     },
     "voter": {
       "title": "मतदाता जानकारी",
       "desc": "निर्वाचक सूची खोजें"
     },
     "voter_search_engine": {
-      "title": "मतदाता सर्च इंजन",
-      "desc": "म.प्र. निर्वाचक नामावली खोजें"
+      "title": "मतदाता खोजें",
+      "desc": ""
+    },
+    "voter_registration": {
+      "title": "दावा / आपत्ति आवेदन",
+      "desc": ""
     },
     "ems": {
       "title": "ईएमएस निगरानी",
       "desc": "लाइव स्टॉक एवं स्थिति"
     },
     "booth": {
-      "title": "बूथ निरीक्षण",
-      "desc": "बूथ स्कैन एवं निरीक्षण"
+      "title": "मतदान केंद्र सर्वे",
+      "desc": ""
     },
     "presiding": {
       "title": "पीठासीन अधिकारी",
@@ -185,7 +221,7 @@
     "subtitle": "कार्यालय सत्यापन के बाद नामांकन की अंतिम स्थिति तय होगी।",
     "apply_online": "स्थानीय निकाय चुनावों के लिए ऑनलाइन आवेदन करें।",
     "track_status_cta": "नामांकन की स्थिति देखें",
-    "header_department": "म.प्र. राज्य निर्वाचन आयोग",
+    "header_department": "राज्य निर्वाचन आयोग",
     "welcome_title": "ऑनलाइन नामांकन में आपका स्वागत है",
     "welcome_subtitle": "नगरीय निकाय और पंचायत चुनावों के लिए ऑनलाइन आवेदन करें।",
     "entry": {
@@ -279,7 +315,7 @@
       "st": "अनुसूचित जनजाति",
       "obc": "ओबीसी",
       "women": "महिला",
-      "state_mp": "मध्यप्रदेश",
+      "state_mp": "राज्य निर्वाचन",
       "district_bhopal": "भोपाल",
       "district_indore": "इंदौर",
       "district_sagar": "सागर",
@@ -511,9 +547,14 @@
     "details": "अधिकारी विवरण",
     "officer_id": "अधिकारी आईडी",
     "user_id": "उपयोगकर्ता आईडी",
-    "section": "अनुभाग",
+    "user_name": "यूज़र नेम",
+    "section": "क्षेत्र",
+    "urban": "Urban",
+    "rural": "Rural",
     "district": "जिला",
     "body": "नगरीय निकाय",
+    "body_janpad": "जनपद",
+    "presiding_officer": "पीठासीन अधिकारी",
     "email": "ईमेल",
     "polling_station": "मतदान केंद्र",
     "state": "राज्य",
@@ -588,7 +629,7 @@
     "evening": "शुभ संध्या"
   },
   "splash": {
-    "title": "मध्यप्रदेश निर्वाचन",
+    "title": "राज्य निर्वाचन",
     "tagline": "सशक्त लोकतंत्र,\nआपकी भागीदारी",
     "loading": "लोड हो रहा है..."
   },
@@ -658,11 +699,11 @@
   },
   "presiding": {
     "officer_title": "पीठासीन अधिकारी",
-    "polling_station": "मतदान केंद्र: {} — {}",
+    "polling_station": "मतदान केंद्र का क्रमांक/नाम: {} — {}",
     "enter_info": "पीठासीन अधिकारी जानकारी दर्ज करें",
     "default_station": "प्राथ. शाला भवन आगरा",
     "section_arrival": "मतदान केंद्र पहुंचने की जानकारी",
-    "section_pre_poll": "मतदान पूर्व जानकारियां",
+    "section_pre_poll": "मतदान पूर्व की जानकारी",
     "section_during_poll": "मतदान के दौरान की जानकारियां",
     "section_post_poll": "मतदान पश्चात जानकारियां",
     "male": "पुरुष",
@@ -690,11 +731,13 @@
     "live_poll_title": "लाइव मतदान गणना",
     "live_poll_subtitle": "रियल टाइम मतदानगना जानकारी",
     "live_badge": "LIVE",
-    "latest_turnout_status": "मतदान की ताज़ा स्थिति",
+    "latest_turnout_status": "लाइव मतदान की स्थिति",
     "polling_station_number": "मतदान केंद्र क्रमांक : {}",
     "last_update": "अंतिम अपडेट",
     "increase_by_one": "+1 बढ़ाएं",
-    "total_votes": "कुल वोट",
+    "decrease_by_one": "-1 घटाएं",
+    "total_votes": "कुल मतदान",
+    "total_percent": "कुल प्रतिशत",
     "turnout_share_percent": "{} हिस्सा",
     "live_poll_note": "प्रतिशत वर्तमान मतदान में प्रत्येक लिंग के हिस्से को दर्शाता है। कृपया प्रत्येक अपडेट के बाद सेव करें।",
     "turnout_intro_title": "प्रत्येक समय स्लॉट के लिए मतदाता उपस्थिति दर्ज करें",
@@ -705,21 +748,46 @@
     "queue_hint": "कतार में लगभग कितने लोग हैं, दर्ज करें",
     "enter_number": "संख्या दर्ज करें",
     "queue_summary": "कतार: {}",
-    "total_votes_summary": "कुल वोट: {}",
+    "total_votes_summary": "कुल मतदान: {}",
     "save_failed": "सहेजना विफल: {}",
     "update_failed": "अपडेट विफल: {}",
     "milestones": {
-      "left_material_center": "सामग्री वितरण केंद्र से निकले",
+      "left_material_center": "सामग्री वितरण केंद्र पहुंचे",
       "reached_polling_station": "मतदान केंद्र पहुंचे",
-      "material_received": "चुनाव सामग्री प्राप्त",
+      "material_received": "चुनावी सामग्री प्राप्त हुई",
       "mock_poll": "मॉक पोल",
       "poll_start": "मतदान प्रारम्भ",
-      "two_hourly_info": "दो घंटे की जानकारी",
+      "two_hourly_info": "2-2 घंटे की जानकारी",
       "live_poll_info": "मतदान की लाइव जानकारी",
       "poll_end": "मतदान समाप्त",
       "machine_sealed": "मशीन सील की गई",
-      "material_handed_over": "जिले में सामग्री सौंपी गई"
-    }
+      "material_handed_over": "मतदान केंद्र पर जानकारी सौंपी गई"
+    },
+    "booth_polling_station": "मतदान केंद्र",
+    "booth_location_title": "मतदान केंद्र का स्थान",
+    "booth_no_coords": "लॉगिन में निर्देशांक नहीं मिले — मैप बटन से खोजें",
+    "booth_current_location": "आपकी वर्तमान लोकेशन: {}",
+    "booth_navigate": "मतदान केंद्र का रास्ता खोजें",
+    "booth_open_map": "मैप पर जाएँ",
+    "booth_map_error": "मैप खोलने में समस्या — Google Maps इंस्टॉल करें"
+  },
+  "webview": {
+    "load_failed_title": "पेज लोड नहीं हो सका",
+    "load_failed_subtitle": "पेज लोड नहीं हो सका। अपना कनेक्शन जाँचें और पुनः प्रयास करें।",
+    "error_network_title": "इंटरनेट कनेक्शन नहीं है",
+    "error_network_sub": "मोबाइल डेटा या Wi‑Fi जाँचें, फिर पुनः प्रयास करें।",
+    "error_http_title": "सर्वर त्रुटि",
+    "error_http_sub": "पेज नहीं खुल सका (HTTP {})।",
+    "error_ssl_title": "सुरक्षित कनेक्शन विफल",
+    "error_ssl_sub": "सर्वर प्रमाणपत्र सत्यापित नहीं हो सका।",
+    "error_timeout_title": "कनेक्शन समय समाप्त",
+    "error_timeout_sub": "सर्वर से जवाब बहुत देर से मिला।",
+    "error_dns_title": "सर्वर नहीं मिला",
+    "error_dns_sub": "सर्वर तक पहुँच नहीं हो सकी। URL या नेटवर्क जाँचें।",
+    "error_generic_title": "पेज लोड नहीं हो सका",
+    "error_generic_sub": "पेज खोलते समय कोई समस्या हुई।",
+    "error_details_label": "त्रुटि विवरण",
+    "error_go_back": "वापस जाएँ"
   },
   "offline_hub": {
     "title": "ऑफ़लाइन",
@@ -747,6 +815,7 @@
     "tip_uninstall": "एप्लिकेशन अनइंस्टॉल न करें।",
     "tip_encrypted": "डेटा स्थानीय रूप से एन्क्रिप्टेड है।",
     "tip_auto_sync": "समन्वयन स्वचालित रूप से होगा।",
-    "banner": "ऑफ़लाइन मोड सक्रिय"
+    "banner": "ऑफ़लाइन मोड सक्रिय",
+    "blocked_service": "\"{}\" नहीं खोल सके — इंटरनेट कनेक्शन नहीं है।"
   }
 }

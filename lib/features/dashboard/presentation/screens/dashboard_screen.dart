@@ -1,13 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_widgets.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Premium Madhya Pradesh Election Management dashboard.
+/// Premium MP State Election Management dashboard.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -30,58 +30,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Obx(() {
       final DashboardState state = controller.state.value;
+      final DashboardCategory category = controller.activeCategory.value;
+      final List<DashboardService> services = controller.filteredServices;
 
-      return ColoredBox(
-        color: context.appBackground,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            controller.rebuildDashboard();
-            await Future<void>.delayed(const Duration(milliseconds: 300));
-          },
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 120),
-            children: <Widget>[
-              DashboardHeader(name: state.userName, pending: state.pendingCount),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: DashboardGap.page,
-                ),
-                child: DashboardWelcomeCard(
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          const DashboardBackdrop(),
+          RefreshIndicator(
+            onRefresh: () async {
+              controller.rebuildDashboard();
+              await Future<void>.delayed(const Duration(milliseconds: 300));
+            },
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 120),
+              children: <Widget>[
+                DashboardHeader(
                   name: state.userName,
-                  designation: state.designation,
-                  district: state.district,
+                  pending: state.pendingCount,
                 ),
-              ),
-              const SizedBox(height: DashboardGap.section),
-              DashboardStatStrip(stats: state.stats),
-              const SizedBox(height: DashboardGap.section),
-              DashboardSectionHeader(
-                title: LocaleKeys.dashboardMainServices.tr(),
-              ),
-              const SizedBox(height: DashboardGap.headerToContent),
-              DashboardServicesGrid(services: state.services),
-              const SizedBox(height: DashboardGap.section),
-              DashboardSectionHeader(
-                title: LocaleKeys.dashboardRecentActivity.tr(),
-                onViewAll: () =>
-                    Get.toNamed<dynamic>(AppRoute.activityHistory.path),
-              ),
-              const SizedBox(height: DashboardGap.headerToContent),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: DashboardGap.page,
+                if (!kHideDashboardStats) ...<Widget>[
+                  const SizedBox(height: DashboardGap.section),
+                  DashboardStatStrip(stats: state.stats),
+                ],
+                const SizedBox(height: 16),
+                DashboardSectionHeader(
+                  title: LocaleKeys.dashboardMainServices.tr(),
                 ),
-                child: DashboardActivityList(events: state.activity),
-              ),
-              const SizedBox(height: DashboardGap.section),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: DashboardGap.page),
-                child: DashboardAlertBanner(),
-              ),
-            ],
+                const SizedBox(height: 8),
+                DashboardCategoryToggle(
+                  active: category,
+                  onChanged: controller.setCategory,
+                ),
+                const SizedBox(height: 10),
+                DashboardServicesGrid(services: services),
+              ],
+            ),
           ),
-        ),
+        ],
       );
     });
   }

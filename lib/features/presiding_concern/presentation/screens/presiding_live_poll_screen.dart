@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
@@ -37,11 +42,16 @@ class _LivePollBodyState extends State<_LivePollBody> {
   int _liveFemale = 0;
   int _liveOther = 0;
   DateTime? _lastUpdate;
+  int? _maleElectors;
+  int? _femaleElectors;
+  int? _otherElectors;
+  int? _totalElectors;
 
   @override
   void initState() {
     super.initState();
     _syncFromSession();
+    unawaited(_loadElectors());
   }
 
   @override
@@ -50,6 +60,22 @@ class _LivePollBodyState extends State<_LivePollBody> {
     if (oldWidget.session != widget.session) {
       _syncFromSession();
     }
+  }
+
+  Future<void> _loadElectors() async {
+    try {
+      final PresidingElectionContextStore store = PresidingElectionContextStore(
+        AppServices.secureStorage,
+      );
+      final PresidingElectionContext? ctx = await store.read();
+      if (!mounted || ctx == null) return;
+      setState(() {
+        _maleElectors = ctx.maleElectors;
+        _femaleElectors = ctx.femaleElectors;
+        _otherElectors = ctx.otherElectors;
+        _totalElectors = ctx.totalElectors;
+      });
+    } catch (_) {}
   }
 
   void _syncFromSession() {
@@ -113,11 +139,8 @@ class _LivePollBodyState extends State<_LivePollBody> {
     }
   }
 
-  String _formatSharePercent(int count, int total) {
-    if (total <= 0 || count <= 0) return '0%';
-    return LocaleKeys.presidingTurnoutSharePercent.tr(
-      args: <String>['${(count / total * 100).toStringAsFixed(2)}%'],
-    );
+  String _formatTurnoutPercent(int votes, int? electors) {
+    return PresidingElectionContext.formatTurnoutPercent(votes, electors);
   }
 
   @override
@@ -130,6 +153,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
     final String lastUpdateLabel = _lastUpdate != null
         ? DateFormat('hh:mm a').format(_lastUpdate!)
         : LocaleKeys.presidingNotSaved.tr();
+    final String totalPercent = _formatTurnoutPercent(total, _totalElectors);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -214,7 +238,10 @@ class _LivePollBodyState extends State<_LivePollBody> {
                     child: _LivePollStatCard(
                       genderType: PresidingGenderType.male,
                       count: _liveMale,
-                      percent: _formatSharePercent(_liveMale, total),
+                      percent: _formatTurnoutPercent(
+                        _liveMale,
+                        _maleElectors,
+                      ),
                       busy: _busy,
                       onAdd: () => _adjust(
                         field: PoElectionRequestFields.male,
@@ -233,7 +260,10 @@ class _LivePollBodyState extends State<_LivePollBody> {
                     child: _LivePollStatCard(
                       genderType: PresidingGenderType.female,
                       count: _liveFemale,
-                      percent: _formatSharePercent(_liveFemale, total),
+                      percent: _formatTurnoutPercent(
+                        _liveFemale,
+                        _femaleElectors,
+                      ),
                       busy: _busy,
                       onAdd: () => _adjust(
                         field: PoElectionRequestFields.female,
@@ -252,7 +282,10 @@ class _LivePollBodyState extends State<_LivePollBody> {
                     child: _LivePollStatCard(
                       genderType: PresidingGenderType.other,
                       count: _liveOther,
-                      percent: _formatSharePercent(_liveOther, total),
+                      percent: _formatTurnoutPercent(
+                        _liveOther,
+                        _otherElectors,
+                      ),
                       busy: _busy,
                       onAdd: () => _adjust(
                         field: PoElectionRequestFields.other,
@@ -269,7 +302,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
                 ],
               ),
               const SizedBox(height: 18),
-              _LivePollSummaryCard(total: total),
+              _LivePollSummaryCard(total: total, totalPercent: totalPercent),
               const SizedBox(height: 18),
               const _InfoNoteCard(),
             ],
@@ -439,7 +472,16 @@ class _LivePollStatCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Text(
+            LocaleKeys.presidingIncreaseByOne.tr(),
+            style: AppTextStyles.caption.copyWith(
+              color: accentColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -458,7 +500,7 @@ class _LivePollStatCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            LocaleKeys.presidingIncreaseByOne.tr(),
+            LocaleKeys.presidingDecreaseByOne.tr(),
             style: AppTextStyles.caption.copyWith(
               color: accentColor,
               fontWeight: FontWeight.w700,
@@ -497,53 +539,86 @@ class _LiveStepButton extends StatelessWidget {
 }
 
 class _LivePollSummaryCard extends StatelessWidget {
-  const _LivePollSummaryCard({required this.total});
+  const _LivePollSummaryCard({
+    required this.total,
+    required this.totalPercent,
+  });
   final int total;
+  final String totalPercent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _SummaryMetricTile(
+            icon: Icons.how_to_vote_rounded,
+            label: LocaleKeys.presidingTotalVotes.tr(),
+            value: '$total',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _SummaryMetricTile(
+            icon: Icons.percent_rounded,
+            label: LocaleKeys.presidingTotalPercent.tr(),
+            value: totalPercent,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SummaryMetricTile extends StatelessWidget {
+  const _SummaryMetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: PresidingUiTokens.cardGreenSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: PresidingUiTokens.cardGreenBorder),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            width: 64,
-            height: 64,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: PresidingUiTokens.actionGreen.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.how_to_vote_rounded,
+              icon,
               color: PresidingUiTokens.actionGreen,
-              size: 32,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  LocaleKeys.presidingTotalVotes.tr(),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '$total',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 32,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: AppTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.w900,
+              fontSize: 28,
             ),
           ),
         ],

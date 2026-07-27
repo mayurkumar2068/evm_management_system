@@ -20,42 +20,36 @@ class _AppSplashScreenState extends State<AppSplashScreen>
     with TickerProviderStateMixin {
   late final AnimationController _enter = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1200),
+    duration: const Duration(milliseconds: 1000),
   )..forward();
 
-  late final AnimationController _pulse = AnimationController(
+  late final AnimationController _dots = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  )..repeat(reverse: true);
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
 
   late final Animation<double> _emblem = CurvedAnimation(
     parent: _enter,
-    curve: const Interval(0.0, 0.55, curve: Curves.elasticOut),
+    curve: const Interval(0.0, 0.55, curve: Curves.easeOutBack),
   );
   late final Animation<double> _fade = CurvedAnimation(
     parent: _enter,
-    curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+    curve: const Interval(0.25, 1.0, curve: Curves.easeOut),
   );
-  late final Animation<double> _loaderFade = Tween<double>(
-    begin: 0.35,
-    end: 1.0,
-  ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut));
 
   @override
   void dispose() {
     _enter.dispose();
-    _pulse.dispose();
+    _dots.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Rebuild when theme toggles during splash.
       AppServices.settings.themeMode.value;
       final bool isDark = context.isAppDark;
       final Color bg = context.appBackground;
-      final Color onBg = context.appOnSurface;
       final Color muted = context.appMuted;
       final Color logoPlate = context.appSurface;
 
@@ -69,129 +63,100 @@ class _AppSplashScreenState extends State<AppSplashScreen>
               final double h = c.maxHeight;
               final double shortest = math.min(w, h);
 
-              final double logoW = (shortest * 0.18).clamp(100.0, 100.0);
-              final double titleSize = (shortest * 0.068).clamp(22.0, 32.0);
-              final double taglineSize = (shortest * 0.04).clamp(13.0, 18.0);
+              final double logoW = (shortest * 0.48).clamp(200.0, 280.0);
               final double hPad = (w * 0.08).clamp(24.0, 72.0);
 
               return Stack(
                 fit: StackFit.expand,
                 children: <Widget>[
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[
+                          bg,
+                          AppColors.primary.withValues(
+                            alpha: isDark ? 0.12 : 0.04,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Soft corner accents — kept small so they never cover the loader.
                   Positioned(
-                    top: -90,
-                    right: -70,
-                    child: Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary.withValues(
-                          alpha: isDark ? 0.16 : 0.12,
-                        ),
+                    top: -40,
+                    right: -36,
+                    child: _GlowBlob(
+                      size: 140,
+                      color: AppColors.primary.withValues(
+                        alpha: isDark ? 0.14 : 0.10,
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: h * 0.12,
-                    left: -80,
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.green.withValues(
-                          alpha: isDark ? 0.14 : 0.10,
-                        ),
+                    bottom: h * 0.28,
+                    left: -48,
+                    child: _GlowBlob(
+                      size: 120,
+                      color: AppColors.green.withValues(
+                        alpha: isDark ? 0.10 : 0.07,
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 20,
-                    right: 20,
-                    bottom: 28 + MediaQuery.of(context).padding.bottom,
-                    child: Container(
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        borderRadius: AppRadius.brPill,
-                        gradient: AppGradients.primaryButton,
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: SafeArea(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: hPad),
-                        child: Column(
-                          children: <Widget>[
-                            const Spacer(flex: 3),
-                            ScaleTransition(
-                              scale: _emblem,
-                              child: FadeTransition(
-                                opacity: _fade,
-                                child: Container(
-                                  padding: const EdgeInsets.all(18),
-                                  decoration: BoxDecoration(
-                                    color: logoPlate,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: context.appOutline,
-                                    ),
-                                    boxShadow: <BoxShadow>[
-                                      BoxShadow(
-                                        color: AppColors.primary.withValues(
-                                          alpha: isDark ? 0.28 : 0.14,
-                                        ),
-                                        blurRadius: 28,
-                                        offset: const Offset(0, 12),
+                  SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: hPad),
+                      child: Column(
+                        children: <Widget>[
+                          const Spacer(flex: 3),
+                          ScaleTransition(
+                            scale: _emblem,
+                            child: FadeTransition(
+                              opacity: _fade,
+                              child: Container(
+                                width: logoW,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: logoPlate,
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: <BoxShadow>[
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: isDark ? 0.16 : 0.08,
                                       ),
-                                    ],
-                                  ),
-                                  child: ClipOval(
-                                    child: BrandLogo(width: logoW),
-                                  ),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: BrandLogo(
+                                  width: logoW - 24,
+                                  height: (logoW - 24) * 1.15,
+                                  cropCaption: false,
+                                  borderRadius: 10,
+                                  backgroundColor: Colors.transparent,
                                 ),
                               ),
                             ),
-                            SizedBox(height: AppResponsive.space(28)),
-                            FadeTransition(
-                              opacity: _fade,
-                              child: Column(
-                                children: <Widget>[
-                                  Text(
-                                    LocaleKeys.splashTitle.tr(),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: onBg,
-                                      fontSize: titleSize,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.2,
-                                      height: 1.2,
-                                    ),
-                                  ),
-                                  SizedBox(height: AppResponsive.space(14)),
-                                  _divider(),
-                                  SizedBox(height: AppResponsive.space(18)),
-                                  Text(
-                                    LocaleKeys.splashTagline.tr(),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: muted,
-                                      fontSize: taglineSize,
-                                      height: 1.45,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          ),
+                          SizedBox(height: AppResponsive.space(28)),
+                          FadeTransition(
+                            opacity: _fade,
+                            child: _divider(isDark: isDark),
+                          ),
+                          const Spacer(flex: 4),
+                          // Compact bottom loader — never stretches full screen.
+                          FadeTransition(
+                            opacity: _fade,
+                            child: _SplashLoader(
+                              controller: _dots,
+                              muted: muted,
+                              isDark: isDark,
                             ),
-                            const Spacer(flex: 4),
-                            FadeTransition(
-                              opacity: _fade,
-                              child: _loader(muted: muted),
-                            ),
-                            SizedBox(height: AppResponsive.space(36)),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: AppResponsive.space(28)),
+                        ],
                       ),
                     ),
                   ),
@@ -204,51 +169,143 @@ class _AppSplashScreenState extends State<AppSplashScreen>
     });
   }
 
-  Widget _divider() {
-    return Container(
-      width: 72,
-      height: 4,
-      decoration: const BoxDecoration(
-        borderRadius: AppRadius.brPill,
-        gradient: AppGradients.primaryButton,
-      ),
+  Widget _divider({required bool isDark}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        _dividerLine(isDark: isDark),
+        const SizedBox(width: 8),
+        Icon(
+          Icons.diamond_rounded,
+          size: 10,
+          color: AppColors.primary.withValues(alpha: isDark ? 0.8 : 0.9),
+        ),
+        const SizedBox(width: 8),
+        _dividerLine(isDark: isDark),
+      ],
     );
   }
 
-  Widget _loader({required Color muted}) {
-    return FadeTransition(
-      opacity: _loaderFade,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 22,
-            height: 2.5,
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.brPill,
-              color: AppColors.primary.withValues(alpha: 0.45),
+  Widget _dividerLine({required bool isDark}) {
+    return Container(
+      width: 34,
+      height: 2,
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.brPill,
+        gradient: LinearGradient(
+          colors: <Color>[
+            AppColors.primary.withValues(alpha: isDark ? 0.72 : 0.88),
+            AppColors.green.withValues(alpha: isDark ? 0.72 : 0.88),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlowBlob extends StatelessWidget {
+  const _GlowBlob({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      ),
+    );
+  }
+}
+
+/// Three bouncing dots + label — sized to content, not the viewport.
+class _SplashLoader extends StatelessWidget {
+  const _SplashLoader({
+    required this.controller,
+    required this.muted,
+    required this.isDark,
+  });
+
+  final AnimationController controller;
+  final Color muted;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _BounceDot(
+              controller: controller,
+              delay: 0.0,
+              color: AppColors.primary.withValues(alpha: isDark ? 0.75 : 0.9),
+              size: 8,
             ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            LocaleKeys.splashLoading.tr(),
-            style: TextStyle(
-              color: muted,
-              fontSize: 12,
-              letterSpacing: 0.8,
-              fontWeight: FontWeight.w600,
+            const SizedBox(width: 10),
+            _BounceDot(
+              controller: controller,
+              delay: 0.18,
+              color: AppColors.primaryDark.withValues(alpha: isDark ? 0.8 : 1),
+              size: 10,
             ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 22,
-            height: 2.5,
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.brPill,
-              color: AppColors.green.withValues(alpha: 0.45),
+            const SizedBox(width: 10),
+            _BounceDot(
+              controller: controller,
+              delay: 0.36,
+              color: AppColors.green.withValues(alpha: isDark ? 0.75 : 0.9),
+              size: 8,
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          LocaleKeys.splashLoading.tr(),
+          style: TextStyle(
+            color: muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class _BounceDot extends StatelessWidget {
+  const _BounceDot({
+    required this.controller,
+    required this.delay,
+    required this.color,
+    required this.size,
+  });
+
+  final AnimationController controller;
+  final double delay;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (BuildContext context, Widget? child) {
+        final double t = (controller.value + delay) % 1.0;
+        final double bounce = math.sin(t * math.pi);
+        return Transform.translate(
+          offset: Offset(0, -4 * bounce),
+          child: Opacity(opacity: 0.45 + (0.55 * bounce), child: child),
+        );
+      },
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       ),
     );
   }

@@ -1,13 +1,16 @@
 import 'dart:io' show Platform;
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
+import 'package:evm_management_system/localization/locale_keys.dart';
 
 /// Opens device maps for turn-by-turn navigation to a polling booth.
 class MapNavigationService {
   MapNavigationService({ExternalUrlLauncher? launcher})
     : _launcher = launcher ?? const ExternalUrlLauncher();
 
-  static const String _defaultDestinationLabel = 'मतदान केंद्र';
+  static String get _defaultDestinationLabel =>
+      LocaleKeys.presidingBoothPollingStation.tr();
 
   final ExternalUrlLauncher _launcher;
 

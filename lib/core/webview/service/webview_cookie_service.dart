@@ -122,6 +122,7 @@ class WebViewCookieService {
       config.poElectionApiBaseUrl,
       config.surveyApiBaseUrl,
       config.voterSearchEngineUrl,
+      config.voterRegistrationUrl,
       config.candidateExpenditureUrl,
     ]) {
       final Uri? uri = Uri.tryParse(raw.trim());

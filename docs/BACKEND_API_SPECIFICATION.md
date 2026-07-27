@@ -1285,4 +1285,17 @@ should implement them and the client can adopt them incrementally without breaki
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0 | 2026-06-19 | Initial comprehensive specification. |
+| 1.1 | 2026-07-27 | Added `GET /Dashboard/GetServices` for dynamic dashboard tiles. |
+
+### 12.6 Dashboard services (`GET /Dashboard/GetServices`)
+
+Returns the dashboard tile catalogue grouped by category toggle.
+
+**Query:** `languageCode` (`hi`|`en`, optional, default `hi`)
+
+**Response item fields:** `id`, `category` (`voterServices`|`aboutElections`), `title`, `desc`, `iconName`, `colorHex`, `url`, `routeName`, `requiresServiceLogin`, `passSessionContext`, `openAsExternalPortal`, `sortOrder`, `isActive`.
+
+**Categories:** `voterServices` = Voter Search, Booth Survey, Expenditure; `aboutElections` = Presiding Officer, Online Nomination.
+
+Until live, the app uses the hardcoded list in `DashboardController._rebuildAsync()`.
 

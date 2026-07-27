@@ -1,4 +1,11 @@
+import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:flutter/material.dart';
+
+/// Dashboard service grouping for the category toggle.
+enum DashboardCategory {
+  voterServices,
+  aboutElections,
+}
 
 /// View-model for a statistic card shown in the dashboard strip.
 class DashboardStat {
@@ -25,16 +32,20 @@ class DashboardService {
     required this.icon,
     required this.color,
     required this.url,
+    required this.category,
     this.routeName,
     this.requiresServiceLogin = true,
     this.passSessionContext = true,
     this.openAsExternalPortal = false,
+    this.forceFreshLogin = false,
+    this.requiredLoginKind,
   });
 
   final String title;
   final String desc;
   final IconData icon;
   final Color color;
+  final DashboardCategory category;
 
   /// External government portal opened in the in-app browser.
   final String url;
@@ -50,4 +61,10 @@ class DashboardService {
 
   /// Third-party portals (voter search) — plain WebView, no cookies/bridge injection.
   final bool openAsExternalPortal;
+
+  /// Always clear any previous officer session and show login again.
+  final bool forceFreshLogin;
+
+  /// When set, an existing session of a different kind cannot be reused.
+  final ServiceLoginKind? requiredLoginKind;
 }

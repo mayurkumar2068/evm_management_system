@@ -6,7 +6,6 @@ import 'package:evm_management_system/core/settings/app_preferences_actions.dart
 import 'package:evm_management_system/core/utils/string_extensions.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/features/offline/presentation/widgets/offline_status_sheet.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/device_record.dart';
@@ -26,6 +25,8 @@ class ProfileScreen extends StatelessWidget {
       final ThemeMode currentThemeMode = AppServices.settings.themeMode.value;
       final AuthUser? authUser = AppServices.auth.authState.value.user;
       final ServiceSession? session = AppServices.serviceAuth.session.value;
+      final bool hasOfficerSession =
+          session != null || (authUser != null && !authUser.isGuest);
       final _ProfileViewData data = _ProfileViewData.from(
         authUser: authUser,
         session: session,
@@ -44,7 +45,6 @@ class ProfileScreen extends StatelessWidget {
               role: data.role,
               officerId: data.primaryId,
               initials: data.name.initials,
-              location: data.location,
               isActive: session != null && !session.isExpired,
             ),
             if (data.detailRows.isNotEmpty) ...<Widget>[
@@ -68,8 +68,6 @@ class ProfileScreen extends StatelessWidget {
               _InventoryStats(),
             ],
             const SizedBox(height: 22),
-            _SectionLabel(LocaleKeys.profileAccount.tr()),
-            const SizedBox(height: 10),
             _GroupCard(
               children: <Widget>[
                 _RowTile(
@@ -104,18 +102,15 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () =>
                       Get.toNamed<dynamic>(AppRoute.notifications.path),
                 ),
-                const _RowDivider(),
-                _RowTile(
-                  icon: Icons.cloud_off_outlined,
-                  color: AppColors.green,
-                  title: LocaleKeys.settingsOfflineStorage.tr(),
-                  subtitle: LocaleKeys.profileSyncSub.tr(),
-                  onTap: () => showOfflineStatusSheet(context),
-                ),
               ],
             ),
+            // Sign Out only when an officer/service session exists.
+            // Guest (signed out) sees Sign In instead — Sign Out stays hidden.
             const SizedBox(height: 28),
-            _SignOutButton(onTap: () => _confirmSignOut(context)),
+            if (hasOfficerSession)
+              _SignOutButton(onTap: () => _confirmSignOut(context))
+            else
+              _SignInButton(onTap: () => _goToSignIn()),
           ],
         ),
       );
@@ -132,6 +127,18 @@ class ProfileScreen extends StatelessWidget {
       destructive: true,
     );
     if (!confirmed) return;
+
+    final AuthUser? user = AppServices.auth.authState.value.user;
+    // Guest + officer/service session: clear session only, stay in app.
+    // Sign Out button then hides and Sign In is shown instead.
+    if (user?.isGuest == true) {
+      await AppServices.serviceAuth.signOut();
+      return;
+    }
+    await AppServices.auth.signOut();
+  }
+
+  Future<void> _goToSignIn() async {
     await AppServices.auth.signOut();
   }
 
@@ -151,7 +158,6 @@ class _ProfileViewData {
     required this.name,
     required this.role,
     required this.primaryId,
-    required this.location,
     required this.detailRows,
   });
 
@@ -162,6 +168,9 @@ class _ProfileViewData {
     final bool hasSessionName =
         session != null && session.name.trim().isNotEmpty;
     final bool isGuest = authUser?.isGuest == true && !hasSessionName;
+    final bool isPresiding = session?.kind == ServiceLoginKind.presiding;
+    final String? urbanRuralRaw = session?.section?.trim();
+    final String urbanRuralCode = (urbanRuralRaw ?? '').toUpperCase();
 
     final String name = hasSessionName
         ? session.name.trim()
@@ -172,8 +181,9 @@ class _ProfileViewData {
                     : LocaleKeys.dashboardGuest.tr()));
 
     final String role = () {
+      if (isPresiding) return LocaleKeys.profilePresidingOfficer.tr();
       if (session?.section != null && session!.section!.trim().isNotEmpty) {
-        return session.section!.trim();
+        return _areaTypeLabel(session.section) ?? LocaleKeys.dashboardRole.tr();
       }
       if (isGuest) return LocaleKeys.dashboardRole.tr();
       if (authUser?.designation != null &&
@@ -183,26 +193,14 @@ class _ProfileViewData {
       return LocaleKeys.dashboardRole.tr();
     }();
 
+    // Prefer login username over GUID user id.
     final String primaryId = () {
+      if (hasSessionName) return session.name.trim();
       if (isGuest) return '—';
       if (authUser?.officerId.trim().isNotEmpty == true) {
         return authUser!.officerId.trim();
       }
-      if (session?.userId.trim().isNotEmpty == true) {
-        return session!.userId.trim();
-      }
       return '—';
-    }();
-
-    final String location = () {
-      final String? districtName = session?.districtName?.trim();
-      if (districtName != null && districtName.isNotEmpty) return districtName;
-      final String? districtId = session?.districtId?.trim();
-      if (districtId != null && districtId.isNotEmpty) return districtId;
-      if (isGuest) return LocaleKeys.dashboardDistrictUnset.tr();
-      final String? authDistrict = authUser?.districtCode?.trim();
-      if (authDistrict != null && authDistrict.isNotEmpty) return authDistrict;
-      return LocaleKeys.dashboardDistrictUnset.tr();
     }();
 
     final List<_DetailItem> rows = <_DetailItem>[];
@@ -213,16 +211,11 @@ class _ProfileViewData {
       rows.add(_DetailItem(label: label, value: trimmed));
     }
 
-    if (!isGuest) {
-      add(LocaleKeys.profileOfficerId.tr(), authUser?.officerId);
-    }
-    if (session?.userId != authUser?.officerId) {
-      add(LocaleKeys.profileUserId.tr(), session?.userId);
-    }
+    add(LocaleKeys.profileUserName.tr(), hasSessionName ? session.name : null);
     if (!isGuest) {
       add(LocaleKeys.profileEmail.tr(), authUser?.email);
     }
-    add(LocaleKeys.profileSection.tr(), session?.section);
+    add(LocaleKeys.profileSection.tr(), _areaTypeLabel(urbanRuralRaw));
 
     final String? district = _firstNonEmpty(<String?>[
       session?.districtName,
@@ -231,7 +224,11 @@ class _ProfileViewData {
     ]);
     add(LocaleKeys.profileDistrict.tr(), district);
 
-    add(LocaleKeys.profileBody.tr(), session?.bodyName);
+    final String bodyLabel = urbanRuralCode == 'R'
+        ? LocaleKeys.profileBodyJanpad.tr()
+        : LocaleKeys.profileBody.tr();
+    add(bodyLabel, session?.bodyName);
+
     if (!isGuest) {
       add(LocaleKeys.profileState.tr(), authUser?.stateCode);
     }
@@ -267,7 +264,6 @@ class _ProfileViewData {
       name: name,
       role: role,
       primaryId: primaryId,
-      location: location,
       detailRows: unique,
     );
   }
@@ -275,8 +271,20 @@ class _ProfileViewData {
   final String name;
   final String role;
   final String primaryId;
-  final String location;
   final List<_DetailItem> detailRows;
+
+  static String? _areaTypeLabel(String? raw) {
+    final String code = (raw ?? '').trim().toUpperCase();
+    if (code == 'U' || code == 'URBAN') {
+      return LocaleKeys.profileUrban.tr();
+    }
+    if (code == 'R' || code == 'RURAL') {
+      return LocaleKeys.profileRural.tr();
+    }
+    final String? trimmed = raw?.trim();
+    if (trimmed == null || trimmed.isEmpty) return null;
+    return trimmed;
+  }
 
   static String? _firstNonEmpty(List<String?> values) {
     for (final String? value in values) {
@@ -299,7 +307,6 @@ class _OfficerHero extends StatelessWidget {
     required this.role,
     required this.officerId,
     required this.initials,
-    required this.location,
     required this.isActive,
   });
 
@@ -307,7 +314,6 @@ class _OfficerHero extends StatelessWidget {
   final String role;
   final String officerId;
   final String initials;
-  final String location;
   final bool isActive;
 
   @override
@@ -439,23 +445,22 @@ class _OfficerHero extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        officerId,
-                        style: AppTextStyles.caption.copyWith(
-                          color: Colors.white.withValues(alpha: 0.78),
-                          letterSpacing: 0.3,
+                      if (officerId.trim().isNotEmpty &&
+                          officerId.trim() != name.trim()) ...<Widget>[
+                        const SizedBox(height: 2),
+                        Text(
+                          officerId,
+                          style: AppTextStyles.caption.copyWith(
+                            color: Colors.white.withValues(alpha: 0.78),
+                            letterSpacing: 0.3,
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
                         children: <Widget>[
-                          _HeroChip(
-                            icon: Icons.location_on_outlined,
-                            label: location,
-                          ),
                           _HeroChip(
                             icon: Icons.bolt_rounded,
                             label: isActive
@@ -803,6 +808,50 @@ class _SignOutButton extends StatelessWidget {
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.error,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignInButton extends StatelessWidget {
+  const _SignInButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primary.withValues(alpha: context.isAppDark ? 0.18 : 0.08),
+      borderRadius: AppRadius.brXl,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brXl,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.brXl,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.28),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Icon(
+                Icons.login_rounded,
+                size: 18,
+                color: AppColors.primaryDark,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                LocaleKeys.serviceAuthSignInButton.tr(),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryDark,
                 ),
               ),
             ],

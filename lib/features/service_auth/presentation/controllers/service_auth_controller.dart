@@ -136,11 +136,22 @@ class ServiceAuthController extends GetxController {
       data[PoLoginResponseFields.long] ?? data['long'],
     );
 
+    final String urbanRural =
+        data[PoLoginResponseFields.urbanRural]?.toString().trim() ?? '';
+    final String? bodyName = _firstNonEmptyString(<Object?>[
+      data[PoLoginResponseFields.ubName],
+      data[PoLoginResponseFields.blockName],
+      data[PoLoginResponseFields.gpName],
+    ]);
+
     final ServiceSession next = ServiceSession(
       token: data[PoLoginResponseFields.accessToken].toString(),
       userId: data[PoLoginResponseFields.userId].toString(),
       name: data[PoLoginResponseFields.userName].toString(),
+      kind: ServiceLoginKind.presiding,
+      section: urbanRural.isEmpty ? null : urbanRural,
       districtName: data[PoLoginResponseFields.distName]?.toString(),
+      bodyName: bodyName,
       ttlHours: ttlHours,
       lat: lat,
       long: long,
@@ -168,6 +179,12 @@ class ServiceAuthController extends GetxController {
       pollingStationName: data[PoLoginResponseFields.psName]?.toString(),
       boothLat: lat,
       boothLong: long,
+      maleElectors: _parseElectors(data[PoLoginResponseFields.maleElectors]),
+      femaleElectors: _parseElectors(
+        data[PoLoginResponseFields.femaleElectors],
+      ),
+      otherElectors: _parseElectors(data[PoLoginResponseFields.otherElectors]),
+      totalElectors: _parseElectors(data[PoLoginResponseFields.totalElectors]),
     );
 
     final PresidingElectionContextStore store = PresidingElectionContextStore(
@@ -246,6 +263,7 @@ class ServiceAuthController extends GetxController {
       token: token,
       userId: (data['UserId'] ?? '').toString(),
       name: (data['Name'] ?? data['UserName'] ?? userName).toString(),
+      kind: ServiceLoginKind.survey,
       section: data['UrbanRural']?.toString(),
       ttlHours: ttlHours,
       districtId: districtId,
@@ -329,6 +347,23 @@ class ServiceAuthController extends GetxController {
       return value.toDouble();
     }
     return double.tryParse(value.toString().trim());
+  }
+
+  int? _parseElectors(Object? value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString().trim());
+  }
+
+  String? _firstNonEmptyString(List<Object?> values) {
+    for (final Object? value in values) {
+      final String trimmed = value?.toString().trim() ?? '';
+      if (trimmed.isNotEmpty && trimmed.toLowerCase() != 'null') {
+        return trimmed;
+      }
+    }
+    return null;
   }
 
   String _networkOrServerMessage(DioException e) {

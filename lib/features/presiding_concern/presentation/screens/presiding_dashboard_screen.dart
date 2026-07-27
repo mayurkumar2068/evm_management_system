@@ -95,17 +95,6 @@ class _DashboardBody extends StatelessWidget {
                 ),
                 child: PresidingBoothMapCard(stationName: stationLabel),
               ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: MpSecTokens.sectionSpacing,
-                ),
-                child: AppGradientButton(
-                  icon: Icons.how_to_vote_rounded,
-                  label: LocaleKeys.commonContinue.tr(),
-                  onPressed: () =>
-                      Get.toNamed<void>(AppRoute.presidingLivePoll.path),
-                ),
-              ),
               for (final _SectionMeta section in sections)
                 if ((grouped[section.id] ?? <PresidingMilestone>[]).isNotEmpty)
                   Padding(

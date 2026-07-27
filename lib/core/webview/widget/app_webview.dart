@@ -3,8 +3,10 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
+import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -51,6 +53,8 @@ class _AppWebViewState extends State<AppWebView> {
   bool _prepared = false;
   bool _loading = true;
   bool _error = false;
+  String _errorCategory = 'load';
+  String _errorMessage = '';
   double _progress = 0;
   Uint8List? _favicon;
   Uri? _lastVisitedUri;
@@ -158,6 +162,8 @@ class _AppWebViewState extends State<AppWebView> {
       setState(() {
         _error = false;
         _loading = true;
+        _errorMessage = '';
+        _errorCategory = 'load';
       });
     }
     final AppWebViewController? controller = _controller;
@@ -518,6 +524,8 @@ class _AppWebViewState extends State<AppWebView> {
     setState(() {
       _loading = false;
       _error = true;
+      _errorCategory = _classifyResourceError(error);
+      _errorMessage = error.description.trim();
     });
     _config.onError?.call(error.description);
   }
@@ -549,6 +557,8 @@ class _AppWebViewState extends State<AppWebView> {
       setState(() {
         _loading = false;
         _error = true;
+        _errorCategory = 'http';
+        _errorMessage = 'HTTP $statusCode';
       });
       _config.onError?.call('HTTP $statusCode');
       return;
@@ -754,54 +764,158 @@ class _AppWebViewState extends State<AppWebView> {
     if (_config.errorBuilder != null) {
       return _config.errorBuilder!(context, _reload);
     }
+
+    final ({String title, String subtitle, IconData icon}) copy =
+        _errorCopyForCategory(_errorCategory);
+
     return Container(
       color: context.appBackground,
       alignment: Alignment.center,
       padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 74,
-            height: 74,
-            decoration: BoxDecoration(
-              color: context.isAppDark
-                  ? AppColors.error.withValues(alpha: 0.2)
-                  : AppColors.errorSurface,
-              shape: BoxShape.circle,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              width: 74,
+              height: 74,
+              decoration: BoxDecoration(
+                color: context.isAppDark
+                    ? AppColors.error.withValues(alpha: 0.2)
+                    : AppColors.errorSurface,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(copy.icon, color: AppColors.error, size: 34),
             ),
-            child: const Icon(
-              Icons.wifi_off_rounded,
-              color: AppColors.error,
-              size: 34,
+            const SizedBox(height: 18),
+            Text(
+              copy.title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.titleMedium.copyWith(
+                color: context.appOnSurface,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'पेज लोड नहीं हो सका',
-            style: AppTextStyles.titleMedium.copyWith(
-              color: context.appOnSurface,
-              fontWeight: FontWeight.w700,
+            const SizedBox(height: 8),
+            Text(
+              copy.subtitle,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: context.appMuted,
+                height: 1.45,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Couldn\'t load this page. Check your connection and try again.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(color: context.appMuted),
-          ),
-          const SizedBox(height: 22),
-          SizedBox(
-            width: 180,
-            child: AppGradientButton(
-              label: 'Retry',
-              icon: Icons.refresh_rounded,
-              gradient: AppGradients.survey,
-              onPressed: _reload,
+            if (_errorMessage.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.06),
+                  borderRadius: AppRadius.brMd,
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.22),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      LocaleKeys.webviewErrorDetailsLabel.tr(),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _errorMessage,
+                      style: AppTextStyles.caption.copyWith(
+                        color: context.appOnSurface,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (_lastStartedUri != null) ...<Widget>[
+                      const SizedBox(height: 8),
+                      Text(
+                        _lastStartedUri.toString(),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(
+                          color: context.appMuted,
+                          fontSize: 10,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 22),
+            SizedBox(
+              width: 200,
+              child: AppGradientButton(
+                label: LocaleKeys.commonRetry.tr(),
+                icon: Icons.refresh_rounded,
+                gradient: AppGradients.survey,
+                onPressed: _reload,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _goBackOrClose,
+              icon: const Icon(Icons.arrow_back_rounded, size: 18),
+              label: Text(LocaleKeys.webviewErrorGoBack.tr()),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  ({String title, String subtitle, IconData icon}) _errorCopyForCategory(
+    String category,
+  ) {
+    return switch (category) {
+      'network' => (
+        title: LocaleKeys.webviewErrorNetworkTitle.tr(),
+        subtitle: LocaleKeys.webviewErrorNetworkSub.tr(),
+        icon: Icons.wifi_off_rounded,
+      ),
+      'http' => (
+        title: LocaleKeys.webviewErrorHttpTitle.tr(),
+        subtitle: LocaleKeys.webviewErrorHttpSub.tr(
+          args: <String>[
+            _errorMessage.replaceFirst(RegExp(r'^HTTP\s*'), ''),
+          ],
+        ),
+        icon: Icons.http_rounded,
+      ),
+      'ssl' => (
+        title: LocaleKeys.webviewErrorSslTitle.tr(),
+        subtitle: LocaleKeys.webviewErrorSslSub.tr(),
+        icon: Icons.lock_outline_rounded,
+      ),
+      'timeout' => (
+        title: LocaleKeys.webviewErrorTimeoutTitle.tr(),
+        subtitle: LocaleKeys.webviewErrorTimeoutSub.tr(),
+        icon: Icons.timer_off_outlined,
+      ),
+      'dns' => (
+        title: LocaleKeys.webviewErrorDnsTitle.tr(),
+        subtitle: LocaleKeys.webviewErrorDnsSub.tr(),
+        icon: Icons.dns_outlined,
+      ),
+      _ => (
+        title: LocaleKeys.webviewErrorGenericTitle.tr(),
+        subtitle: _errorMessage.isNotEmpty
+            ? LocaleKeys.webviewErrorGenericSub.tr()
+            : LocaleKeys.webviewLoadFailedSubtitle.tr(),
+        icon: Icons.error_outline_rounded,
+      ),
+    };
   }
 }

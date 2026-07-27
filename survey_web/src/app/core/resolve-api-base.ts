@@ -5,7 +5,7 @@
  * 1. Flutter override — cookie `app_api_base`, query `apiBase`, or
  *    `window.__APP_CONTEXT__.apiBaseUrl` (matches active app flavor).
  * 2. Same-host — when the UI is served from `/pssurvey/` on a real host,
- *    use `{origin}/POElectionAPI` so DEV (10.x) and PROD (mpsecerms) stay aligned.
+ *    use `{origin}/POElectionAPI` so DEV (10.x) and PROD (mplocalelection) stay aligned.
  * 3. Build-time `environment.apiBaseUrl` fallback.
  */
 export function resolveApiBaseUrl(buildTimeDefault: string): string {
@@ -64,6 +64,7 @@ function deriveSameHostApiBase(): string | null {
     const knownHosts =
       hostname === '10.115.197.192' ||
       hostname.endsWith('.mp.gov.in') ||
+      hostname === 'mplocalelection.mp.gov.in' ||
       hostname === 'mpsecerms.mp.gov.in';
     if (!underPssurvey && !knownHosts) {
       return null;

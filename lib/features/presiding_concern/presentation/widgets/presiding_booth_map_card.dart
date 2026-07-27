@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/location/location_service.dart';
 import 'package:evm_management_system/core/navigation/map_navigation_service.dart';
@@ -5,6 +6,7 @@ import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.da
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +68,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
     if (name != null && name.isNotEmpty) {
       return name;
     }
-    return 'मतदान केंद्र';
+    return LocaleKeys.presidingBoothPollingStation.tr();
   }
 
   Future<void> _openNavigation() async {
@@ -84,9 +86,9 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
           : await _maps.openPlaceSearch(_stationLabel);
       if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text('मैप खोलने में समस्या — Google Maps इंस्टॉल करें'),
+            content: Text(LocaleKeys.presidingBoothMapError.tr()),
           ),
         );
       }
@@ -153,7 +155,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'मतदान केंद्र',
+                        LocaleKeys.presidingBoothPollingStation.tr(),
                         style: AppTextStyles.caption.copyWith(
                           fontWeight: FontWeight.w700,
                           color: AppColors.slate700,
@@ -171,7 +173,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'मतदान केंद्र का स्थान',
+                  LocaleKeys.presidingBoothLocationTitle.tr(),
                   style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AppColors.slate800,
@@ -189,7 +191,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                 Text(
                   _hasBooth
                       ? '${_boothLat!.toStringAsFixed(5)}°, ${_boothLong!.toStringAsFixed(5)}°'
-                      : 'लॉगिन में निर्देशांक नहीं मिले — मैप बटन से खोज खोलें',
+                      : LocaleKeys.presidingBoothNoCoords.tr(),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.slate500,
                     fontFeatures: const <FontFeature>[
@@ -200,9 +202,12 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                 if (_current != null) ...<Widget>[
                   const SizedBox(height: 4),
                   Text(
-                    'आपकी वर्तमान लोकेशन: '
-                    '${_current!.latitude.toStringAsFixed(5)}°, '
-                    '${_current!.longitude.toStringAsFixed(5)}°',
+                    LocaleKeys.presidingBoothCurrentLocation.tr(
+                      args: <String>[
+                        '${_current!.latitude.toStringAsFixed(5)}°, '
+                        '${_current!.longitude.toStringAsFixed(5)}°',
+                      ],
+                    ),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.slate500,
                     ),
@@ -225,7 +230,7 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                           )
                         : const Icon(Icons.directions_rounded),
                     label: Text(
-                      'मतदान केंद्र पर जाएँ',
+                      LocaleKeys.presidingBoothNavigate.tr(),
                       style: AppTextStyles.titleSmall.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -251,13 +256,13 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
     return Container(
       color: AppColors.slate50,
       alignment: Alignment.center,
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(Icons.map_outlined, size: 40, color: AppColors.slate300),
           SizedBox(height: 8),
           Text(
-            'मैप पर जाएँ',
+            LocaleKeys.presidingBoothOpenMap.tr(),
             style: TextStyle(
               color: AppColors.slate500,
               fontWeight: FontWeight.w600,

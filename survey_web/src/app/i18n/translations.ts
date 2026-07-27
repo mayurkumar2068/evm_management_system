@@ -16,8 +16,9 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'area.urban': 'नगरीय',
     'area.rural': 'ग्रामीण',
     'loc.note.afterSelect': 'सही स्थान चयन के बाद ही सर्वे चेकलिस्ट उपलब्ध होगी।',
-    'loc.note.lockedArea': 'लॉगिन के अनुसार क्षेत्र तय है — केवल उसी प्रकार के स्थान चुनें।',
-    'loc.section.location': 'स्थान का चयन',
+    'loc.note.lockedArea':
+      'लॉगिन के अनुसार क्षेत्र तय है — केवल उसी प्रकार के मतदान केंद्र चुनें।',
+    'loc.section.location': 'जिले का चयन',
     'loc.note.enableNext': 'सभी स्तर चुनने के बाद ही "आगे बढ़ें" बटन सक्रिय होगा।',
     'loc.next': 'आगे बढ़ें',
     'loc.validation.selectAll': 'कृपया सभी विकल्प चुनें।',
@@ -77,7 +78,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // coordinates-card
     'coord.loading': 'लाइव लोकेशन प्राप्त हो रही है…',
-    'coord.live': 'लाइव लोकेशन प्राप्त',
+    'coord.live': 'प्राप्त लाइव लोकेशन',
     'coord.unavailable': 'लोकेशन उपलब्ध नहीं',
     'coord.lat': 'अक्षांश',
     'coord.lng': 'देशांतर',
@@ -88,7 +89,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   // booth map
     'map.boothTitle': 'मतदान केंद्र का स्थान',
     'map.boothChip': 'मतदान केंद्र',
-    'map.navigate': 'मतदान केंद्र पर जाएँ',
+    'map.navigate': 'मतदान केंद्र का रास्ता खोजें',
 
     // image-upload
     'img.add': 'फ़ोटो जोड़ें',
@@ -115,8 +116,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'loc.note.afterSelect':
       'The survey checklist is available only after a valid location is selected.',
     'loc.note.lockedArea':
-      'Area type is fixed from login — only that location cascade is shown.',
-    'loc.section.location': 'Location Selection',
+      'Area type is fixed from login — select only that type of polling station.',
+    'loc.section.location': 'District Selection',
     'loc.note.enableNext':
       'The "Continue" button activates only after all levels are selected.',
     'loc.next': 'Continue',
@@ -173,7 +174,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'ci.photoHint': '* Photo is mandatory when Yes is selected',
 
     'coord.loading': 'Fetching live location…',
-    'coord.live': 'Live location acquired',
+    'coord.live': 'Acquired live location',
     'coord.unavailable': 'Location unavailable',
     'coord.lat': 'Latitude',
     'coord.lng': 'Longitude',
@@ -183,7 +184,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     'map.boothTitle': 'Polling booth location',
     'map.boothChip': 'Polling booth',
-    'map.navigate': 'Navigate to polling booth',
+    'map.navigate': 'Find route to polling station',
 
     'img.add': 'Add photo',
     'img.camera': 'Camera',

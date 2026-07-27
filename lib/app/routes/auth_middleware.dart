@@ -1,5 +1,6 @@
 import 'package:evm_management_system/app/router/app_destinations.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ class AuthMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
     final AuthState auth = AppServices.auth.authState.value;
-    final bool onboardingSeen = AppServices.onboarding.seen;
+    final bool onboardingSeen =
+        kSkipOnboarding || AppServices.onboarding.seen;
     final String location = route ?? AppRoute.splash.path;
 
     final bool atSplash = location == AppRoute.splash.path;

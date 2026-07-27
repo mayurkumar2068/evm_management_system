@@ -4,6 +4,6 @@
  */
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://mpsecerms.mp.gov.in/POElectionAPI',
+  apiBaseUrl: 'https://mplocalelection.mp.gov.in/POElectionAPI',
   useMockData: false,
 };

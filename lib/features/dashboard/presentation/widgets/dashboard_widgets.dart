@@ -12,7 +12,7 @@ import 'package:evm_management_system/shared/models/activity_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Local brand tints for the dashboard — soft blue→mint (Booth Survey family).
+/// Local brand tints — soft blue→mint dashboard accents.
 class DashboardBrand {
   const DashboardBrand._();
   static const Color green = AppColors.primary;
@@ -21,6 +21,14 @@ class DashboardBrand {
   static const Color saffron = AppColors.saffron;
   static const Color ink = AppColors.textPrimary;
   static const Color surface = AppColors.slate50;
+
+  /// Welcome hero — same hues as app header, slightly richer/deeper.
+  static const LinearGradient welcomeGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: <Color>[Color(0xFF4B8FE8), Color(0xFF2563EB), Color(0xFF059669)],
+    stops: <double>[0.0, 0.48, 1.0],
+  );
 }
 
 /// Local spacing constants for the dashboard.
@@ -29,6 +37,73 @@ class DashboardGap {
   static const double page = 20;
   static const double section = 24;
   static const double headerToContent = 12;
+}
+
+/// Soft multicolor wash on the light dashboard canvas.
+class DashboardBackdrop extends StatelessWidget {
+  const DashboardBackdrop({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  Color(0xFFD7E9FB),
+                  Color(0xFFE8F3FC),
+                  Color(0xFFE5F8F1),
+                  Color(0xFFDCEEF9),
+                ],
+                stops: <double>[0.0, 0.32, 0.68, 1.0],
+              ),
+            ),
+          ),
+          Positioned(
+            top: -48,
+            right: -28,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withValues(alpha: 0.16),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 200,
+            left: -60,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.green.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            right: -20,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.saffron.withValues(alpha: 0.10),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
@@ -50,6 +125,7 @@ class DashboardHeader extends StatelessWidget {
         8,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Container(
             width: 40,
@@ -69,43 +145,46 @@ class DashboardHeader extends StatelessWidget {
             ),
             child: const BrandLogo(width: 44),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   LocaleKeys.dashboardBrandTitle.tr(),
-                  maxLines: 1,
+                  maxLines: 2,
+                  textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.titleMedium.copyWith(
                     color: context.appOnSurface,
                     fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    height: 1.1,
+                    fontSize: 14,
+                    height: 1.25,
                   ),
                 ),
+                const SizedBox(height: 3),
                 Text(
                   LocaleKeys.dashboardBrandSubtitle.tr(),
-                  maxLines: 1,
+                  maxLines: 2,
+                  textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
-                    color: context.appMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A3A6B),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           _RoundIcon(
             icon: Icons.notifications_none_rounded,
             badge: pending,
             onTap: () => Get.toNamed<dynamic>(AppRoute.notifications.path),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           _Avatar(
             name: name,
             onTap: () => Get.offNamed<dynamic>(AppRoute.profile.path),
@@ -237,7 +316,7 @@ class DashboardWelcomeCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         borderRadius: AppRadius.brXl,
-        gradient: AppGradients.header,
+        gradient: DashboardBrand.welcomeGradient,
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.28),
@@ -475,6 +554,101 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+// ── Category toggle ───────────────────────────────────────────────────────
+
+class DashboardCategoryToggle extends StatelessWidget {
+  const DashboardCategoryToggle({
+    required this.active,
+    required this.onChanged,
+    super.key,
+  });
+
+  final DashboardCategory active;
+  final ValueChanged<DashboardCategory> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: DashboardGap.page),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: context.appChip,
+          borderRadius: AppRadius.brPill,
+          border: Border.all(color: context.appOutline),
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: _ToggleOption(
+                label: LocaleKeys.dashboardVoterServices.tr(),
+                selected: active == DashboardCategory.voterServices,
+                onTap: () => onChanged(DashboardCategory.voterServices),
+              ),
+            ),
+            Expanded(
+              child: _ToggleOption(
+                label: LocaleKeys.dashboardAboutElections.tr(),
+                selected: active == DashboardCategory.aboutElections,
+                onTap: () => onChanged(DashboardCategory.aboutElections),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleOption extends StatelessWidget {
+  const _ToggleOption({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primaryDark : Colors.transparent,
+          borderRadius: AppRadius.brPill,
+          boxShadow: selected
+              ? <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption.copyWith(
+            color: selected ? Colors.white : context.appOnSurface,
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Services grid ─────────────────────────────────────────────────────────
 
 class DashboardServicesGrid extends StatelessWidget {
@@ -483,17 +657,29 @@ class DashboardServicesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    const double spacing = 12;
+    final double tileWidth =
+        (screenWidth - (DashboardGap.page * 2) - spacing) / 2;
+    // Compact tiles — shorter on home so the grid doesn't dominate.
+    final bool hasDesc = services.any(
+      (DashboardService s) => s.desc.trim().isNotEmpty,
+    );
+    final double tileHeight = (hasDesc ? tileWidth * 0.78 : tileWidth * 0.68)
+        .clamp(92.0, hasDesc ? 128.0 : 112.0);
+    final double aspectRatio = tileWidth / tileHeight;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: DashboardGap.page),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisSpacing: 22,
-          crossAxisSpacing: 22,
-          childAspectRatio: 1.18,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          childAspectRatio: aspectRatio,
         ),
         itemCount: services.length,
         itemBuilder: (context, index) {
@@ -512,13 +698,27 @@ class DashboardServicesGrid extends StatelessWidget {
 
     // 1. Check for service login if required
     if (s.requiresServiceLogin) {
-      if (session == null) {
+      final bool kindMismatch = s.requiredLoginKind != null &&
+          session != null &&
+          session.kind != s.requiredLoginKind;
+      final bool needsLogin =
+          s.forceFreshLogin || session == null || kindMismatch;
+      if (needsLogin) {
+        // Clear previous survey/PO token so this service always authenticates fresh.
+        if (session != null) {
+          await AppServices.serviceAuth.signOut();
+        }
         await Get.toNamed<dynamic>(
           AppRoute.serviceLogin.path,
           arguments: s.title,
         );
         session = AppServices.serviceAuth.session.value;
-        if (session == null) return; 
+        if (session == null) return;
+        if (s.requiredLoginKind != null &&
+            session.kind != s.requiredLoginKind) {
+          await AppServices.serviceAuth.signOut();
+          return;
+        }
       }
     }
 
@@ -531,7 +731,7 @@ class DashboardServicesGrid extends StatelessWidget {
     // 3. Handle External Web URLs
     final bool isOnline = await AppServices.connectivity.isOnline;
     if (!isOnline) {
-      await Get.toNamed<dynamic>(AppRoute.offlineHub.path);
+      await Get.toNamed<dynamic>(AppRoute.offlineHub.path, arguments: s.title);
       return;
     }
 
@@ -553,84 +753,99 @@ class DashboardServicesGrid extends StatelessWidget {
   }
 }
 
+/// Classic service tile — white card, tinted icon, title (+ optional desc).
 class _ServiceCard extends StatelessWidget {
   const _ServiceCard({required this.service, required this.onTap});
+
   final DashboardService service;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final bool hasDesc = service.desc.trim().isNotEmpty;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: DashboardStatStrip.cardDecoration(context).copyWith(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: DashboardStatStrip.cardDecoration(
+          context,
+        ).copyWith(borderRadius: BorderRadius.circular(16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              width: 52,
-              height: 52,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: <Color>[
-                    service.color.withValues(alpha: 0.15),
+                    service.color.withValues(alpha: 0.16),
                     service.color.withValues(alpha: 0.05),
                   ],
                 ),
-                borderRadius: AppRadius.brLg,
+                borderRadius: AppRadius.brMd,
                 border: Border.all(
                   color: service.color.withValues(alpha: 0.12),
                 ),
               ),
-              child: Icon(service.icon, size: 28, color: service.color),
+              child: Icon(service.icon, size: 22, color: service.color),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+            const SizedBox(height: 8),
+            Row(
               children: <Widget>[
-                Text(
-                  service.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: context.appOnSurface,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    height: 1.2,
+                Expanded(
+                  child: Text(
+                    service.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: context.appOnSurface,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      height: 1.2,
+                    ),
                   ),
                 ),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        service.desc,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.caption.copyWith(
-                          color: context.appMuted,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 16,
-                      color: service.color.withValues(alpha: 0.8),
-                    ),
-                  ],
-                ),
+                if (!hasDesc) ...<Widget>[
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 14,
+                    color: service.color.withValues(alpha: 0.8),
+                  ),
+                ],
               ],
             ),
+            if (hasDesc) ...<Widget>[
+              const SizedBox(height: 2),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      service.desc,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.caption.copyWith(
+                        color: context.appMuted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 14,
+                    color: service.color.withValues(alpha: 0.8),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

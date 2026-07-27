@@ -20,15 +20,15 @@ abstract final class PresidingSessionMapper {
         state: PresidingMilestoneState.pending,
       ),
       const PresidingMilestone(
-        id: PresidingMilestoneIds.reachedPollingStation,
+        id: PresidingMilestoneIds.materialReceived,
         sectionId: PresidingSectionIds.arrival,
-        labelKey: PresidingMilestoneLabelKeys.reachedPollingStation,
+        labelKey: PresidingMilestoneLabelKeys.materialReceived,
         state: PresidingMilestoneState.pending,
       ),
       const PresidingMilestone(
-        id: PresidingMilestoneIds.materialReceived,
-        sectionId: PresidingSectionIds.prePoll,
-        labelKey: PresidingMilestoneLabelKeys.materialReceived,
+        id: PresidingMilestoneIds.reachedPollingStation,
+        sectionId: PresidingSectionIds.arrival,
+        labelKey: PresidingMilestoneLabelKeys.reachedPollingStation,
         state: PresidingMilestoneState.pending,
       ),
       const PresidingMilestone(
