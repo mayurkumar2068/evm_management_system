@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:evm_management_system/config/flavor.dart';
 
 /// Central place to select which environment the app runs against.
@@ -12,16 +14,19 @@ class AppConfig {
   const AppConfig._();
 
   /// 👉 Change this value to switch environment while developing.
-  static const Flavor defaultFlavor = Flavor.dev;
+  static const Flavor defaultFlavor = Flavor.production;
 
   /// Optional build-time override, e.g. `--dart-define=APP_FLAVOR=uat`.
   static const String _override = String.fromEnvironment('APP_FLAVOR');
 
   /// The environment the app should boot with.
   static Flavor get environment => switch (_override) {
+
     'dev' => Flavor.dev,
     'uat' => Flavor.uat,
     'prod' || 'production' => Flavor.production,
     _ => defaultFlavor,
+
   };
+
 }

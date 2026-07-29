@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../core/notifications/notification_service.dart';
+
 /// Single composition root. Loads the flavor `.env`, initializes cross-cutting
 /// services, wires GetX dependencies and starts the app inside a guarded zone.
 Future<void> bootstrap(Flavor flavor) async {
@@ -27,7 +29,9 @@ Future<void> bootstrap(Flavor flavor) async {
         GoogleFonts.poppins(),
         GoogleFonts.notoSansDevanagari(),
       ]);
+      WidgetsFlutterBinding.ensureInitialized();
 
+      await LocalNotificationService.instance.initialize();
       await dotenv.load(fileName: flavor.envFile);
       final EnvironmentConfig config = EnvironmentConfig.load(flavor);
 

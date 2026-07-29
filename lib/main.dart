@@ -5,4 +5,6 @@ import 'package:evm_management_system/config/app_config.dart';
 ///
 /// The active environment (DEV / UAT / PRODUCTION) is selected in
 /// [AppConfig.environment]. Change that one constant to switch flavors.
-Future<void> main() => bootstrap(AppConfig.environment);
+Future<void> main() async {
+  await bootstrap(AppConfig.environment);
+}

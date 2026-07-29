@@ -81,7 +81,10 @@ abstract final class AppServices {
       const DefaultScreenSecurityService(),
       permanent: true,
     );
-    Get.put<NotificationService>(NoopNotificationService(), permanent: true);
+    Get.put<LocalNotificationService>(
+      LocalNotificationService.instance,
+      permanent: true,
+    );
 
     final SessionEventBus sessionBus = SessionEventBus();
     Get.put<SessionEventBus>(sessionBus, permanent: true);

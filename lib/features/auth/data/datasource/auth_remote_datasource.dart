@@ -4,10 +4,11 @@ import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/features/auth/data/models/auth_response_model.dart';
 import 'package:evm_management_system/features/auth/data/models/user_model.dart';
 import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
-
+import 'package:evm_management_system/core/notifications/notification_service.dart';
 /// Contract for the auth network calls.
 abstract interface class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginCredentials credentials);
+  Future<UserModel> localNotification(UserModel usermodel);
   Future<UserModel> profile();
   Future<void> logout();
 }
@@ -30,12 +31,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if (credentials.electionId != null) {
       body['electionId'] = credentials.electionId;
     }
+
     final Response<Map<String, dynamic>> response = await _apiClient
         .post<Map<String, dynamic>>(
           ApiEndpoints.login,
           data: body,
           options: unauthenticatedOptions,
         );
+
+    final authResponse = AuthResponseModel.fromJson(
+      response.data ?? <String, dynamic>{},
+    );
+    await localNotification(authResponse.user);
+
     return AuthResponseModel.fromJson(response.data ?? <String, dynamic>{});
   }
 
@@ -58,5 +66,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         sendTimeout: const Duration(seconds: 3),
       ),
     );
+  }
+
+  @override
+  Future<UserModel> localNotification(UserModel userModel) async {
+    final String areaType = userModel.areaType.toString().trim().toLowerCase();
+
+    await NotificationUtils.scheduleDailyReminders(
+      areaType: areaType == 'urban'
+          ? PollingAreaType.urban
+          : PollingAreaType.rural,
+    );
+
+    return userModel;
   }
 }

@@ -43,6 +43,7 @@ class AppBottomNav extends StatelessWidget {
         12 + MediaQuery.of(context).padding.bottom * 0.4,
       ),
       child: Container(
+
         decoration: BoxDecoration(
           color: context.appNavBar,
           borderRadius: BorderRadius.circular(26),
