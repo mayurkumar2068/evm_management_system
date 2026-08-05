@@ -324,7 +324,7 @@ class _LoginHero extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Row(
                   children: <Widget>[
@@ -349,29 +349,25 @@ class _LoginHero extends StatelessWidget {
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            title,
-                            style: AppTextStyles.titleLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              height: 1.15,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            subtitle,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.white.withValues(alpha: 0.92),
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        title,
+                        style: AppTextStyles.titleLarge.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    height: 1.35,
+                  ),
                 ),
               ],
             ),

@@ -17,44 +17,35 @@ abstract final class AppFieldDecoration {
       labelText: labelText,
       errorText: errorText,
       helperText: helperText,
-
       filled: true,
-      fillColor: enabled ? AppColors.surfaceVariant : AppColors.slate100,
-
+      fillColor: enabled ? AppColors.surface : AppColors.slate100,
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       alignLabelWithHint: true,
-      isDense: false,
-
-      contentPadding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
-
-      labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate500),
-
+      isDense: true,
+      contentPadding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+      labelStyle: AppTextStyles.caption.copyWith(
+        color: AppColors.slate500,
+        fontWeight: FontWeight.w600,
+      ),
       floatingLabelStyle: AppTextStyles.label.copyWith(
         color: AppColors.primary,
-        backgroundColor: AppColors.surface,
+        fontWeight: FontWeight.w700,
       ),
-
       helperStyle: AppTextStyles.caption.copyWith(color: AppColors.slate500),
-
       errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
-
       errorMaxLines: 2,
-
       prefixIcon: prefixIcon == null
           ? null
           : Icon(
               prefixIcon,
-              size: 22,
+              size: 20,
               color: enabled ? AppColors.slate500 : AppColors.slate300,
             ),
-
-      prefixIconConstraints: const BoxConstraints(minWidth: 48),
-
+      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       suffixIcon: suffixIcon,
-
-      border: _border(AppColors.outline),
-      enabledBorder: _border(AppColors.outline),
-      disabledBorder: _border(AppColors.slate200),
+      border: _border(AppColors.slate200),
+      enabledBorder: _border(AppColors.slate200),
+      disabledBorder: _border(AppColors.slate100),
       focusedBorder: _border(AppColors.primary, width: 1.5),
       errorBorder: _border(AppColors.error),
       focusedErrorBorder: _border(AppColors.error, width: 1.5),
@@ -115,7 +106,7 @@ class AppDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget placeholder = Text(
       hint ?? _label,
-      style: AppTextStyles.bodyLarge.copyWith(
+      style: AppTextStyles.bodyMedium.copyWith(
         color: enabled ? AppColors.slate400 : AppColors.slate300,
       ),
       overflow: TextOverflow.ellipsis,
@@ -123,27 +114,20 @@ class AppDropdown<T> extends StatelessWidget {
 
     return DropdownButtonFormField<T>(
       key: ValueKey('$label-$value-${items.length}-$enabled'),
-
       value: _hasSelection ? value : null,
-
       isExpanded: true,
-
+      isDense: true,
       borderRadius: AppRadius.brMd,
-
-      menuMaxHeight: 320,
-
+      menuMaxHeight: 280,
       dropdownColor: AppColors.surface,
-
-      elevation: 4,
-
+      elevation: 3,
       icon: Icon(
         Icons.keyboard_arrow_down_rounded,
-        color: enabled ? AppColors.slate600 : AppColors.slate400,
+        size: 22,
+        color: enabled ? AppColors.slate500 : AppColors.slate300,
       ),
-
       hint: placeholder,
       disabledHint: placeholder,
-
       decoration: AppFieldDecoration.dropdown(
         labelText: _label,
         errorText: errorText,
@@ -152,16 +136,15 @@ class AppDropdown<T> extends StatelessWidget {
         enabled: enabled,
         suffixIcon: isLoading
             ? const Padding(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.all(10),
                 child: SizedBox(
-                  width: 18,
-                  height: 18,
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             : null,
       ),
-
       items: !_hasItems
           ? const []
           : items
@@ -171,19 +154,20 @@ class AppDropdown<T> extends StatelessWidget {
                     child: Text(
                       labelBuilder(item),
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyLarge.copyWith(
+                      style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.slate800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 )
                 .toList(),
-
       onChanged: enabled && !isLoading ? onChanged : null,
-
       validator: validator,
-
-      style: AppTextStyles.bodyLarge.copyWith(color: AppColors.slate800),
+      style: AppTextStyles.bodyMedium.copyWith(
+        color: AppColors.slate800,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

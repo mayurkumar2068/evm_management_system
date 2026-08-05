@@ -63,13 +63,22 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _content() {
-    if (icon == null) return Text(label, style: AppTextStyles.button);
+    final Color foreground = switch (variant) {
+      AppButtonVariant.primary ||
+      AppButtonVariant.secondary ||
+      AppButtonVariant.danger => AppColors.onPrimary,
+      AppButtonVariant.outline || AppButtonVariant.text => AppColors.primary,
+    };
+    final TextStyle labelStyle = AppTextStyles.button.copyWith(
+      color: foreground,
+    );
+    if (icon == null) return Text(label, style: labelStyle);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 20),
+        Icon(icon, size: 20, color: foreground),
         AppSpacing.gapSm,
-        Text(label, style: AppTextStyles.button),
+        Text(label, style: labelStyle),
       ],
     );
   }

@@ -103,11 +103,6 @@ class _OnlineNominationHomeScreenState
                   title: LocaleKeys.nominationFeatureTransparencyTitle.tr(),
                   subtitle: LocaleKeys.nominationFeatureTransparencyDesc.tr(),
                 ),
-                NominationFeatureBullet(
-                  icon: Icons.speed_rounded,
-                  title: LocaleKeys.nominationFeatureSpeedTitle.tr(),
-                  subtitle: LocaleKeys.nominationFeatureSpeedDesc.tr(),
-                ),
                 AppSpacing.vGapLg,
                 NominationGovButton(
                   label: LocaleKeys.nominationActionStart.tr(),

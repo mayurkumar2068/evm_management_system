@@ -2,7 +2,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Domain contract for presiding-officer offline-first data.
+/// Domain contract for presiding-officer session data (API-first when online).
 abstract interface class PresidingConcernRepository {
   /// Loads the active session or seeds defaults for first launch.
   Future<PresidingSession> loadSession();
@@ -28,6 +28,9 @@ abstract interface class PresidingConcernRepository {
   /// Retries pending milestone and turnout API submissions.
   Future<void> syncPending();
 
-  /// Pulls saved PO status from server and merges into the local session.
+  /// Pulls latest server-side PO status and merges milestone/turnout timestamps.
   Future<PresidingSession> refreshFromServer();
+
+  /// Wipes local PO session cache (milestones / turnout). Call on logout / re-login.
+  Future<void> clearLocalCache();
 }

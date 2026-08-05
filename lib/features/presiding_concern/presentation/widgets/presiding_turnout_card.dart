@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,7 @@ class PresidingTurnoutCard extends StatefulWidget {
     this.onExpansionChanged,
     this.queueOnly = false,
     this.embedded = false,
+    this.forceReadOnly = false,
     super.key,
   });
 
@@ -42,6 +45,7 @@ class PresidingTurnoutCard extends StatefulWidget {
   final ValueChanged<bool>? onExpansionChanged;
   final bool queueOnly;
   final bool embedded;
+  final bool forceReadOnly;
 
   final Future<void> Function({
     int? male,
@@ -130,6 +134,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
     final int previous = _val(targetCtrl);
     final int next = previous + delta;
     if (next < 0) return;
+    if (next > TurnoutCountValidator.maxEnterableCount) return;
 
     targetCtrl.text = '$next';
     setState(() => _busy = true);
@@ -142,6 +147,13 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
         queueCount: widget.queueOnly ? _val(_queueCtrl) : null,
       );
       widget.onSaved?.call();
+    } on TurnoutCountValidationException catch (e) {
+      targetCtrl.text = '$previous';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(formatTurnoutValidationMessage(e.result))),
+        );
+      }
     } catch (e) {
       targetCtrl.text = '$previous';
       if (mounted) {
@@ -169,6 +181,12 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
         queueCount: widget.queueOnly ? _val(_queueCtrl) : null,
       );
       widget.onSaved?.call();
+    } on TurnoutCountValidationException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(formatTurnoutValidationMessage(e.result))),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -184,7 +202,8 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
     }
   }
 
-  bool get _isReadOnly => widget.initialRecord?.isReadOnly ?? false;
+  bool get _isReadOnly =>
+      widget.forceReadOnly || (widget.initialRecord?.isReadOnly ?? false);
 
   @override
   Widget build(BuildContext context) {
@@ -314,37 +333,18 @@ class _TimeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.slate100,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.access_time_rounded,
-            color: AppColors.primary,
-            size: 22,
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: 56,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.caption.copyWith(
-              fontWeight: FontWeight.w800,
-              color: AppColors.primary,
-              fontSize: 11,
-            ),
-          ),
-        ),
-      ],
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.slate100,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Icon(
+        Icons.access_time_rounded,
+        color: AppColors.primary,
+        size: 22,
+      ),
     );
   }
 }
@@ -362,31 +362,27 @@ class _SaveStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isSaved && !isReadOnly) {
+      return const SizedBox.shrink();
+    }
+
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Icon(
           isReadOnly
               ? Icons.lock_rounded
-              : isSaved
-              ? Icons.check_circle_rounded
-              : Icons.radio_button_unchecked_rounded,
+              : Icons.check_circle_rounded,
           size: 16,
-          color: isReadOnly
-              ? AppColors.slate500
-              : isSaved
-              ? AppColors.success
-              : AppColors.slate400,
+          color: isReadOnly ? AppColors.slate500 : AppColors.success,
         ),
         const SizedBox(width: 4),
-        Flexible(
+        Expanded(
           child: Text(
             isReadOnly
                 ? LocaleKeys.presidingAlreadyRegistered.tr()
-                : isSaved
-                ? LocaleKeys.presidingSavedAt.tr(args: <String>[savedTime])
-                : LocaleKeys.presidingNotSaved.tr(),
-            maxLines: 1,
+                : LocaleKeys.presidingSavedAt.tr(args: <String>[savedTime]),
+            maxLines: 2,
+            softWrap: true,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.caption.copyWith(
               color: isSaved ? AppColors.success : AppColors.slate500,
@@ -416,7 +412,6 @@ class _SaveActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool disabled = busy || isReadOnly || onPressed == null;
     return SizedBox(
-      width: 108,
       height: 48,
       child: ElevatedButton(
         onPressed: disabled ? null : onPressed,
@@ -430,7 +425,8 @@ class _SaveActionButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          minimumSize: const Size(108, 48),
         ),
         child: busy
             ? const SizedBox(
@@ -534,6 +530,10 @@ class _QueueCountSection extends StatelessWidget {
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly,
+            const _ReplaceInitialZeroFormatter(),
+            LengthLimitingTextInputFormatter(
+              TurnoutCountValidator.maxInputDigits,
+            ),
           ],
           decoration: InputDecoration(
             hintText: LocaleKeys.presidingEnterNumber.tr(),
@@ -715,6 +715,10 @@ class _CountBox extends StatelessWidget {
         readOnly: disabled,
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly,
+          const _ReplaceInitialZeroFormatter(),
+          LengthLimitingTextInputFormatter(
+            TurnoutCountValidator.maxInputDigits,
+          ),
         ],
         style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w800),
         decoration: InputDecoration(
@@ -740,6 +744,29 @@ class _CountBox extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// When field shows only `0`, first typed digit replaces it (e.g. type `5` → `5`, not `05`).
+/// Does not affect later edits once value is non-zero.
+class _ReplaceInitialZeroFormatter extends TextInputFormatter {
+  const _ReplaceInitialZeroFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (oldValue.text == '0' &&
+        newValue.text.length > 1 &&
+        newValue.text.startsWith('0')) {
+      final String replaced = newValue.text.substring(1);
+      return TextEditingValue(
+        text: replaced,
+        selection: TextSelection.collapsed(offset: replaced.length),
+      );
+    }
+    return newValue;
   }
 }
 

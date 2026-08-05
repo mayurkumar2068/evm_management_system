@@ -7,6 +7,8 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
+import '../../../../shared/design_system/tokens/app_theme_colors.dart';
+
 /// Premium MP State Election Management dashboard.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -33,41 +35,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final DashboardCategory category = controller.activeCategory.value;
       final List<DashboardService> services = controller.filteredServices;
 
-      return Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          const DashboardBackdrop(),
-          RefreshIndicator(
-            onRefresh: () async {
-              controller.rebuildDashboard();
-              await Future<void>.delayed(const Duration(milliseconds: 300));
-            },
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 120),
-              children: <Widget>[
-                DashboardHeader(
-                  name: state.userName,
-                  pending: state.pendingCount,
-                ),
-                if (!kHideDashboardStats) ...<Widget>[
-                  const SizedBox(height: DashboardGap.section),
-                  DashboardStatStrip(stats: state.stats),
+      return Scaffold(
+        backgroundColor: context.appBackground,
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            const DashboardBackdrop(),
+            RefreshIndicator(
+              onRefresh: () async {
+                controller.rebuildDashboard();
+                await Future<void>.delayed(const Duration(milliseconds: 300));
+              },
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 120),
+                children: <Widget>[
+                  DashboardHeader(
+                    name: state.userName,
+                    pending: state.pendingCount,
+                  ),
+                  if (!kHideDashboardStats) ...<Widget>[
+                    const SizedBox(height: DashboardGap.section),
+                    DashboardStatStrip(stats: state.stats),
+                  ],
+                  const SizedBox(height: 16),
+                  DashboardSectionHeader(
+                    title: LocaleKeys.dashboardMainServices.tr(),
+                  ),
+                  const SizedBox(height: 8),
+                  DashboardCategoryToggle(
+                    active: category,
+                    onChanged: controller.setCategory,
+                  ),
+                  const SizedBox(height: 10),
+                  DashboardServicesGrid(services: services),
                 ],
-                const SizedBox(height: 16),
-                DashboardSectionHeader(
-                  title: LocaleKeys.dashboardMainServices.tr(),
-                ),
-                const SizedBox(height: 8),
-                DashboardCategoryToggle(
-                  active: category,
-                  onChanged: controller.setCategory,
-                ),
-                const SizedBox(height: 10),
-                DashboardServicesGrid(services: services),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     });
   }

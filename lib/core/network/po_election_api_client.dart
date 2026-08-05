@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/core/network/dio_factory.dart';
 import 'package:evm_management_system/core/network/interceptors/bearer_auth_interceptor.dart';
+import 'package:evm_management_system/core/network/interceptors/po_api_logging_interceptor.dart';
 import 'package:evm_management_system/core/network/po_election_auth.dart';
 
 /// Shared authenticated Dio client for all PO Election API traffic.
@@ -14,6 +15,8 @@ abstract final class PoElectionApiClient {
       baseUrl: config.poElectionApiBaseUrl,
       interceptors: <Interceptor>[
         BearerAuthInterceptor(getAccessToken: PoElectionAuth.accessToken),
+        // Always log PO traffic (prod ENABLE_LOGGING=false otherwise hides it).
+        PoApiLoggingInterceptor(),
       ],
     );
   }

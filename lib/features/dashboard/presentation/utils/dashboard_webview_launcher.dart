@@ -18,9 +18,7 @@ abstract final class DashboardWebViewLauncher {
     required bool openAsExternalPortal,
   }) {
     final String token = session?.token ?? '';
-    if (!passSessionContext || token.isEmpty) {
-      return baseUrl;
-    }
+    if (!passSessionContext || token.isEmpty) return baseUrl;
 
     var url = appendWebViewSurveyContext(
       baseUrl,

@@ -13,6 +13,7 @@ class AppGradientHeader extends StatelessWidget {
     this.leading,
     this.trailing,
     this.bottom,
+    this.centerTitle = false,
     this.gradient = AppGradients.header,
     this.padding = const EdgeInsets.fromLTRB(16, 16, 16, 20),
     super.key,
@@ -23,12 +24,18 @@ class AppGradientHeader extends StatelessWidget {
   final Widget? leading;
   final Widget? trailing;
   final Widget? bottom;
+
+  /// When true, title/subtitle are centered (leading/trailing stay at edges).
+  final bool centerTitle;
   final Gradient gradient;
   final EdgeInsetsGeometry padding;
+
+  static const double _sideSlot = 38;
 
   @override
   Widget build(BuildContext context) {
     final double topInset = MediaQuery.of(context).padding.top;
+
     return Container(
       decoration: BoxDecoration(
         gradient: gradient,
@@ -60,36 +67,87 @@ class AppGradientHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 if (title != null || leading != null || trailing != null)
-                  Row(
-                    children: <Widget>[
-                      if (leading != null) ...<Widget>[
-                        leading!,
-                        const SizedBox(width: 12),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  centerTitle
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              if (leading != null)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: leading!,
+                                ),
+                              if (trailing != null)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: trailing!,
+                                ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: leading != null || trailing != null
+                                      ? _sideSlot + 8
+                                      : 0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    if (title != null)
+                                      Text(
+                                        title!,
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.titleLarge.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    if (subtitle != null)
+                                      Text(
+                                        subtitle!,
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Row(
                           children: <Widget>[
-                            if (title != null)
-                              Text(
-                                title!,
-                                style: AppTextStyles.titleLarge.copyWith(
-                                  color: Colors.white,
-                                ),
+                            if (leading != null) ...<Widget>[
+                              leading!,
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  if (title != null)
+                                    Text(
+                                      title!,
+                                      style: AppTextStyles.titleLarge.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (subtitle != null)
+                                    Text(
+                                      subtitle!,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                            if (subtitle != null)
-                              Text(
-                                subtitle!,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                              ),
+                            ),
+                            if (trailing != null) trailing!,
                           ],
                         ),
-                      ),
-                      if (trailing != null) trailing!,
-                    ],
-                  ),
                 if (bottom != null) ...<Widget>[
                   if (title != null) const SizedBox(height: 18),
                   bottom!,

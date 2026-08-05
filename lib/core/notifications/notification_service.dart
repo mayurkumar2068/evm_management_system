@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:evm_management_system/core/time/app_time_zone.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 enum PollingAreaType {
@@ -25,6 +25,17 @@ class NotificationUtils {
     );
   }
 
+  /// One-shot test — fires after [minutes] (default 10). Debug / QA only.
+  static Future<void> scheduleTestInMinutes({int minutes = 10}) async {
+    await LocalNotificationService.instance.scheduleInMinutes(
+      id: 998,
+      minutes: minutes,
+      title: 'परीक्षण सूचना',
+      body:
+          'सूचना परीक्षण सफल। यह $minutes मिनट बाद आने के लिए शेड्यूल की गई थी।',
+    );
+  }
+
   static Future<void> scheduleDailyReminders({
     required PollingAreaType areaType,
   }) async {
@@ -44,18 +55,14 @@ class LocalNotificationService {
   FlutterLocalNotificationsPlugin();
 
   static const String _channelId = 'voter_turnout_reporting';
-  static const String _channelName = 'Voter Turnout Reporting';
+  static const String _channelName = 'मतदान अपडेट रिमाइंडर';
 
   bool _initialized = false;
 
   Future<void> initialize() async {
     if (_initialized) return;
 
-    tz.initializeTimeZones();
-
-    try {
-      tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
-    } catch (_) {}
+    await AppTimeZone.ensureInitialized();
 
     const DarwinInitializationSettings darwin =
     DarwinInitializationSettings(
@@ -95,7 +102,7 @@ class LocalNotificationService {
       const AndroidNotificationChannel(
         _channelId,
         _channelName,
-        description: 'Voter Turnout Reminder',
+        description: '2-2 घंटे की मतदान जानकारी अपडेट रिमाइंडर',
         importance: Importance.max,
       ),
     );
@@ -113,9 +120,47 @@ class LocalNotificationService {
       sound: true,
     );
 
-    debugPrint("iOS Permission : $granted");
+    debugPrint('iOS Permission : $granted');
 
     _initialized = true;
+
+    // Production-like behavior: no automatic debug test notification on init.
+    // Trigger test manually via NotificationUtils.scheduleTestInMinutes().
+  }
+
+  /// One-shot notification after [minutes] from now (does not repeat).
+  Future<void> scheduleInMinutes({
+    required int id,
+    required int minutes,
+    required String title,
+    required String body,
+  }) async {
+    await initialize();
+
+    final tz.TZDateTime when =
+        tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
+
+    await _plugin.cancel(id: id);
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: when,
+      notificationDetails: _notificationDetails(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+
+    debugPrint(
+      '[Notification] one-shot id=$id scheduled at $when '
+      '(in ${minutes}m, tz=${tz.local.name})',
+    );
+
+    final List<PendingNotificationRequest> pending =
+        await _plugin.pendingNotificationRequests();
+    debugPrint('[Notification] pending count=${pending.length}');
+    for (final PendingNotificationRequest item in pending) {
+      debugPrint('[Notification] pending ID:${item.id} Title:${item.title}');
+    }
   }
 
   // ============================
@@ -140,6 +185,7 @@ class LocalNotificationService {
     for (int i = 0; i < hours.length; i++) {
       await _scheduleReminder(
         id: 100 + i,
+        areaType: areaType,
         hour: hours[i],
         minute: 0,
       );
@@ -160,6 +206,7 @@ class LocalNotificationService {
 
   Future<void> _scheduleReminder({
     required int id,
+    required PollingAreaType areaType,
     required int hour,
     required int minute,
   }) async {
@@ -180,16 +227,37 @@ class LocalNotificationService {
 
     await _plugin.zonedSchedule(
       id: id,
-      title: 'Voter Turnout Update',
-      body:
-      'Please submit voter turnout percentage recorded up to ${_formatTime(
-          hour, minute)}.',
+      title: _reminderTitle(areaType: areaType, hour: hour),
+      body: _reminderBody(areaType: areaType, hour: hour, minute: minute),
       scheduledDate: scheduled,
       notificationDetails: _notificationDetails(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
+  String _reminderTitle({
+    required PollingAreaType areaType,
+    required int hour,
+  }) {
+    if (areaType == PollingAreaType.urban && hour == 17) {
+      return 'मतदान अपडेट (5 बजे) आवश्यक';
+    }
+    return 'मतदान अपडेट आवश्यक';
+  }
+
+  String _reminderBody({
+    required PollingAreaType areaType,
+    required int hour,
+    required int minute,
+  }) {
+    final String slot = _formatTime(hour, minute);
+    final bool isUrbanFinalSlot = areaType == PollingAreaType.urban && hour == 17;
+    if (isUrbanFinalSlot) {
+      return 'कृपया $slot तक का मतदान प्रतिशत अभी दर्ज करें। यह नगरीय क्षेत्र की अंतिम 2-2 घंटे की प्रविष्टि है।';
+    }
+    return 'कृपया $slot तक की 2-2 घंटे की मतदान जानकारी अभी भरें। यह रीयल-टाइम मॉनिटरिंग के लिए आवश्यक है।';
+  }
+
 
   // ============================
   // Cancel only reminder IDs
@@ -243,7 +311,7 @@ class LocalNotificationService {
       android: AndroidNotificationDetails(
         _channelId,
         _channelName,
-        channelDescription: 'Voter Turnout Reminder',
+        channelDescription: '2-2 घंटे की मतदान जानकारी अपडेट रिमाइंडर',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,

@@ -1,11 +1,15 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
+  inject,
   signal,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -166,7 +170,9 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
     `,
   ],
 })
-export class ImageUploadComponent {
+export class ImageUploadComponent implements OnChanges {
+  private readonly cdr = inject(ChangeDetectorRef);
+
   /** Longest edge of the stored image — small enough for a fast WebView. */
   private static readonly MAX_SIDE = 1280;
   /** JPEG quality for the stored/compressed image. */
@@ -183,6 +189,12 @@ export class ImageUploadComponent {
 
   @ViewChild('cameraInput') private cameraInput!: ElementRef<HTMLInputElement>;
   @ViewChild('galleryInput') private galleryInput!: ElementRef<HTMLInputElement>;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['image'] || changes['disabled']) {
+      this.cdr.markForCheck();
+    }
+  }
 
   open(source: 'camera' | 'gallery'): void {
     // Prefer the native bridge inside the Flutter WebView: it captures via

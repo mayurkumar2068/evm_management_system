@@ -30,15 +30,19 @@
 
       <app-checklist-item
         [group]="questionForm"
+        [title]="uiTitle()"
+        [answer]="uiAnswer()"
+        [image]="uiImage()"
         [index]="currentIndex()"
         [compact]="true"
         [uploadDisabled]="false"
+        (answerChange)="onAnswerChange($event)"
+        (imageChange)="onImageChange($event)"
         (enlarge)="openPreview($event)"
       />
 
       <div class="remark-card">
         <label class="remark-card__label" for="survey-remark">
-          <mat-icon>edit_note</mat-icon>
           <span>{{ 'chk.remark.label' | t }}</span>
         </label>
         <textarea
@@ -53,7 +57,6 @@
 
       @if (saveError(); as err) {
         <p class="alert alert--error">
-          <mat-icon>error_outline</mat-icon>
           {{ err }}
         </p>
       }

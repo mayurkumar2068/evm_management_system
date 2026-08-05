@@ -45,23 +45,36 @@ class DashboardBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     return IgnorePointer(
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          const DecoratedBox(
+          DecoratedBox(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[
-                  Color(0xFFD7E9FB),
-                  Color(0xFFE8F3FC),
-                  Color(0xFFE5F8F1),
-                  Color(0xFFDCEEF9),
-                ],
-                stops: <double>[0.0, 0.32, 0.68, 1.0],
-              ),
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        AppColors.darkBackground,
+                        AppColors.darkBackground.withValues(alpha: 0.95),
+                        AppColors.darkSurface.withValues(alpha: 0.9),
+                        AppColors.darkBackground,
+                      ],
+                      stops: const <double>[0.0, 0.35, 0.7, 1.0],
+                    )
+                  : const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        Color(0xFFD7E9FB),
+                        Color(0xFFE8F3FC),
+                        Color(0xFFE5F8F1),
+                        Color(0xFFDCEEF9),
+                      ],
+                      stops: <double>[0.0, 0.32, 0.68, 1.0],
+                    ),
             ),
           ),
           Positioned(
@@ -72,7 +85,7 @@ class DashboardBackdrop extends StatelessWidget {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.16),
+                color: AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.16),
               ),
             ),
           ),
@@ -84,7 +97,7 @@ class DashboardBackdrop extends StatelessWidget {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.green.withValues(alpha: 0.12),
+                color: AppColors.green.withValues(alpha: isDark ? 0.06 : 0.12),
               ),
             ),
           ),
@@ -96,7 +109,7 @@ class DashboardBackdrop extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.saffron.withValues(alpha: 0.10),
+                color: AppColors.saffron.withValues(alpha: isDark ? 0.05 : 0.10),
               ),
             ),
           ),
@@ -164,12 +177,14 @@ class DashboardHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  LocaleKeys.dashboardBrandSubtitle.tr(),
+                  'हर वोट कीमती • हर निकाय महत्वपूर्ण',
                   maxLines: 2,
                   textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
-                    color: const Color(0xFF1A3A6B),
+                    color: context.isAppDark
+                        ? context.appMuted
+                        : const Color(0xFF1A3A6B),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     height: 1.3,
@@ -277,7 +292,10 @@ class _RoundIcon extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: DashboardBrand.saffron,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(
+                    color: context.isAppDark ? context.appSurface : Colors.white,
+                    width: 2,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -661,12 +679,11 @@ class DashboardServicesGrid extends StatelessWidget {
     const double spacing = 12;
     final double tileWidth =
         (screenWidth - (DashboardGap.page * 2) - spacing) / 2;
-    // Compact tiles — shorter on home so the grid doesn't dominate.
     final bool hasDesc = services.any(
       (DashboardService s) => s.desc.trim().isNotEmpty,
     );
-    final double tileHeight = (hasDesc ? tileWidth * 0.78 : tileWidth * 0.68)
-        .clamp(92.0, hasDesc ? 128.0 : 112.0);
+    final double tileHeight = (hasDesc ? tileWidth * 0.95 : tileWidth * 0.68)
+        .clamp(92.0, hasDesc ? 156.0 : 112.0);
     final double aspectRatio = tileWidth / tileHeight;
 
     return Padding(
@@ -704,10 +721,7 @@ class DashboardServicesGrid extends StatelessWidget {
       final bool needsLogin =
           s.forceFreshLogin || session == null || kindMismatch;
       if (needsLogin) {
-        // Clear previous survey/PO token so this service always authenticates fresh.
-        if (session != null) {
-          await AppServices.serviceAuth.signOut();
-        }
+        // Do NOT signOut before login — back/cancel must keep existing session.
         await Get.toNamed<dynamic>(
           AppRoute.serviceLogin.path,
           arguments: s.title,
@@ -716,7 +730,6 @@ class DashboardServicesGrid extends StatelessWidget {
         if (session == null) return;
         if (s.requiredLoginKind != null &&
             session.kind != s.requiredLoginKind) {
-          await AppServices.serviceAuth.signOut();
           return;
         }
       }
@@ -811,12 +824,12 @@ class _ServiceCard extends StatelessWidget {
                   ),
                 ),
                 if (!hasDesc) ...<Widget>[
-                  const SizedBox(width: 2),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 14,
-                    color: service.color.withValues(alpha: 0.8),
-                  ),
+                  // const SizedBox(width: 2),
+                  // Icon(
+                  //   Icons.arrow_forward_rounded,
+                  //   size: 14,
+                  //   color: service.color.withValues(alpha: 0.8),
+                  // ),
                 ],
               ],
             ),
@@ -827,22 +840,23 @@ class _ServiceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       service.desc,
-                      maxLines: 1,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.caption.copyWith(
                         color: context.appMuted,
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
+                        height: 1.25,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 14,
-                    color: service.color.withValues(alpha: 0.8),
-                  ),
+                  // const SizedBox(width: 2),
+                  // Icon(
+                  //   Icons.arrow_forward_rounded,
+                  //   size: 14,
+                  //   color: service.color.withValues(alpha: 0.8),
+                  // ),
                 ],
               ),
             ],
@@ -1077,6 +1091,7 @@ class DashboardSectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
+              textAlign: onViewAll == null ? TextAlign.center : TextAlign.start,
               style: AppTextStyles.titleMedium.copyWith(
                 color: context.appOnSurface,
                 fontWeight: FontWeight.w900,

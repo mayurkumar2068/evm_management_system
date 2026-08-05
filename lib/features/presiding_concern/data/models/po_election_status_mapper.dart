@@ -52,13 +52,25 @@ abstract final class PoElectionStatusMapper {
   }) {
     return current
         .map((PresidingMilestone milestone) {
-          final _MilestoneStatus? status = _milestoneStatus(milestone.id, data);
+          final _MilestoneStatus? status = _milestoneStatus(
+            milestone.id,
+            data,
+            current: milestone,
+          );
+          // null ⇒ keep local state unchanged.
           if (status == null) return milestone;
-          if (!status.isCompleted) return milestone;
+
+          if (status.isCompleted) {
+            return milestone.copyWith(
+              state: PresidingMilestoneState.completed,
+              completedAt: status.completedAt ?? milestone.completedAt,
+              pendingSync: false,
+            );
+          }
+
           return milestone.copyWith(
-            state: PresidingMilestoneState.completed,
-            completedAt:
-                status.completedAt ?? milestone.completedAt ?? DateTime.now(),
+            state: PresidingMilestoneState.pending,
+            clearCompletedAt: true,
             pendingSync: false,
           );
         })
@@ -75,6 +87,31 @@ abstract final class PoElectionStatusMapper {
     if (male == null && female == null && other == null && savedAt == null) {
       return null;
     }
+    // 0/0/0 with no timestamp = slot never filled on server — omit so we
+    // don't overwrite good local/API counts with empty zeros.
+    if (savedAt == null &&
+        (male ?? 0) == 0 &&
+        (female ?? 0) == 0 &&
+        (other ?? 0) == 0) {
+      return null;
+    }
+    // Live poll: backend may return timestamp with empty/null counts.
+    // Treat 0/0/0 as "not submitted" so UI doesn't show a misleading time.
+    if (slotId == TurnoutSlotIds.livePollInfo &&
+        (male ?? 0) == 0 &&
+        (female ?? 0) == 0 &&
+        (other ?? 0) == 0) {
+      return const TurnoutRecord(
+        slotId: TurnoutSlotIds.livePollInfo,
+        male: 0,
+        female: 0,
+        thirdGender: 0,
+        savedAt: null,
+        pendingSync: false,
+        isLocked: false,
+      );
+    }
+
     return TurnoutRecord(
       slotId: slotId,
       male: male ?? 0,
@@ -82,14 +119,18 @@ abstract final class PoElectionStatusMapper {
       thirdGender: other ?? 0,
       savedAt: savedAt,
       pendingSync: false,
-      isLocked: savedAt != null,
+      // Live poll remains editable during polling; it only locks on explicit
+      // milestone submit (2-2 hourly/live complete), not merely on refresh.
+      isLocked:
+          slotId == TurnoutSlotIds.livePollInfo ? false : (savedAt != null),
     );
   }
 
   static _MilestoneStatus? _milestoneStatus(
     String milestoneId,
-    Map<String, dynamic> data,
-  ) {
+    Map<String, dynamic> data, {
+    required PresidingMilestone current,
+  }) {
     return switch (milestoneId) {
       PresidingMilestoneIds.leftMaterialCenter => _MilestoneStatus(
         isCompleted: _bool(data[PoElectionResponseFields.isDepartedFromHome]),
@@ -117,6 +158,10 @@ abstract final class PoElectionStatusMapper {
         isCompleted: _bool(data[PoElectionResponseFields.isPollStarted]),
         completedAt: _date(data[PoElectionResponseFields.pollStartedTime]),
       ),
+      PresidingMilestoneIds.twoHourlyInfo =>
+        _twoHourlyStatus(data, current: current),
+      PresidingMilestoneIds.livePollInfo =>
+        _livePollStatus(data, current: current),
       PresidingMilestoneIds.pollEnd => _MilestoneStatus(
         isCompleted: _bool(data[PoElectionResponseFields.isPollEnded]),
         completedAt: _date(data[PoElectionResponseFields.pollEndedTime]),
@@ -133,6 +178,78 @@ abstract final class PoElectionStatusMapper {
       ),
       _ => null,
     };
+  }
+
+  /// Clears stale local "completed" when server has no slot times.
+  /// Keeps finish-state only when local already completed + server still has
+  /// turnout evidence; never invents completion from a single slot save.
+  static _MilestoneStatus? _twoHourlyStatus(
+    Map<String, dynamic> data, {
+    required PresidingMilestone current,
+  }) {
+    if (!_bool(data[PoElectionResponseFields.isPollStarted])) {
+      return const _MilestoneStatus(isCompleted: false);
+    }
+
+    final DateTime? latest = _latestTwoHourlyEvidenceTime(data);
+    if (latest == null) {
+      // Server empty ⇒ drop fake local timestamp/flag.
+      return const _MilestoneStatus(isCompleted: false);
+    }
+    if (!current.isCompleted) {
+      // Slots may exist, but finish button not pressed yet.
+      return null;
+    }
+    return _MilestoneStatus(isCompleted: true, completedAt: latest);
+  }
+
+  /// Live uses only PollLive* fields — never copies 2–2 hourly timestamp.
+  static _MilestoneStatus? _livePollStatus(
+    Map<String, dynamic> data, {
+    required PresidingMilestone current,
+  }) {
+    if (!_bool(data[PoElectionResponseFields.isPollStarted])) {
+      return const _MilestoneStatus(isCompleted: false);
+    }
+
+    final int male = _int(data[PoElectionResponseFields.pollLiveMale]) ?? 0;
+    final int female = _int(data[PoElectionResponseFields.pollLiveFemale]) ?? 0;
+    final int other = _int(data[PoElectionResponseFields.pollLiveOther]) ?? 0;
+    final DateTime? updatedAt = _date(
+      data[PoElectionResponseFields.pollLiveUpdateTime],
+    );
+
+    final bool hasLiveEvidence =
+        updatedAt != null && (male > 0 || female > 0 || other > 0);
+    if (!hasLiveEvidence) {
+      return const _MilestoneStatus(isCompleted: false);
+    }
+    if (!current.isCompleted) {
+      return null;
+    }
+    return _MilestoneStatus(isCompleted: true, completedAt: updatedAt);
+  }
+
+  static DateTime? _latestTwoHourlyEvidenceTime(Map<String, dynamic> data) {
+    final List<DateTime> times = <DateTime>[
+      if (_date(data[PoElectionResponseFields.poll9AmUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.poll9AmUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.poll11AmUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.poll11AmUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.poll1PmUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.poll1PmUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.poll3PmUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.poll3PmUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.poll5PmUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.poll5PmUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.qUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.qUpdateTime])!,
+      if (_date(data[PoElectionResponseFields.finalUpdateTime]) != null)
+        _date(data[PoElectionResponseFields.finalUpdateTime])!,
+    ];
+    if (times.isEmpty) return null;
+    times.sort();
+    return times.last;
   }
 
   static int? _int(Object? value) {

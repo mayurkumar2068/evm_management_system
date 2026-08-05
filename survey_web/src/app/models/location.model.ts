@@ -14,6 +14,8 @@ export interface LocationOption {
 export interface LabelValue {
   readonly label: string;
   readonly value: string;
+  /** Cascade level key (e.g. booth) for lookups without icons. */
+  readonly key?: string;
   /** Optional Material icon name shown before the label. */
   readonly icon?: string;
 }

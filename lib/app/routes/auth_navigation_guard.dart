@@ -17,9 +17,9 @@ abstract final class AuthNavigationGuard {
     if (redirect == null) return;
     final String current = Get.currentRoute;
     if (current == redirect) return;
-    // Defer so we never dispose the current route mid-frame (logout crash).
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (Get.currentRoute == redirect) return;
+      // Prefer offNamed when stack is empty/splash; offAllNamed clears history.
       Get.offAllNamed<dynamic>(redirect);
     });
   }
@@ -30,11 +30,14 @@ abstract final class AuthNavigationGuard {
     String location,
     bool onboardingSeen,
   ) {
-    final bool atSplash = location == AppRoute.splash.path;
-    final bool atLogin = location == AppRoute.login.path;
-    final bool atOnboarding = location == AppRoute.onboarding.path;
+    // GetX may report '' before the first named route settles.
+    final String normalized =
+        location.isEmpty || location == '/' ? AppRoute.splash.path : location;
+    final bool atSplash = normalized == AppRoute.splash.path;
+    final bool atLogin = normalized == AppRoute.login.path;
+    final bool atOnboarding = normalized == AppRoute.onboarding.path;
 
-    if (kHideReports && location.startsWith(AppRoute.reports.path)) {
+    if (kHideReports && normalized.startsWith(AppRoute.reports.path)) {
       return AppRoute.dashboard.path;
     }
 
@@ -51,7 +54,7 @@ abstract final class AuthNavigationGuard {
         if (atSplash || atLogin || atOnboarding) {
           return AppRoute.dashboard.path;
         }
-        final AppDestination? dest = AppDestinations.byPath(location);
+        final AppDestination? dest = AppDestinations.byPath(normalized);
         final role = auth.user?.role;
         if (dest != null && role != null && !dest.isAllowedFor(role)) {
           return AppRoute.dashboard.path;

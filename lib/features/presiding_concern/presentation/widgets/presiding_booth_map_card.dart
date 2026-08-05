@@ -182,9 +182,13 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
                 const SizedBox(height: 6),
                 Text(
                   _stationLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.clip,
+                  softWrap: true,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.slate700,
                     fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
                 const SizedBox(height: 4),

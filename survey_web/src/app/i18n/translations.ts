@@ -19,10 +19,12 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'loc.note.lockedArea':
       'लॉगिन के अनुसार क्षेत्र तय है — केवल उसी प्रकार के मतदान केंद्र चुनें।',
     'loc.section.location': 'जिले का चयन',
-    'loc.note.enableNext': 'सभी स्तर चुनने के बाद ही "आगे बढ़ें" बटन सक्रिय होगा।',
+    'loc.note.enableNext':
+      'मतदान केंद्र चुनने के उपरांत "आगे बढ़ें" बटन सक्रिय होगा।',
     'loc.next': 'आगे बढ़ें',
     'loc.validation.selectAll': 'कृपया सभी विकल्प चुनें।',
     'loc.row.areaType': 'क्षेत्र प्रकार',
+    'loc.row.booth': 'मतदान केंद्र क्रमांक और नाम',
 
     // cascade levels
     'level.district': 'जिला',
@@ -37,7 +39,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // survey-checklist
     'chk.hero.title': 'मतदान केंद्र चेकलिस्ट',
     'chk.hero.sub': 'हर बिंदु जाँचें व आवश्यक फ़ोटो जोड़ें',
-    'chk.section.location': 'चयनित स्थान',
+    'chk.section.location': 'चयनित मतदान केंद्र की जानकारी',
     'chk.section.checklist': 'सर्वे चेकलिस्ट',
     'chk.loading': 'चेकलिस्ट लोड हो रही है…',
     'chk.progress': 'प्रश्न {current} / {total}',
@@ -119,10 +121,11 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       'Area type is fixed from login — select only that type of polling station.',
     'loc.section.location': 'District Selection',
     'loc.note.enableNext':
-      'The "Continue" button activates only after all levels are selected.',
+      'After selecting the polling station, the "Continue" button will become active.',
     'loc.next': 'Continue',
     'loc.validation.selectAll': 'Please select all options.',
     'loc.row.areaType': 'Area Type',
+    'loc.row.booth': 'Polling station number and name',
 
     'level.district': 'District',
     'level.block': 'Janpad (Block)',
@@ -135,7 +138,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     'chk.hero.title': 'Polling Station Checklist',
     'chk.hero.sub': 'Check each point and add the required photo',
-    'chk.section.location': 'Selected Location',
+    'chk.section.location': 'Selected polling station details',
     'chk.section.checklist': 'Survey Checklist',
     'chk.loading': 'Loading checklist…',
     'chk.progress': 'Question {current} of {total}',
@@ -154,7 +157,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'chk.feedback.label': 'Other Remarks',
     'chk.feedback.placeholder': 'Write any other info or suggestion here… (optional)',
     'chk.footer.pending': '{n} question(s) left — each needs an answer and a photo',
-    'chk.submit': 'Submit Information',
+    'chk.submit': 'Send Information',
     'chk.confirm.title': 'Submit information?',
     'chk.confirm.body':
       'Do you want to submit the survey information? Changes will not be possible after submission.',

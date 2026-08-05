@@ -18,6 +18,11 @@ final class PresidingConcernLocalDatasource {
     return _db.put(LocalCollections.presidingConcern, sessionDocId, json);
   }
 
+  /// Deletes the cached session (logout / fresh login).
+  Future<void> clearSession() {
+    return _db.delete(LocalCollections.presidingConcern, sessionDocId);
+  }
+
   /// Emits session changes.
   Stream<List<Map<String, dynamic>>> watchAll() {
     return _db.watch(LocalCollections.presidingConcern);

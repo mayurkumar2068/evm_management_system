@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Monthly Work Progress Report — MPSeCNet</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm 16mm 14mm; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.42;
+    color: #15202b;
+  }
+  h1 {
+    font-size: 17pt;
+    color: #0b2a4a;
+    margin: 0 0 2pt 0;
+  }
+  h1 + h2 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: #1d4ed8;
+    margin: 0 0 12pt 0;
+    padding-bottom: 6pt;
+    border-bottom: 2px solid #1d4ed8;
+  }
+  h2 {
+    font-size: 12pt;
+    color: #0b2a4a;
+    margin: 16pt 0 6pt 0;
+    padding-bottom: 3pt;
+    border-bottom: 1px solid #cbd5e1;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 10.5pt;
+    color: #1e3a5f;
+    margin: 12pt 0 4pt 0;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 10pt;
+    color: #334155;
+    margin: 8pt 0 4pt 0;
+  }
+  p { margin: 3pt 0 5pt 0; }
+  ul { margin: 3pt 0 7pt 16pt; padding: 0; }
+  li { margin: 1.5pt 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6pt 0 10pt 0;
+    font-size: 8.6pt;
+  }
+  tr { page-break-inside: avoid; }
+  th, td {
+    border: 1px solid #bfc9d6;
+    padding: 4pt 5pt;
+    vertical-align: top;
+    text-align: left;
+  }
+  th { background: #e7eef8; color: #0b2a4a; font-weight: 700; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  table.meta td { border: none; padding: 2pt 10pt 2pt 0; background: transparent !important; }
+  table.meta tr:nth-child(even) td { background: transparent !important; }
+  table.meta td:first-child { font-weight: 700; color: #475569; width: 150px; white-space: nowrap; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 8pt; background: #f1f5f9; padding: 0 2pt; }
+  hr { border: none; border-top: 1px solid #cbd5e1; margin: 10pt 0; }
+  .end { margin-top: 14pt; color: #64748b; font-size: 9pt; }
+</style>
+</head>
+<body>
+<h1>Monthly Work Progress Report</h1>
+<h2>Project: MPSeCNet — Mobile Application for Election Field Services</h2>
+<table class="meta">
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td><strong>Project name</strong></td><td>MPSeCNet</td></tr>
+<tr><td><strong>Prepared by</strong></td><td>Mayur Bobade, Associate Engineer</td></tr>
+<tr><td><strong>Document type</strong></td><td>Monthly Work Progress Report</td></tr>
+<tr><td><strong>Reporting period</strong></td><td>18 June 2026 – 31 July 2026</td></tr>
+<tr><td><strong>Report date</strong></td><td>31 July 2026</td></tr>
+<tr><td><strong>Prepared for</strong></td><td>Election Department / concerned reviewing authority</td></tr>
+<tr><td><strong>Classification</strong></td><td>Internal — for official review</td></tr>
+</table>
+<hr/>
+<h2>Document control</h2>
+<table>
+<tr><th>Version</th><th>Date</th><th>Author</th><th>Description</th></tr>
+<tr><td>1.0</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Initial draft</td></tr>
+<tr><td>1.1</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Status wording corrected; Election Department assigned work only</td></tr>
+<tr><td>1.2</td><td>31 July 2026</td><td>Mayur Bobade</td><td>EVM scanning module recorded as starting work</td></tr>
+<tr><td>1.3</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Open items framed as department dependency</td></tr>
+<tr><td>1.4</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Professional rewrite for formal submission</td></tr>
+<tr><td>1.5</td><td>31 July 2026</td><td>Mayur Bobade, Associate Engineer</td><td>Documentation polish for official departmental submission</td></tr>
+</table>
+<hr/>
+<h2>Status terminology</h2>
+<p>The following status terms are used consistently throughout this report:</p>
+<table>
+<tr><th>Term</th><th>Definition</th></tr>
+<tr><td><strong>Developed</strong></td><td>Application code, user interface, or integration work has been implemented</td></tr>
+<tr><td><strong>Configured</strong></td><td>Environment, URL, or permission settings have been applied</td></tr>
+<tr><td><strong>In Testing</strong></td><td>Undergoing device or API checks; not presented as final acceptance</td></tr>
+<tr><td><strong>Partial</strong></td><td>Work has been started or partly delivered; remaining scope exists</td></tr>
+<tr><td><strong>Open</strong></td><td>Awaiting inputs, decisions, or confirmation from the Election Department</td></tr>
+</table>
+<p><strong>Disclaimer:</strong> This report does not state that the application is fully complete, publicly released, or formally accepted for statewide use.</p>
+<hr/>
+<h2>1. Executive Summary</h2>
+<p>During the reporting period <strong>18 June 2026 to 31 July 2026</strong>, development work was carried out on the <strong>MPSeCNet</strong> mobile application in support of Election Department field services.</p>
+<p>Work began with an <strong>EVM scanning / Control Unit (CU) – Ballot Unit (BU) module</strong> and was subsequently expanded, under departmental direction, to include booth survey access, Presiding Officer screens, urban online nomination, home service portals, branding and profile updates, and local notification setup.</p>
+<p>Major areas of progress include:</p>
+<ul><li>Establishment of the mobile application foundation and environment configuration (DEV / UAT / PROD)</li><li>Development of EVM CU / BU registration and scanning as the starting module</li><li>Integration of survey access through in-app WebView, with urban and rural master-data fixes</li><li>Development of Presiding Officer milestones and live मतदान entry using login elector counts</li><li>Development of the urban online nomination path using OLINAPI</li><li>Configuration of related portals (search, expenditure, claim / objection)</li><li>Generation of a PROD-flavour APK on <strong>27 July 2026</strong> for internal checking</li><li>Resolution of local notification display issues on iOS and Android</li></ul>
+<p>Status is reported factually as <strong>Developed</strong>, <strong>Configured</strong>, <strong>In Testing</strong>, <strong>Partial</strong>, or <strong>Open</strong>. Formal UAT acceptance, public distribution, and statewide rollout are <strong>not</strong> claimed.</p>
+<hr/>
+<h2>2. Objectives of the Assignment</h2>
+<p>The assignment covers digital application support for Election Department / State Election Commission field services through a single mobile application.</p>
+<h3>2.1 Starting objective</h3>
+<p>Enable EVM-related field capture within the application, including:</p>
+<ul><li>Control Unit (CU) registration</li><li>Ballot Unit (BU) registration</li><li>Barcode / QR scanning</li><li>Inventory-style screens</li></ul>
+<h3>2.2 Expanded objectives (as directed)</h3>
+<p>1. Officer access to election-related digital services  </p>
+<p>2. Booth / polling-station survey  </p>
+<p>3. Presiding Officer (पीठासीन अधिकारी) election-day related screens  </p>
+<p>4. Online nomination (urban masters)  </p>
+<p>5. Related web portals (search, expenditure, claim / objection)  </p>
+<p>6. Hindi–English user interface and MPSEC branding  </p>
+<hr/>
+<h2>3. Technology Stack Used</h2>
+<table>
+<tr><th>Layer</th><th>Technology / component</th></tr>
+<tr><td>Mobile framework</td><td>Flutter application structure</td></tr>
+<tr><td>Application runtime</td><td>GetX (current runtime for state / routing)</td></tr>
+<tr><td>Survey UI</td><td>Angular survey UI hosted for in-app WebView use</td></tr>
+<tr><td>Local storage</td><td>Local JSON database (including device / inventory collections)</td></tr>
+<tr><td>Environments</td><td>DEV / UAT / PROD flavour configuration</td></tr>
+<tr><td>Secure storage</td><td>Secure token storage</td></tr>
+<tr><td>In-app browsing</td><td>WebView for survey and external portals</td></tr>
+<tr><td>Offline support</td><td>Offline sync queue and WebView form submission queue</td></tr>
+<tr><td>Localisation</td><td>English / Hindi translation keys</td></tr>
+<tr><td>Continuous integration</td><td>CI scripts for build / analyse</td></tr>
+<tr><td>Notifications</td><td>Local notification scheduling (iOS / Android)</td></tr>
+</table>
+<p><strong>Note:</strong> Items not expressly listed in the source progress record are marked as Not Available.</p>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Backend database platform (department-owned)</td><td>Not Available</td></tr>
+<tr><td>Public app store listing status</td><td>Not Available (not claimed)</td></tr>
+</table>
+<hr/>
+<h2>4. Major Deliverables</h2>
+<table>
+<tr><th>#</th><th>Deliverable</th><th>Status</th></tr>
+<tr><td>1</td><td>EVM scanning module start (CU / BU registration, barcode scanner, inventory UI scaffolding)</td><td>Developed</td></tr>
+<tr><td>2</td><td>Mobile application base (structure, flavours, API client, local storage)</td><td>Developed</td></tr>
+<tr><td>3</td><td>Officer / service login (survey login and Presiding Officer login)</td><td>Developed</td></tr>
+<tr><td>4</td><td>मतदान केंद्र / booth survey (WebView + master-data fixes; <code>/pssurvey/</code> in prod flavour)</td><td>Developed / Configured</td></tr>
+<tr><td>5</td><td>Presiding Officer flow (milestones, booth map, live मतदान with elector-based percentages)</td><td>Developed / In Testing</td></tr>
+<tr><td>6</td><td>Online nomination — urban path (OLINAPI masters, form steps, local draft save)</td><td>Developed</td></tr>
+<tr><td>7</td><td>Online nomination — panchayat path</td><td>Partial</td></tr>
+<tr><td>8</td><td>Home services list (search, survey, व्यय लेखा, दावा / आपत्ति, Presiding Officer, nomination)</td><td>Developed</td></tr>
+<tr><td>9</td><td>Branding / splash / profile updates</td><td>Developed</td></tr>
+<tr><td>10</td><td>Claim / objection access via <code>https://mpsecerms.mp.gov.in/secforms</code></td><td>Configured</td></tr>
+<tr><td>11</td><td>Local reminder notification technical setup</td><td>Developed</td></tr>
+<tr><td>12</td><td>PROD-flavour APK (<code>app-prod-release.apk</code>) dated 27 July 2026</td><td>Available for internal install / test</td></tr>
+</table>
+<hr/>
+<h2>5. Key Achievements</h2>
+<p>The following achievements are recorded for the reporting period. They reflect implemented work and do not imply formal departmental go-live.</p>
+<p>1. <strong>Single-application approach:</strong> EVM scanning was established as the starting module; survey, Presiding Officer, nomination, and portals were added on the same application base.  </p>
+<p>2. <strong>Survey usability improvements:</strong> District → body → booth cascade fixes; urban master-call fallbacks; rural जनपद / booth empty-dropdown correction using login BodyID.  </p>
+<p>3. <strong>Presiding Officer support:</strong> Milestone and live मतदान screens developed; percentages derived from Male / Female / Other / Total electors in the login response.  </p>
+<p>4. <strong>Urban nomination path:</strong> Election / post selection and area cascade via OLINAPI, with multi-step form and local draft save.  </p>
+<p>5. <strong>Home and branding alignment:</strong> MPSeCNet naming, MPSEC logo, Hindi service titles, and profile field corrections as instructed.  </p>
+<p>6. <strong>Internal build artefact:</strong> PROD-flavour APK generated on 27 July 2026 for internal checking.  </p>
+<p>7. <strong>Notification reliability fix:</strong> iOS notification-centre delegate and Android permission / receiver configuration corrected after diagnostic investigation.</p>
+<hr/>
+<h2>6. Summary of Work Requested versus Work Carried Out</h2>
+<table>
+<tr><th>#</th><th>Work area</th><th>Work carried out</th><th>Current status</th></tr>
+<tr><td>1</td><td>EVM scanning module (starting module)</td><td>CU / BU registration screens; barcode scanner module; device / inventory UI scaffolding</td><td>Developed (starting module); presently held behind a feature flag while survey / Presiding Officer / nomination services were prioritised. Not presented as finished field rollout</td></tr>
+<tr><td>2</td><td>Mobile application base</td><td>Flutter structure; environment flavours (dev / uat / prod); API client; local storage</td><td>Developed</td></tr>
+<tr><td>3</td><td>Officer / service login</td><td>Survey login and Presiding Officer login connected to election APIs</td><td>Developed; verified with credentials available during development</td></tr>
+<tr><td>4</td><td>मतदान केंद्र / booth survey</td><td>Angular survey UI inside in-app WebView; district / body / booth master fixes; prod flavour URL set to <code>/pssurvey/</code></td><td>Developed and Configured; runtime depends on server / API availability</td></tr>
+<tr><td>5</td><td>Presiding Officer (पीठासीन अधिकारी) flow</td><td>Milestones; booth map entry; live मतदान entry with percentages from login elector counts</td><td>Developed; In Testing with Presiding Officer login response fields</td></tr>
+<tr><td>6</td><td>Online nomination (urban)</td><td>OLINAPI masters; form steps; local draft save</td><td>Developed for urban path; panchayat path remains Partial</td></tr>
+<tr><td>7</td><td>Home services list</td><td>Tiles for search, survey, व्यय लेखा, दावा / आपत्ति, Presiding Officer, nomination</td><td>Developed as per department UI instructions</td></tr>
+<tr><td>8</td><td>Branding / splash / profile</td><td>MPSEC logo; titles; profile fields (UserName, Urban / Rural, निकाय label)</td><td>Developed as per instructions received</td></tr>
+<tr><td>9</td><td>Claim / objection access</td><td>Tile opens <code>https://mpsecerms.mp.gov.in/secforms</code> in WebView</td><td>Configured; behaviour depends on the external website</td></tr>
+<tr><td>10</td><td>Local reminder notification</td><td>Scheduling logic; iOS / Android permission setup fixes</td><td>Developed; official reminder timings await department confirmation (Open)</td></tr>
+<tr><td>11</td><td>Internal APK for checking</td><td>PROD-flavour APK built on 27 July 2026</td><td>Available for internal install / test — not a public store release</td></tr>
+</table>
+<hr/>
+<h2>7. Week-wise Progress</h2>
+<h3>7.1 Week 1 — 18 to 22 June 2026</h3>
+<p><strong>Focus:</strong> Application foundation, beginning from the EVM scanning / CU–BU module</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>Project setup and application structure  </li><li>Network client and secure token storage  </li><li>Design system and shared UI components  </li><li>Auth and dashboard scaffolding  </li><li>EVM starting screens: Control Unit (CU) and Ballot Unit (BU) registration scaffolding  </li><li>Local JSON database (including device / inventory collections)  </li><li>Environment files for DEV / UAT / PROD  </li><li>Baseline project documentation  </li></ul>
+<p><strong>Status:</strong> Developed — foundation and EVM scanning module start. Later weeks expanded the same application for survey / Presiding Officer / nomination as directed.</p>
+<hr/>
+<h3>7.2 Week 2 — 23 to 29 June 2026</h3>
+<p><strong>Focus:</strong> Continue EVM capture path; survey access from mobile; Hindi / English; offline support</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>English / Hindi translation keys  </li><li>Continued scanner capability on the EVM module track  </li><li>WebView module for survey / portals inside the application  </li><li>Service login screen (officer gate before services)  </li><li>Offline sync queue and WebView form submission queue  </li><li>Profile, settings, and onboarding screens  </li><li>CI scripts for build / analyse  </li></ul>
+<p><strong>Status:</strong> Developed — EVM module track continued alongside survey-in-app path and offline queue.</p>
+<hr/>
+<h3>7.3 Week 3 — 30 June to 6 July 2026</h3>
+<p><strong>Focus:</strong> Application navigation shell and first Presiding Officer screens</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>Bottom navigation (Dashboard / Profile)  </li><li>Language and theme preference handling  </li><li>Presiding Officer data layer and local milestone / turnout UI (first version)  </li><li>Offline status UI  </li><li>Dashboard structure cleanup  </li></ul>
+<p><strong>Status:</strong> Developed — Presiding Officer screens (first version); later weeks connected additional API / login data.</p>
+<hr/>
+<h3>7.4 Week 4 — 7 to 13 July 2026</h3>
+<p><strong>Focus:</strong> Connect application to Election Commission APIs and present required home services</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>Application state / routing moved to GetX (current runtime)  </li><li>Environment URLs pointed to POElectionAPI / related MPSEC services used in this project  </li><li>Home tiles expanded for voter search, booth survey, Presiding Officer, nomination, expenditure  </li><li>Profile display of session-based officer data  </li></ul>
+<p><strong>Status:</strong> Developed — API wiring for development / testing environments. Formal departmental acceptance remains a separate step.</p>
+<hr/>
+<h3>7.5 Week 5 — 14 to 20 July 2026</h3>
+<p><strong>Focus:</strong> Booth survey master-data issues (urban / rural) and stable survey opening from the application</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>Code published to the project repository  </li><li>Survey web staging support for checking  </li><li>Fixes for district → body → booth cascade  </li><li>Urban body / polling-station master call fallbacks  </li><li>Rural जनपद / booth empty-dropdown fix (prefer login BodyID)  </li><li>Theme alignment for login / survey screens  </li><li>Survey WebView base URL set to production host path <code>/pssurvey/</code> in prod flavour configuration  </li></ul>
+<p><strong>Status:</strong> Developed and Configured — survey integration fixes. Runtime opening depends on server response and network. Statewide rollout approval is not claimed.</p>
+<hr/>
+<h3>7.6 Week 6 — 21 to 27 July 2026</h3>
+<p><strong>Focus:</strong> Online nomination (urban) and Presiding Officer / home changes as instructed</p>
+<h4>A. Online nomination</h4>
+<ul><li>Urban election / post selection from OLINAPI  </li><li>District → urban body → ward (ward only where post rule requires)  </li><li>Multi-step form and local draft save  </li><li>Entry UI for urban / panchayat  </li></ul>
+<p><strong>Status:</strong> Developed for urban path. Panchayat full API parity remains <strong>Partial</strong>. Nomination registration (userid / password) is not presented as a finished, department-accepted feature.</p>
+<h4>B. Home / branding / Presiding Officer changes</h4>
+<ul><li>Application display name set as MPSeCNet  </li><li>Splash logo updated with the provided MPSEC logo asset  </li><li>Home titles updated:</li></ul>
+<p>  - मतदान केंद्र सर्वे  </p>
+<p>  - निर्वाचन व्यय लेखा  </p>
+<p>  - दावा / आपत्ति आवेदन (opens secforms URL)  </p>
+<ul><li>Smaller home service cards  </li><li>Presiding Officer login kept separate from survey login (fresh login)  </li><li>Milestone Hindi text and order updates  </li><li>Live मतदान screen: percentages based on Male / Female / Other / Total electors from login response  </li><li>Profile: UserName instead of UserId GUID; role text पीठासीन अधिकारी; Urban / Rural; जनपद for R / नगरीय निकाय for U; खाता heading and offline-storage row removed as instructed  </li><li>PROD-flavour APK generated for internal checking  </li></ul>
+<p><strong>Status:</strong> Developed — UI / API wiring as instructed. APK is for internal install / test only.</p>
+<hr/>
+<h3>7.7 Week 7 — 28 to 31 July 2026</h3>
+<p><strong>Focus:</strong> Local notification check (turnout reminder test)</p>
+<p><strong>Work carried out</strong></p>
+<ul><li>Investigated why schedule appeared in logs but notification did not display  </li><li>Identified missing iOS notification-centre delegate configuration  </li><li>Updated iOS AppDelegate and Android notification permissions / receivers  </li><li>Adjusted schedule code (timezone, present flags, notification channel)  </li></ul>
+<p><strong>Status:</strong> Developed — technical fix completed. Official reminder timings and message policy remain <strong>Open</strong> (awaiting department confirmation).</p>
+<hr/>
+<h2>8. Technical Challenges and Resolutions</h2>
+<table>
+<tr><th>Challenge</th><th>Resolution</th><th>Period</th></tr>
+<tr><td>Rural जनपद / booth dropdowns appearing empty</td><td>Prefer login BodyID in master resolution</td><td>Week 5 (14–20 July 2026)</td></tr>
+<tr><td>Urban body / polling-station master call failures</td><td>Path and query fallbacks for master calls</td><td>Week 5 (14–20 July 2026)</td></tr>
+<tr><td>District → body → booth cascade instability</td><td>Cascade fixes for full district list and child masters</td><td>Week 5 (14–20 July 2026)</td></tr>
+<tr><td>Presiding Officer session reuse with survey login</td><td>Fresh Presiding Officer login enforced (separate from survey login)</td><td>Week 6 (21–27 July 2026)</td></tr>
+<tr><td>Local notification scheduled in logs but not displayed</td><td>iOS notification-centre delegate set; Android permissions / receivers updated; schedule presentation flags adjusted</td><td>Week 7 (28–31 July 2026)</td></tr>
+</table>
+<hr/>
+<h2>9. Systems and Integrations Referred</h2>
+<table>
+<tr><th>System / URL area</th><th>Purpose</th></tr>
+<tr><td>POElectionAPI</td><td>Survey / Presiding Officer related APIs and login</td></tr>
+<tr><td>OLINAPI</td><td>Urban nomination masters</td></tr>
+<tr><td>SECSearch / mpsecerms</td><td>Voter search opened in WebView</td></tr>
+<tr><td>CandidateExpenditure</td><td>व्यय लेखा opened in WebView</td></tr>
+<tr><td>secforms (<code>https://mpsecerms.mp.gov.in/secforms</code>)</td><td>दावा / आपत्ति आवेदन opened in WebView</td></tr>
+<tr><td><code>/pssurvey/</code></td><td>Survey web base URL in prod flavour configuration</td></tr>
+</table>
+<hr/>
+<h2>10. Repository / Build Activity Summary</h2>
+<table>
+<tr><th>Date</th><th>Update</th></tr>
+<tr><td>17 July 2026</td><td>Survey-related fixes and code publish</td></tr>
+<tr><td>20 July 2026</td><td>Code publish</td></tr>
+<tr><td>22 July 2026</td><td>Code publish</td></tr>
+<tr><td>24 July 2026</td><td>Online nomination related work publish</td></tr>
+<tr><td>27 July 2026</td><td>Presiding Officer / home / branding changes; PROD-flavour APK built locally</td></tr>
+<tr><td>29 July 2026</td><td>Local notification related changes publish</td></tr>
+</table>
+<h3>Internal APK note</h3>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Artefact</td><td><code>app-prod-release.apk</code></td></tr>
+<tr><td>Flavour</td><td>PROD</td></tr>
+<tr><td>Build date</td><td>27 July 2026</td></tr>
+<tr><td>Intended use</td><td>Internal testing</td></tr>
+<tr><td>Public store publishing</td><td>Not claimed</td></tr>
+<tr><td>Formal go-live declaration</td><td>Not claimed</td></tr>
+</table>
+<hr/>
+<h2>11. Testing and Validation Summary</h2>
+<table>
+<tr><th>Activity</th><th>Detail</th><th>Status</th></tr>
+<tr><td>Officer / service login verification</td><td>Verified with credentials available during development</td><td>Developed (development-time verification)</td></tr>
+<tr><td>Survey opening and master-data paths</td><td>Urban / rural cascade and BodyID-related fixes exercised during development</td><td>Developed / Configured; runtime depends on server / API</td></tr>
+<tr><td>Presiding Officer live मतदान percentages</td><td>Exercised with Presiding Officer login response fields</td><td>In Testing</td></tr>
+<tr><td>Local notification schedule test</td><td>Schedule visible in logs; display issue diagnosed and fixed</td><td>Developed (technical fix); official policy still Open</td></tr>
+<tr><td>Formal UAT by Election Department</td><td>Schedule, credentials, and written acceptance</td><td>Open</td></tr>
+<tr><td>Independent QA sign-off pack</td><td>Not Available</td><td>Not Available</td></tr>
+</table>
+<hr/>
+<h2>12. Risks / Dependencies</h2>
+<table>
+<tr><th>Risk / dependency</th><th>Nature</th><th>Impact if unresolved</th></tr>
+<tr><td>Formal UAT / acceptance</td><td>Dependency on Election Department</td><td>Application cannot be treated as formally accepted</td></tr>
+<tr><td>Public or enterprise distribution</td><td>Dependency on Election Department</td><td>Internal APK remains limited to install / test use</td></tr>
+<tr><td>Official release signing</td><td>Dependency on organisation / department</td><td>Store or enterprise packaging cannot proceed</td></tr>
+<tr><td>Panchayat nomination full API flow</td><td>Dependency on Election Department / backend</td><td>Urban–panchayat parity remains Partial</td></tr>
+<tr><td>Official notification schedule</td><td>Dependency on Election Department</td><td>Reminder service cannot be treated as policy-complete</td></tr>
+<tr><td>EVM scanning field enablement</td><td>Dependency on Election Department priority decision</td><td>Module remains behind feature flag</td></tr>
+<tr><td>Backend / hosting stability</td><td>Dependency on Election Department backend / hosting</td><td>Login, masters, and survey responses may fail at runtime</td></tr>
+</table>
+<hr/>
+<h2>13. Pending Activities (Open Items)</h2>
+<p>The following items remain <strong>Open</strong>. Closure depends on Election Department inputs, decisions, or confirmation, and not only on further mobile development.</p>
+<table>
+<tr><th>Open item</th><th>Dependency on Election Department</th></tr>
+<tr><td>Formal UAT / acceptance of the application build</td><td>UAT schedule, test credentials, and written acceptance</td></tr>
+<tr><td>Public or enterprise distribution</td><td>Distribution decision, store / enterprise account, and release approval</td></tr>
+<tr><td>Official release signing (keystore / certificate)</td><td>Signing credentials and release-process ownership</td></tr>
+<tr><td>Panchayat nomination full API flow (parity with urban)</td><td>Confirmed API readiness, field rules, and go-ahead for remaining steps</td></tr>
+<tr><td>Official local-notification schedule (election-day reminder policy)</td><td>Approved reminder timings, message text, and trigger rules</td></tr>
+<tr><td>EVM scanning module enablement for field use</td><td>Priority decision to re-enable CU / BU scanning (module already started; presently held behind feature flag while other services were prioritised)</td></tr>
+<tr><td>Stable master data / login / survey responses during use</td><td>Backend / hosting uptime, correct master data, and officer environment access</td></tr>
+</table>
+<p><strong>Note:</strong> Mobile-side work for assigned items has been carried out as listed in this report. Closure of the above items requires department-side action or confirmation.</p>
+<hr/>
+<h2>14. Recommendations</h2>
+<p>The following recommendations are limited to enabling closure of items already identified in this report:</p>
+<p>1. Schedule formal UAT with nominated credentials and written acceptance criteria.  </p>
+<p>2. Confirm distribution approach (enterprise package versus store) and release signing ownership.  </p>
+<p>3. Provide go-ahead and API readiness confirmation for remaining panchayat nomination steps, if required.  </p>
+<p>4. Finalise election-day local-notification timings and message text, if reminders are to be used operationally.  </p>
+<p>5. Confirm whether the EVM scanning module should be re-enabled for field use or remain deferred.  </p>
+<p>6. Ensure backend / hosting availability for officer login, masters, and survey during validation windows.</p>
+<hr/>
+<h2>15. Conclusion</h2>
+<p>During <strong>18 June 2026 – 31 July 2026</strong>, work on MPSeCNet was carried out for Election Department mobile application tasks. Engagement <strong>started from an EVM scanning / CU–BU module</strong>, and the same application was expanded for survey access, Presiding Officer screens, urban nomination integration, home service tiles / portals, branding and profile corrections as instructed, and local notification setup fixes.</p>
+<p>Status throughout this document is reported as <strong>Developed</strong>, <strong>Configured</strong>, <strong>In Testing</strong>, <strong>Partial</strong>, or <strong>Open</strong>, as applicable. This document does <strong>not</strong> claim that the solution is fully complete, publicly live for all users, or formally accepted for statewide production use.</p>
+<p>Any go-live declaration should follow formal acceptance by the Election Department.</p>
+<hr/>
+<h2>Appendix A — Glossary of Module and Service Names</h2>
+<table>
+<tr><th>Name</th><th>Usage in this report</th></tr>
+<tr><td>MPSeCNet</td><td>Mobile application project name</td></tr>
+<tr><td>EVM</td><td>Electronic Voting Machine related module (CU / BU)</td></tr>
+<tr><td>CU</td><td>Control Unit</td></tr>
+<tr><td>BU</td><td>Ballot Unit</td></tr>
+<tr><td>Presiding Officer / पीठासीन अधिकारी</td><td>Election-day officer flow</td></tr>
+<tr><td>POElectionAPI</td><td>Survey / Presiding Officer APIs and login</td></tr>
+<tr><td>OLINAPI</td><td>Urban nomination masters</td></tr>
+<tr><td><code>/pssurvey/</code></td><td>Survey web base path in prod flavour configuration</td></tr>
+<tr><td>secforms</td><td>Claim / objection portal path under mpsecerms</td></tr>
+</table>
+<hr/>
+<h2>Appendix B — Document Revision History</h2>
+<table>
+<tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
+<tr><td>1.0</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Initial draft</td></tr>
+<tr><td>1.1</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Status wording corrected; Election Department assigned work only</td></tr>
+<tr><td>1.2</td><td>31 July 2026</td><td>Mayur Bobade</td><td>EVM scanning module recorded as starting work</td></tr>
+<tr><td>1.3</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Open items framed as department dependency</td></tr>
+<tr><td>1.4</td><td>31 July 2026</td><td>Mayur Bobade</td><td>Professional rewrite for formal submission</td></tr>
+<tr><td>1.5</td><td>31 July 2026</td><td>Mayur Bobade, Associate Engineer</td><td>Polished Monthly Work Progress Report for official submission</td></tr>
+</table>
+<hr/>
+<p><strong>Prepared by</strong></p>
+<p><strong>Mayur Bobade</strong>  </p>
+<p>Associate Engineer  </p>
+<p><strong>Date:</strong> 31 July 2026  </p>
+<hr/>
+<p class="end"><em>End of report</em></p>
+</body>
+</html>

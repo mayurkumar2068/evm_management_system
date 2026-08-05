@@ -91,20 +91,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Text(
                             LocaleKeys.authGatewayWelcome.tr(),
+                            textAlign: TextAlign.center,
                             style: AppTextStyles.titleLarge.copyWith(
                               color: context.appOnSurface,
                               fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            LocaleKeys.authGatewaySubtitle.tr(),
-                            style: AppTextStyles.caption.copyWith(
-                              color: context.appMuted,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -112,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: AppIcons.dashboard,
                             color: AppColors.primary,
                             title: LocaleKeys.menuDashboard.tr(),
-                            subtitle: LocaleKeys.authGatewayDashboardSub.tr(),
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.dashboard),
                           ),
@@ -122,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: AppIcons.reports,
                               color: AppColors.green,
                               title: LocaleKeys.regReports.tr(),
-                              subtitle: LocaleKeys.authGatewayReportsSub.tr(),
                               enabled: !loading,
                               onTap: () => _enter(AppRoute.reports),
                             ),
@@ -132,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: AppIcons.profile,
                             color: AppColors.primaryDark,
                             title: LocaleKeys.profileTitle.tr(),
-                            subtitle: LocaleKeys.authGatewayProfileSub.tr(),
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.profile),
                           ),
@@ -142,85 +133,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: AppIcons.stockRegister,
                               color: AppColors.teal,
                               title: LocaleKeys.regInventory.tr(),
-                              subtitle: LocaleKeys.authGatewayInventorySub.tr(),
                               enabled: !loading,
                               onTap: () => _enter(AppRoute.masterStockRegister),
                             ),
                           ],
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            height: 54,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: AppGradients.primaryButton,
-                                borderRadius: AppRadius.brPill,
-                                boxShadow: <BoxShadow>[
-                                  BoxShadow(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.28,
-                                    ),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: InkWell(
-                                  onTap: loading
-                                      ? null
-                                      : () => _enter(AppRoute.dashboard),
-                                  borderRadius: AppRadius.brPill,
-                                  child: Center(
-                                    child: loading
-                                        ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.4,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                    Colors.white,
-                                                  ),
-                                            ),
-                                          )
-                                        : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              Text(
-                                                LocaleKeys.commonGetStarted
-                                                    .tr(),
-                                                style: AppTextStyles.titleSmall
-                                                    .copyWith(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                    ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                Icons.arrow_forward_rounded,
-                                                color: Colors.white,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      LocaleKeys.appCopyright.tr(),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.caption.copyWith(
-                        color: context.appMuted,
-                        fontSize: 10,
                       ),
                     ),
                   ],
@@ -239,7 +156,6 @@ class _NavTile extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.title,
-    required this.subtitle,
     required this.onTap,
     this.enabled = true,
   });
@@ -247,7 +163,6 @@ class _NavTile extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title;
-  final String subtitle;
   final VoidCallback onTap;
   final bool enabled;
 
@@ -280,25 +195,12 @@ class _NavTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        title,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: context.appOnSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: AppTextStyles.caption.copyWith(
-                          color: context.appMuted,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: context.appOnSurface,
+                    ),
                   ),
                 ),
                 Icon(
@@ -387,54 +289,37 @@ class _SoftLoginHero extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: 56,
-                      height: 56,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                Container(
+                  width: 56,
+                  height: 56,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                      child: const ClipOval(
-                        child: BrandLogo(width: 40),
-                      ),
+                    ],
+                  ),
+                  child: const ClipOval(
+                    child: BrandLogo(width: 40),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    LocaleKeys.dashboardBrandTitle.tr(),
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            LocaleKeys.splashTitle.tr(),
-                            style: AppTextStyles.titleLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              height: 1.15,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            LocaleKeys.dashboardBrandSubtitle.tr(),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.white.withValues(alpha: 0.92),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),

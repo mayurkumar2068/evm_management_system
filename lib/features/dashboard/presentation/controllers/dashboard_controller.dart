@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -54,7 +55,7 @@ class DashboardController extends GetxController {
 
   List<DashboardService> get filteredServices => state.value.services
       .where((DashboardService s) => s.category == activeCategory.value)
-      .toList();
+      .toList(growable: false);
 
   void setCategory(DashboardCategory category) {
     if (activeCategory.value == category) return;
@@ -93,66 +94,69 @@ class DashboardController extends GetxController {
   }
 
   Future<void> _rebuildAsync(int token) async {
+    // EasyLocalization loads JSON async after first frame; wait until keys resolve
+    // so we don't bake raw key strings into dashboard labels.
+    for (int i = 0; i < 40; i++) {
+      if (token != _rebuildToken || isClosed) return;
+      if (LocaleKeys.dashboardGuest.tr() != LocaleKeys.dashboardGuest) break;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    if (token != _rebuildToken || isClosed) return;
+
     final String surveyWebUrl = AppServices.config.surveyWebBaseUrl;
-    final String voterSearchUrl = AppServices.config.voterSearchEngineUrl;
     final String voterRegistrationUrl = AppServices.config.voterRegistrationUrl;
     final String expenditureUrl = AppServices.config.candidateExpenditureUrl;
     final ServiceSession? session = AppServices.serviceAuth.session.value;
-
     final AuthUser? authUser = Get.isRegistered<AuthController>()
         ? AppServices.auth.authState.value.user
         : null;
     final bool isGuestAuth =
         authUser?.isGuest == true &&
         (session == null || session.name.trim().isEmpty);
-    final String name = () {
-      if (session != null && session.name.trim().isNotEmpty) {
-        return session.name.trim();
-      }
-      if (isGuestAuth) return LocaleKeys.dashboardGuest.tr();
-      if (authUser != null && authUser.fullName.trim().isNotEmpty) {
-        return authUser.fullName.trim();
-      }
-      return LocaleKeys.dashboardGuest.tr();
-    }();
-    final String designation = () {
-      if (session?.section != null && session!.section!.trim().isNotEmpty) {
-        return session.section!.trim();
-      }
-      if (isGuestAuth) return LocaleKeys.dashboardRole.tr();
-      if (authUser?.designation != null &&
-          authUser!.designation!.trim().isNotEmpty) {
-        return authUser.designation!.trim();
-      }
-      return LocaleKeys.dashboardRole.tr();
-    }();
-    final String district = () {
-      if (session?.districtName != null &&
-          session!.districtName!.trim().isNotEmpty) {
-        return session.districtName!.trim();
-      }
-      if (session?.districtId != null &&
-          session!.districtId!.trim().isNotEmpty) {
-        return session.districtId!.trim();
-      }
-      if (isGuestAuth) return LocaleKeys.dashboardDistrictUnset.tr();
-      if (authUser?.districtCode != null &&
-          authUser!.districtCode!.trim().isNotEmpty) {
-        return authUser.districtCode!.trim();
-      }
-      return LocaleKeys.dashboardDistrictUnset.tr();
-    }();
 
     final List<WebFormSubmission> submissions =
         await AppServices.webSubmissionRepository.all();
     if (token != _rebuildToken || isClosed) return;
 
+    final _SubmissionCounts counts = _countSubmissions(submissions);
+
+    state.value = DashboardState(
+      userName: _resolveUserName(
+        session: session,
+        authUser: authUser,
+        isGuestAuth: isGuestAuth,
+      ),
+      designation: _resolveDesignation(
+        session: session,
+        authUser: authUser,
+        isGuestAuth: isGuestAuth,
+      ),
+      district: _resolveDistrict(
+        session: session,
+        authUser: authUser,
+        isGuestAuth: isGuestAuth,
+      ),
+      pendingCount: counts.pending + counts.failed,
+      stats: _buildStats(submissions.length, counts),
+      services: _buildServices(
+        surveyWebUrl: surveyWebUrl,
+        voterRegistrationUrl: voterRegistrationUrl,
+        expenditureUrl: expenditureUrl,
+      ),
+      activity: _activityFromSubmissions(submissions),
+    );
+  }
+
+  static _SubmissionCounts _countSubmissions(
+    List<WebFormSubmission> submissions,
+  ) {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     int synced = 0;
     int pending = 0;
     int failed = 0;
     int todayCount = 0;
+
     for (final WebFormSubmission s in submissions) {
       switch (s.status) {
         case WebSubmissionStatus.synced:
@@ -171,71 +175,57 @@ class DashboardController extends GetxController {
       if (created == today) todayCount++;
     }
 
-    final List<DashboardStat> stats = <DashboardStat>[
+    return _SubmissionCounts(
+      synced: synced,
+      pending: pending,
+      failed: failed,
+      todayCount: todayCount,
+    );
+  }
+
+  static List<DashboardStat> _buildStats(
+    int total,
+    _SubmissionCounts counts,
+  ) {
+    return <DashboardStat>[
       DashboardStat(
         label: LocaleKeys.dashboardStatSurveysTotal.tr(),
-        value: '${submissions.length}',
+        value: '$total',
         trend: '',
         icon: Icons.assignment_turned_in_outlined,
         color: AppColors.primary,
       ),
       DashboardStat(
         label: LocaleKeys.dashboardStatSurveysToday.tr(),
-        value: '$todayCount',
+        value: '${counts.todayCount}',
         trend: '',
         icon: Icons.today_outlined,
         color: AppColors.green,
       ),
       DashboardStat(
         label: LocaleKeys.dashboardStatSurveysSynced.tr(),
-        value: '$synced',
+        value: '${counts.synced}',
         trend: '',
         icon: Icons.cloud_done_outlined,
         color: AppColors.teal,
       ),
       DashboardStat(
         label: LocaleKeys.dashboardStatSurveysPending.tr(),
-        value: '${pending + failed}',
+        value: '${counts.pending + counts.failed}',
         trend: '',
         icon: Icons.notifications_active_outlined,
         color: AppColors.warning,
       ),
     ];
+  }
 
-    final List<DashboardService> services = <DashboardService>[
-      DashboardService(
-        title: LocaleKeys.serviceVoterSearchEngineTitle.tr(),
-        desc: '',
-        icon: Icons.manage_search_outlined,
-        color: AppColors.primary,
-        url: voterSearchUrl,
-        category: DashboardCategory.voterServices,
-        requiresServiceLogin: false,
-        passSessionContext: false,
-        openAsExternalPortal: true,
-      ),
-      DashboardService(
-        title: LocaleKeys.serviceBoothTitle.tr(),
-        desc: '',
-        icon: Icons.location_on_outlined,
-        color: AppColors.primaryBright,
-        url: surveyWebUrl,
-        category: DashboardCategory.voterServices,
-        requiredLoginKind: ServiceLoginKind.survey,
-      ),
-      DashboardService(
-        title: LocaleKeys.serviceExpenditureTitle.tr(),
-        desc: '',
-        icon: Icons.account_balance_wallet_outlined,
-        color: AppColors.saffron,
-        url: expenditureUrl,
-        category: DashboardCategory.voterServices,
-        // Same officer login gate as booth survey; then open ASPX in WebView.
-        requiresServiceLogin: true,
-        passSessionContext: false,
-        openAsExternalPortal: true,
-        requiredLoginKind: ServiceLoginKind.survey,
-      ),
+  static List<DashboardService> _buildServices({
+    required String surveyWebUrl,
+    required String voterRegistrationUrl,
+    required String expenditureUrl,
+  }) {
+    return <DashboardService>[
+      // Tab 1 — Voter Services
       DashboardService(
         title: LocaleKeys.serviceVoterRegistrationTitle.tr(),
         desc: '',
@@ -248,6 +238,50 @@ class DashboardController extends GetxController {
         openAsExternalPortal: true,
       ),
       DashboardService(
+        title: LocaleKeys.serviceVoterSearchEngineTitle.tr(),
+        desc: '',
+        icon: Icons.manage_search_outlined,
+        color: AppColors.primary,
+        url: '',
+        category: DashboardCategory.voterServices,
+        routeName: AppRoute.voterSearch.path,
+        requiresServiceLogin: false,
+      ),
+      // Tab 2 — About Elections
+      if (!kHideOnlineNomination)
+        DashboardService(
+          title: LocaleKeys.serviceOnlineNominationTitle.tr(),
+          desc: LocaleKeys.serviceOnlineNominationDesc.tr(),
+          icon: Icons.how_to_reg_rounded,
+          color: AppColors.green,
+          url: '',
+          category: DashboardCategory.aboutElections,
+          routeName: AppRoute.onlineNominationHome.path,
+          requiresServiceLogin: false,
+        ),
+      if (!kHideExpenditureAccount)
+        DashboardService(
+          title: LocaleKeys.serviceExpenditureTitle.tr(),
+          desc: '',
+          icon: Icons.account_balance_wallet_outlined,
+          color: AppColors.saffron,
+          url: expenditureUrl,
+          category: DashboardCategory.aboutElections,
+          requiresServiceLogin: true,
+          passSessionContext: false,
+          openAsExternalPortal: true,
+          requiredLoginKind: ServiceLoginKind.survey,
+        ),
+      DashboardService(
+        title: LocaleKeys.serviceBoothTitle.tr(),
+        desc: '',
+        icon: Icons.location_on_outlined,
+        color: AppColors.primaryBright,
+        url: surveyWebUrl,
+        category: DashboardCategory.aboutElections,
+        requiredLoginKind: ServiceLoginKind.survey,
+      ),
+      DashboardService(
         title: LocaleKeys.servicePresidingTitle.tr(),
         desc: LocaleKeys.servicePresidingDesc.tr(),
         icon: Icons.how_to_vote_rounded,
@@ -255,30 +289,60 @@ class DashboardController extends GetxController {
         url: '',
         category: DashboardCategory.aboutElections,
         routeName: AppRoute.presidingDashboard.path,
-        forceFreshLogin: true,
+        forceFreshLogin: false,
         requiredLoginKind: ServiceLoginKind.presiding,
       ),
-      DashboardService(
-        title: LocaleKeys.serviceOnlineNominationTitle.tr(),
-        desc: LocaleKeys.serviceOnlineNominationDesc.tr(),
-        icon: Icons.how_to_reg_rounded,
-        color: AppColors.green,
-        url: '',
-        category: DashboardCategory.aboutElections,
-        routeName: AppRoute.onlineNominationHome.path,
-        requiresServiceLogin: false,
-      ),
     ];
+  }
 
-    state.value = DashboardState(
-      userName: name,
-      designation: designation,
-      district: district,
-      pendingCount: pending + failed,
-      stats: stats,
-      services: services,
-      activity: _activityFromSubmissions(submissions),
-    );
+  static String _resolveUserName({
+    required ServiceSession? session,
+    required AuthUser? authUser,
+    required bool isGuestAuth,
+  }) {
+    final String? sessionName = _trimmedOrNull(session?.name);
+    if (sessionName != null) return sessionName;
+    if (!isGuestAuth) {
+      final String? fullName = _trimmedOrNull(authUser?.fullName);
+      if (fullName != null) return fullName;
+    }
+    return LocaleKeys.dashboardGuest.tr();
+  }
+
+  static String _resolveDesignation({
+    required ServiceSession? session,
+    required AuthUser? authUser,
+    required bool isGuestAuth,
+  }) {
+    final String? section = _trimmedOrNull(session?.section);
+    if (section != null) return section;
+    if (!isGuestAuth) {
+      final String? designation = _trimmedOrNull(authUser?.designation);
+      if (designation != null) return designation;
+    }
+    return LocaleKeys.dashboardRole.tr();
+  }
+
+  static String _resolveDistrict({
+    required ServiceSession? session,
+    required AuthUser? authUser,
+    required bool isGuestAuth,
+  }) {
+    final String? districtName = _trimmedOrNull(session?.districtName);
+    if (districtName != null) return districtName;
+    final String? districtId = _trimmedOrNull(session?.districtId);
+    if (districtId != null) return districtId;
+    if (!isGuestAuth) {
+      final String? districtCode = _trimmedOrNull(authUser?.districtCode);
+      if (districtCode != null) return districtCode;
+    }
+    return LocaleKeys.dashboardDistrictUnset.tr();
+  }
+
+  static String? _trimmedOrNull(String? value) {
+    if (value == null) return null;
+    final String trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
   /// Recent activity from locally tracked survey / web form submissions.
@@ -345,4 +409,18 @@ class DashboardController extends GetxController {
         LocaleKeys.dashboardStatSurveysPending.tr(),
     };
   }
+}
+
+class _SubmissionCounts {
+  const _SubmissionCounts({
+    required this.synced,
+    required this.pending,
+    required this.failed,
+    required this.todayCount,
+  });
+
+  final int synced;
+  final int pending;
+  final int failed;
+  final int todayCount;
 }

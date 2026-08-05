@@ -87,37 +87,47 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: fill,
+        fillColor: isLight ? AppColors.surface : AppColors.darkSurface,
         isDense: true,
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         alignLabelWithHint: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 14,
+          vertical: 12,
         ),
-        labelStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.slate500,
+        labelStyle: AppTextStyles.caption.copyWith(
+          color: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
+          fontWeight: FontWeight.w600,
         ),
         floatingLabelStyle: AppTextStyles.label.copyWith(
-          color: AppColors.greenDark,
+          color: scheme.primary,
+          fontWeight: FontWeight.w700,
         ),
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.slate400),
-        helperStyle: AppTextStyles.caption.copyWith(color: AppColors.slate500),
+        hintStyle: AppTextStyles.bodyMedium.copyWith(
+          color: isLight ? AppColors.slate400 : AppColors.darkTextSecondary,
+        ),
+        helperStyle: AppTextStyles.caption.copyWith(
+          color: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
+        ),
         errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
         errorMaxLines: 2,
-        prefixIconColor: AppColors.slate500,
-        suffixIconColor: AppColors.slate500,
-        border: const OutlineInputBorder(
+        prefixIconColor: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
+        suffixIconColor: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
+        border: OutlineInputBorder(
           borderRadius: AppRadius.brMd,
-          borderSide: BorderSide(color: AppColors.outline),
+          borderSide: BorderSide(
+            color: isLight ? AppColors.slate200 : AppColors.darkOutline,
+          ),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.brMd,
-          borderSide: BorderSide(color: AppColors.outline),
+          borderSide: BorderSide(
+            color: isLight ? AppColors.slate200 : AppColors.darkOutline,
+          ),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.brMd,
-          borderSide: BorderSide(color: AppColors.greenDark, width: 1.5),
+          borderSide: BorderSide(color: scheme.primary, width: 1.5),
         ),
         errorBorder: const OutlineInputBorder(
           borderRadius: AppRadius.brMd,

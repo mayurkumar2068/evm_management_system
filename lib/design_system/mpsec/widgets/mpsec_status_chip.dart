@@ -17,6 +17,10 @@ class MpSecStatusChip extends StatelessWidget {
   final MpSecChipVariant variant;
   final VoidCallback? onTap;
 
+  /// Fits the longest action label ("Mark complete" / "पूर्ण करें").
+  static const double _actionMinWidth = 112;
+  static const double _actionMinHeight = 36;
+
   @override
   Widget build(BuildContext context) {
     final Color background;
@@ -33,9 +37,19 @@ class MpSecStatusChip extends StatelessWidget {
         foreground = AppColors.slate500;
     }
 
+    final bool isActionLike =
+        variant == MpSecChipVariant.action ||
+        variant == MpSecChipVariant.disabled;
+
     final Widget chip = Container(
-      constraints: const BoxConstraints(minHeight: MpSecTokens.touchTarget / 2),
+      constraints: BoxConstraints(
+        minWidth: isActionLike ? _actionMinWidth : 0,
+        minHeight: isActionLike
+            ? _actionMinHeight
+            : MpSecTokens.touchTarget / 2,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      alignment: isActionLike ? Alignment.center : null,
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppRadius.pill),

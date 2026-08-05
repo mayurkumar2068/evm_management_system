@@ -47,6 +47,24 @@ export interface SaveSurveyAnswerResponse {
   Id: string;
 }
 
+/** `POST /api/PSSurvey/existing_answer` request body. */
+export interface ExistingAnswerRequest {
+  PSId: string;
+  QuestionId: string;
+}
+
+/** `POST /api/PSSurvey/existing_answer` response `Data`. */
+export interface ExistingAnswer {
+  readonly id: string;
+  readonly answerYN: boolean | null;
+  readonly answerText: string | null;
+  readonly remark: string;
+  readonly lat: number | null;
+  readonly long: number | null;
+  /** Raw base64 or data-URL photo string. */
+  readonly photo: string | null;
+}
+
 /** A checklist definition item as returned by the legacy mock API. */
 export interface SurveyItem {
   readonly surveyId: string;

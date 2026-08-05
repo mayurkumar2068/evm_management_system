@@ -1,23 +1,21 @@
-import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/location/location_service.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/connectivity_service.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_election_action_result.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
+import 'package:evm_management_system/features/presiding_concern/data/config/turnout_slot_registry.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_concern_local_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_concern_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
-import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_election_api_mapper.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_election_status_mapper.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/presiding_session_mapper.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/repository/presiding_concern_repository.dart';
-import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
-import 'package:get/get.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 
-/// Offline-first repository for presiding-officer election-day data with PO Election API sync.
+/// API-first repository for PO election-day data (local cache only when offline).
 final class PresidingConcernRepositoryImpl
     implements PresidingConcernRepository {
   PresidingConcernRepositoryImpl({
@@ -70,26 +68,79 @@ final class PresidingConcernRepositoryImpl
     if (milestone.isCompleted) {
       return PresidingActionOutcome(session: session);
     }
+    if (!session.isMilestoneActionEnabled(milestoneId)) {
+      return PresidingActionOutcome(
+        session: session,
+        message: session.milestoneActionBlockKey(milestoneId),
+      );
+    }
 
     final PoElectionActionResult apiResult = await _syncMilestone(
       session: session,
       milestoneId: milestoneId,
     );
-    final DateTime completedAt = apiResult.actionDateTime ?? DateTime.now();
     final bool synced = apiResult.accepted;
+    // Prefer server ActionDateTime. If already-registered with no timestamp,
+    // do NOT invent simulator clock — UI shows completed without a fake time.
+    DateTime? completedAt = apiResult.actionDateTime ??
+        (apiResult.alreadyRegistered
+            ? null
+            : (synced ? DateTime.now() : DateTime.now()));
+
+    // 2–2 hourly / live: use their own evidence times (never share one clock).
+    if (milestoneId == PresidingMilestoneIds.twoHourlyInfo) {
+      completedAt = _latestLocalTurnoutTime(session) ?? completedAt;
+    } else if (milestoneId == PresidingMilestoneIds.livePollInfo) {
+      final TurnoutRecord? live =
+          session.turnoutRecords[TurnoutSlotIds.livePollInfo];
+      final bool hasLiveCounts = (live?.male ?? 0) > 0 ||
+          (live?.female ?? 0) > 0 ||
+          (live?.thirdGender ?? 0) > 0;
+      completedAt = hasLiveCounts ? (live?.savedAt ?? completedAt) : null;
+    }
 
     final List<PresidingMilestone> updated = session.milestones
         .map((PresidingMilestone item) {
           if (item.id != milestoneId) return item;
+          if (completedAt == null &&
+              (apiResult.alreadyRegistered ||
+                  milestoneId == PresidingMilestoneIds.livePollInfo)) {
+            return item.copyWith(
+              state: PresidingMilestoneState.completed,
+              clearCompletedAt: true,
+              pendingSync: false,
+            );
+          }
           return item.copyWith(
             state: PresidingMilestoneState.completed,
-            completedAt: completedAt,
+            completedAt: completedAt ?? DateTime.now(),
             pendingSync: !synced,
           );
         })
         .toList(growable: false);
 
-    final PresidingSession next = session.copyWith(milestones: updated);
+    Map<String, TurnoutRecord> turnout = session.turnoutRecords;
+    // Submitting 2–2 hourly (or locking live) freezes live जानकारी edits.
+    if (milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
+        milestoneId == PresidingMilestoneIds.livePollInfo) {
+      final TurnoutRecord? live =
+          turnout[TurnoutSlotIds.livePollInfo];
+      if (live != null && !live.isLocked) {
+        turnout = Map<String, TurnoutRecord>.from(turnout)
+          ..[TurnoutSlotIds.livePollInfo] = live.copyWith(isLocked: true);
+      } else if (live == null) {
+        turnout = Map<String, TurnoutRecord>.from(turnout)
+          ..[TurnoutSlotIds.livePollInfo] = const TurnoutRecord(
+            slotId: TurnoutSlotIds.livePollInfo,
+            isLocked: true,
+          );
+      }
+    }
+
+    final PresidingSession next = session.copyWith(
+      milestones: updated,
+      turnoutRecords: turnout,
+    );
     await _persist(next);
     return PresidingActionOutcome(
       session: next,
@@ -112,6 +163,59 @@ final class PresidingConcernRepositoryImpl
       return session;
     }
 
+    final bool isQueueOnly = slotId == TurnoutSlotIds.queueCount;
+    final PresidingElectionContext? electors = await _contextStore.read();
+    final int resolvedMale = male ?? existing?.male ?? 0;
+    final int resolvedFemale = female ?? existing?.female ?? 0;
+    final int resolvedOther = thirdGender ?? existing?.thirdGender ?? 0;
+    final int resolvedQueue = queueCount ?? existing?.queueCount ?? 0;
+
+    if (isQueueOnly) {
+      if (resolvedQueue < 0) {
+        throw const TurnoutCountValidationException(
+          TurnoutCountValidationResult.fail(
+            'presiding.count_cannot_be_negative',
+          ),
+        );
+      }
+      if (resolvedQueue > TurnoutCountValidator.maxEnterableCount) {
+        throw const TurnoutCountValidationException(
+          TurnoutCountValidationResult.fail(
+            'presiding.count_max_four_digits',
+            limit: TurnoutCountValidator.maxEnterableCount,
+          ),
+        );
+      }
+    } else {
+      final TurnoutCountValidationResult validation =
+          TurnoutCountValidator.validate(
+        male: resolvedMale,
+        female: resolvedFemale,
+        other: resolvedOther,
+        bounds: TurnoutCountValidator.boundsFor(
+          session: session,
+          slotId: slotId,
+          electors: electors,
+        ),
+      );
+      if (!validation.isOk) {
+        throw TurnoutCountValidationException(validation);
+      }
+    }
+
+    final TurnoutCountValidationResult lastPlusQueue =
+        TurnoutCountValidator.validateLastPlusQueueVsCompletion(
+      session: session,
+      slotId: slotId,
+      male: resolvedMale,
+      female: resolvedFemale,
+      other: resolvedOther,
+      queueCount: resolvedQueue,
+    );
+    if (!lastPlusQueue.isOk) {
+      throw TurnoutCountValidationException(lastPlusQueue);
+    }
+
     final TurnoutRecord record = TurnoutRecord(
       slotId: slotId,
       male: male ?? existing?.male,
@@ -127,10 +231,11 @@ final class PresidingConcernRepositoryImpl
       record: record,
     );
     final DateTime savedAt = apiResult.actionDateTime ?? record.savedAt!;
+    final bool lockSlot = slotId != TurnoutSlotIds.livePollInfo;
     final TurnoutRecord persisted = record.copyWith(
       savedAt: savedAt,
       pendingSync: !apiResult.accepted,
-      isLocked: true,
+      isLocked: lockSlot,
     );
 
     final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
@@ -180,7 +285,9 @@ final class PresidingConcernRepositoryImpl
           Map<String, TurnoutRecord>.from(session.turnoutRecords)
             ..[entry.key] = record.copyWith(
               pendingSync: false,
-              isLocked: apiResult.alreadyRegistered || apiResult.success,
+              isLocked: entry.key == TurnoutSlotIds.livePollInfo
+                  ? record.isLocked
+                  : (apiResult.alreadyRegistered || apiResult.success),
             );
       session = session.copyWith(turnoutRecords: turnout);
     }
@@ -196,52 +303,49 @@ final class PresidingConcernRepositoryImpl
     if (remote == null) return loadSession();
 
     final PresidingSession session = await loadSession();
-    final String? userId = await _resolveUserId(session);
-    if (userId == null || userId.isEmpty) {
-      return session;
-    }
+    final PresidingElectionContext? context = await _resolveContext(session);
+    if (context == null) return session;
 
     try {
-      final Map<String, dynamic>? statusData = await remote.fetchPoStatus(
-        userId: userId,
+      final Map<String, dynamic>? status = await remote.fetchPoStatus(
+        electionId: context.electionId,
+        psId: context.psId,
       );
-      if (statusData == null || statusData.isEmpty) return session;
+      if (status == null || status.isEmpty) return session;
 
-      final Map<String, TurnoutRecord> fromServer =
-          PoElectionStatusMapper.turnoutRecordsFromStatus(statusData);
-      final Map<String, TurnoutRecord> merged = Map<String, TurnoutRecord>.from(
-        session.turnoutRecords,
-      );
-
-      for (final MapEntry<String, TurnoutRecord> entry in fromServer.entries) {
-        final TurnoutRecord? local = merged[entry.key];
-        if (local?.pendingSync == true) continue;
-        merged[entry.key] = entry.value;
+      final Map<String, TurnoutRecord> serverTurnout =
+          PoElectionStatusMapper.turnoutRecordsFromStatus(status);
+      // API-first: drop local slot copies the server no longer has.
+      final Map<String, TurnoutRecord> mergedTurnout =
+          Map<String, TurnoutRecord>.from(session.turnoutRecords);
+      for (final TurnoutSlotConfig config
+          in TurnoutSlotRegistry.genderStatusSlots()) {
+        if (serverTurnout.containsKey(config.slotId)) {
+          mergedTurnout[config.slotId] = serverTurnout[config.slotId]!;
+        } else {
+          mergedTurnout.remove(config.slotId);
+        }
       }
-
-      final List<PresidingMilestone> milestones =
+      if (serverTurnout.containsKey(TurnoutSlotIds.queueCount)) {
+        mergedTurnout[TurnoutSlotIds.queueCount] =
+            serverTurnout[TurnoutSlotIds.queueCount]!;
+      } else {
+        mergedTurnout.remove(TurnoutSlotIds.queueCount);
+      }
+      final List<PresidingMilestone> mergedMilestones =
           PoElectionStatusMapper.milestonesFromStatus(
-            current: session.milestones,
-            data: statusData,
-          );
-
-      final String? bodyType = statusData[PoElectionResponseFields.bodyType]
-          ?.toString();
+        current: session.milestones,
+        data: status,
+      );
       final PresidingSession next = session.copyWith(
-        areaType: bodyType?.isNotEmpty ?? false
-            ? PresidingElectionContext.normalizeAreaType(bodyType)
-            : session.areaType,
-        turnoutRecords: merged,
-        milestones: milestones,
+        milestones: mergedMilestones,
+        turnoutRecords: mergedTurnout,
       );
       await _persist(next);
-      AppLogger.i(
-        'PO status synced from server (${merged.length} turnout slots)',
-      );
       return next;
     } catch (e, s) {
       AppLogger.w('PO status refresh failed', error: e, stackTrace: s);
-      return loadSession();
+      return session;
     }
   }
 
@@ -260,6 +364,12 @@ final class PresidingConcernRepositoryImpl
           : current.pollingStationName,
     );
     await _persist(next);
+  }
+
+  @override
+  Future<void> clearLocalCache() async {
+    await _local.clearSession();
+    AppLogger.i('PO local session cache cleared');
   }
 
   @override
@@ -289,18 +399,21 @@ final class PresidingConcernRepositoryImpl
     PresidingElectionContext? context,
   ) {
     if (context == null) return session;
+    // Login context is source of truth for election identity / urban-rural.
+    final String? contextArea =
+        context.areaType.isNotEmpty ? context.areaType : null;
     return session.copyWith(
-      electionId: session.electionId ?? context.electionId,
-      psId: session.psId ?? context.psId,
-      areaType: session.areaType ?? context.areaType,
-      pollingStationCode: session.pollingStationCode.isNotEmpty
-          ? session.pollingStationCode
-          : (context.pollingStationCode ?? ''),
-      pollingStationName:
-          session.pollingStationName.isNotEmpty &&
-              !session.pollingStationName.startsWith('presiding.')
-          ? session.pollingStationName
-          : (context.pollingStationName ?? session.pollingStationName),
+      electionId: context.electionId > 0
+          ? context.electionId
+          : session.electionId,
+      psId: context.psId.isNotEmpty ? context.psId : session.psId,
+      areaType: contextArea ?? session.areaType,
+      pollingStationCode: context.pollingStationCode?.isNotEmpty ?? false
+          ? context.pollingStationCode!
+          : session.pollingStationCode,
+      pollingStationName: context.pollingStationName?.isNotEmpty ?? false
+          ? context.pollingStationName!
+          : session.pollingStationName,
     );
   }
 
@@ -424,21 +537,6 @@ final class PresidingConcernRepositoryImpl
     return stored;
   }
 
-  Future<String?> _resolveUserId(PresidingSession session) async {
-    final PresidingElectionContext? context = await _contextStore.read();
-    final String? fromContext = context?.userId?.trim();
-    if (fromContext != null && fromContext.isNotEmpty) return fromContext;
-
-    if (Get.isRegistered<ServiceAuthController>()) {
-      final String? sessionUserId =
-          AppServices.serviceAuth.session.value?.userId;
-      if (sessionUserId != null && sessionUserId.trim().isNotEmpty) {
-        return sessionUserId.trim();
-      }
-    }
-    return null;
-  }
-
   PresidingSession _ensureMilestoneCatalog(PresidingSession session) {
     final List<PresidingMilestone> source = session.milestones;
     final Map<String, PresidingMilestone> byId = <String, PresidingMilestone>{
@@ -511,5 +609,19 @@ final class PresidingConcernRepositoryImpl
 
   Future<void> _persist(PresidingSession session) {
     return _local.writeSession(PresidingSessionMapper.toJson(session));
+  }
+
+  DateTime? _latestLocalTurnoutTime(PresidingSession session) {
+    DateTime? latest;
+    for (final MapEntry<String, TurnoutRecord> entry
+        in session.turnoutRecords.entries) {
+      if (entry.key == TurnoutSlotIds.livePollInfo) continue;
+      final DateTime? savedAt = entry.value.savedAt;
+      if (savedAt == null) continue;
+      if (latest == null || savedAt.isAfter(latest)) {
+        latest = savedAt;
+      }
+    }
+    return latest;
   }
 }

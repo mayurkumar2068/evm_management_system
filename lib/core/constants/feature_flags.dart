@@ -10,6 +10,12 @@ const bool kHideDashboardStats = true;
 /// Hides the reports screen and all navigation entry points.
 const bool kHideReports = true;
 
+/// Hides Online Nomination tile (dashboard + related entry points).
+const bool kHideOnlineNomination = true;
+
+/// Hides Election Expenditure Account (व्यय लेखा) tile.
+const bool kHideExpenditureAccount = true;
+
 /// Skips green onboarding slides + first-run language bottomsheet.
 /// Splash continues as guest straight to the home/dashboard.
 const bool kSkipOnboarding = true;

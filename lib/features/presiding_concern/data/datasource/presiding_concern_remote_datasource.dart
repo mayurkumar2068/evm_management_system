@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/network/po_election_api_client.dart';
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
@@ -13,8 +14,11 @@ abstract interface class PresidingConcernRemoteDatasource {
     required Map<String, dynamic> body,
   });
 
-  /// GET `/api/POElection/get-po-status?id={userId}`
-  Future<Map<String, dynamic>?> fetchPoStatus({required String userId});
+  /// POST `/api/POElection/po-status` with `{electionId, psId}`
+  Future<Map<String, dynamic>?> fetchPoStatus({
+    required int electionId,
+    required String psId,
+  });
 }
 
 /// Dio-backed PO Election API client using the PO login access token.
@@ -44,18 +48,44 @@ final class PresidingConcernRemoteDatasourceImpl
   }
 
   @override
-  Future<Map<String, dynamic>?> fetchPoStatus({required String userId}) async {
+  Future<Map<String, dynamic>?> fetchPoStatus({
+    required int electionId,
+    required String psId,
+  }) async {
     final String token = (await _getAccessToken())?.trim() ?? '';
-    if (token.isEmpty || userId.trim().isEmpty) return null;
+    final String resolvedPsId = psId.trim();
+    if (token.isEmpty || electionId <= 0 || resolvedPsId.isEmpty) {
+      AppLogger.w(
+        '[PO API] po-status skipped — '
+        'token=${token.isEmpty ? "MISSING" : "ok"} '
+        'electionId=$electionId '
+        'psId=${resolvedPsId.isEmpty ? "MISSING" : resolvedPsId}',
+      );
+      return null;
+    }
 
-    final Response<dynamic> response = await _dio.get<dynamic>(
-      PoElectionEndpoints.getPoStatus(userId.trim()),
+    final Response<dynamic> response = await _dio.post<dynamic>(
+      PoElectionEndpoints.poStatus,
+      data: <String, dynamic>{
+        PoElectionRequestFields.electionId: electionId,
+        PoElectionRequestFields.psId: resolvedPsId,
+      },
       options: Options(
-        headers: <String, dynamic>{'Authorization': 'Bearer $token'},
+        contentType: Headers.jsonContentType,
+        headers: <String, dynamic>{
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       ),
     );
     final int? status = response.statusCode;
-    if (status == null || status < 200 || status >= 300) return null;
+    if (status == null || status < 200 || status >= 300) {
+      AppLogger.w(
+        '[PO API] po-status non-2xx http=$status '
+        '(endpoint may be missing on this host) body=${response.data}',
+      );
+      return null;
+    }
 
     final dynamic data = response.data;
     if (data is Map) {
@@ -66,9 +96,21 @@ final class PresidingConcernRemoteDatasourceImpl
         final Object? payload =
             body[PoElectionResponseFields.data] ?? body['data'];
         if (payload is Map) return payload.cast<String, dynamic>();
+        AppLogger.w(
+          '[PO API] po-status Status=true but Data is not a Map '
+          '(type=${payload.runtimeType})',
+        );
+      } else {
+        AppLogger.w(
+          '[PO API] po-status Status=$statusFlag '
+          'Message=${body['Message']}',
+        );
       }
       return body;
     }
+    AppLogger.w(
+      '[PO API] po-status unexpected body type=${data.runtimeType}',
+    );
     return null;
   }
 

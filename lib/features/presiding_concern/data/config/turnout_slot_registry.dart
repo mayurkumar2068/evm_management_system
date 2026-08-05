@@ -168,7 +168,10 @@ abstract final class TurnoutSlotRegistry {
   }
 
   static List<TurnoutSlotConfig> forAreaType(String? areaType) {
-    final PresidingAreaType resolved = PresidingAreaType.parse(areaType);
+    final PresidingAreaType resolved = PresidingAreaType.parse(
+      areaType,
+      fallback: PresidingAreaType.rural,
+    );
     return _turnoutScreenOrder
         .where(
           (TurnoutSlotConfig config) => !config.urbanOnly || resolved.isUrban,

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/network/dio_factory.dart';
@@ -34,12 +35,7 @@ class ServiceAuthController extends GetxController {
 
   bool get isLoggedIn {
     final ServiceSession? current = session.value;
-    if (current == null) return false;
-    if (current.isExpired) {
-      signOut();
-      return false;
-    }
-    return true;
+    return current != null;
   }
 
   @override
@@ -50,25 +46,32 @@ class ServiceAuthController extends GetxController {
 
   Future<void> _loadSession() async {
     final String? raw = await AppServices.secureStorage.read(
-      SecureStorageKeys.userSession,
-    );
+          SecureStorageKeys.serviceSession,
+        ) ??
+        // Legacy: older builds stored service login under userSession.
+        await AppServices.secureStorage.read(SecureStorageKeys.userSession);
     if (raw != null) {
       try {
-        final ServiceSession restored = ServiceSession.fromJson(
-          jsonDecode(raw) as Map<String, dynamic>,
-        );
-        if (!restored.isExpired) {
-          session.value = restored;
-          await _persistPoAccessToken(
-            accessToken: restored.token,
-            ttlHours: restored.ttlHours ?? 24,
-          );
-          PresidingConcernModule.resetClients();
-        } else {
-          await signOut();
+        final Map<String, dynamic> json =
+            jsonDecode(raw) as Map<String, dynamic>;
+        // Ignore app-auth UserModel payloads (no service token).
+        if (json['token'] is! String || (json['token'] as String).isEmpty) {
+          return;
         }
+        final ServiceSession restored = ServiceSession.fromJson(json);
+        session.value = restored;
+        await _persistPoAccessToken(
+          accessToken: restored.token,
+          ttlHours: restored.ttlHours ?? 24,
+        );
+        // Migrate legacy key → dedicated service session key.
+        await AppServices.secureStorage.write(
+          SecureStorageKeys.serviceSession,
+          jsonEncode(restored.toJson()),
+        );
+        PresidingConcernModule.resetClients();
       } catch (_) {
-        await signOut();
+        // Corrupt payload — do not wipe other auth keys here.
       }
     }
   }
@@ -88,6 +91,9 @@ class ServiceAuthController extends GetxController {
     required String userId,
     required String password,
   }) async {
+    AppLogger.w(
+      '[PO API] login-po-pass starting userId=$userId',
+    );
     final Response<dynamic> res;
 
     try {
@@ -103,6 +109,10 @@ class ServiceAuthController extends GetxController {
         ),
       );
     } on DioException catch (e) {
+      AppLogger.w(
+        '[PO API] login-po-pass DioException http=${e.response?.statusCode} '
+        'type=${e.type.name} msg=${e.message}',
+      );
       throw ServiceAuthException(_networkOrServerMessage(e));
     }
 
@@ -190,13 +200,24 @@ class ServiceAuthController extends GetxController {
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );
+    final PresidingElectionContext? previous = await store.read();
     await store.save(context);
 
     await _saveSession(next);
-    PresidingConcernModule.resetClients();
+    // Keep offline milestone/turnout data across re-login of the same booth.
+    // Only wipe when election / PS identity changes.
+    final bool identityChanged = previous == null ||
+        previous.electionId != context.electionId ||
+        previous.psId != context.psId;
+    if (identityChanged) {
+      await PresidingConcernModule.clearLocalCache();
+    } else {
+      PresidingConcernModule.resetClients();
+    }
     try {
-      await PresidingConcernModule.repository.refreshFromServer();
+      await PresidingConcernModule.repository.applyElectionContext(context);
     } catch (_) {}
+    // Status pull happens once via watchSession warm-sync (sync + po-status fetch).
     return next;
   }
 
@@ -334,7 +355,7 @@ class ServiceAuthController extends GetxController {
   Future<void> _saveSession(ServiceSession s) async {
     session.value = s;
     await AppServices.secureStorage.write(
-      SecureStorageKeys.userSession,
+      SecureStorageKeys.serviceSession,
       jsonEncode(s.toJson()),
     );
   }
@@ -386,8 +407,10 @@ class ServiceAuthController extends GetxController {
     _surveyDio = null;
     PoElectionApiClient.reset();
     await AppServices.tokenVault.clear();
+    await AppServices.secureStorage.delete(SecureStorageKeys.serviceSession);
+    // Legacy key cleanup (older builds stored service login here).
     await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
-    PresidingConcernModule.resetClients();
+    await PresidingConcernModule.clearLocalCache();
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );

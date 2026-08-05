@@ -176,13 +176,8 @@ class _AppWebViewState extends State<AppWebView> {
   }
 
   Future<void> _goBackOrClose() async {
+    // Always leave the WebView screen — do not walk in-page history.
     final NavigatorState navigator = Navigator.of(context);
-    final bool canBack =
-        await (_controller?.canGoBack() ?? Future<bool>.value(false));
-    if (canBack) {
-      await _controller?.goBack();
-      return;
-    }
     if (navigator.canPop()) {
       navigator.pop();
     }

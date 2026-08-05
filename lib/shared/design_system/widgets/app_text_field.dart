@@ -84,17 +84,28 @@ class AppTextField extends StatelessWidget {
         validator: validator,
         autofillHints: autofillHints,
         textCapitalization: textCapitalization,
-        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.slate800),
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.slate800,
+          fontWeight: FontWeight.w600,
+        ),
         decoration: InputDecoration(
           labelText: _labelText,
           hintText: hint,
           errorText: errorText,
           helperText: helperText,
           counterText: maxLength == null ? null : '',
-          prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 22),
+          prefixIcon: prefixIcon == null
+              ? null
+              : Icon(prefixIcon, size: 20, color: AppColors.slate500),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 40,
+            minHeight: 40,
+          ),
           suffixIcon:
               suffix ??
-              (suffixIcon == null ? null : Icon(suffixIcon, size: 22)),
+              (suffixIcon == null
+                  ? null
+                  : Icon(suffixIcon, size: 20, color: AppColors.slate500)),
         ),
       ),
     );

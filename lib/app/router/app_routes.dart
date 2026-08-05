@@ -42,7 +42,8 @@ enum AppRoute {
   nominationTrackStatus(
     '/online-nomination/track-status',
     'nominationTrackStatus',
-  );
+  ),
+  voterSearch('/voter-search', 'voterSearch');
 
   const AppRoute(this.path, this.name);
 

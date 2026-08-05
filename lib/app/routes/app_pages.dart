@@ -33,6 +33,7 @@ import 'package:evm_management_system/features/search/presentation/screens/searc
 import 'package:evm_management_system/features/service_auth/presentation/screens/service_login_screen.dart';
 import 'package:evm_management_system/features/settings/presentation/screens/settings_screen.dart';
 import 'package:evm_management_system/features/sync_management/presentation/screens/sync_management_screen.dart';
+import 'package:evm_management_system/features/voter_search/presentation/screens/voter_search_screen.dart';
 import 'package:evm_management_system/features/web_portal/presentation/screens/offline_fallback_screen.dart';
 import 'package:evm_management_system/features/web_portal/presentation/screens/web_view_screen.dart';
 import 'package:flutter/material.dart';
@@ -120,6 +121,11 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoute.onlineNominationHome.path,
       page: () => const OnlineNominationHomeScreen(),
+      middlewares: <GetMiddleware>[AuthMiddleware()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoute.voterSearch.path,
+      page: () => const VoterSearchScreen(),
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
     GetPage<dynamic>(

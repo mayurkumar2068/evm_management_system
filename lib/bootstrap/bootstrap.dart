@@ -11,6 +11,7 @@ import 'package:evm_management_system/app/app.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/settings/settings_service.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:evm_management_system/core/time/app_time_zone.dart';
 import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,6 +25,7 @@ Future<void> bootstrap(Flavor flavor) async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await AppTimeZone.ensureInitialized();
       await EasyLocalization.ensureInitialized();
       await GoogleFonts.pendingFonts(<TextStyle>[
         GoogleFonts.poppins(),
@@ -69,7 +71,6 @@ Future<void> bootstrap(Flavor flavor) async {
           onboardingSeen = false;
         }
       } else {
-        // Persist so storage stays consistent if the flag is later turned off.
         try {
           await secureStorage.write(SecureStorageKeys.onboardingSeen, 'true');
         } catch (_) {}
@@ -86,7 +87,6 @@ Future<void> bootstrap(Flavor flavor) async {
       final AppSettingsService settingsService = AppSettingsService(
         secureStorage,
       );
-      // Hindi-first default; respect the officer's last chosen language.
       final Locale appLocale = _resolveStartupLocale(
         await settingsService.loadLocale(),
       );

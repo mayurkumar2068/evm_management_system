@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:evm_management_system/config/app_config.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:evm_management_system/core/time/app_time_zone.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,7 +28,6 @@ class WebSessionService {
   }) async {
     final ServiceSession? session = AppServices.serviceAuth.session.value;
     final String deviceId = await _deviceId.getOrCreate();
-    final DateTime now = DateTime.now();
 
     return WebSessionContext(
       accessToken: session?.token,
@@ -47,7 +47,7 @@ class WebSessionService {
       buildNumber: kWebBuildNumber,
       platform: Platform.isIOS ? 'ios' : 'android',
       environment: AppConfig.environment.name,
-      timezone: now.timeZoneName,
+      timezone: AppTimeZone.headerValue,
       correlationId: const Uuid().v4(),
     );
   }

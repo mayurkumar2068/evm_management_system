@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  NgZone,
   OnInit,
   computed,
   inject,
@@ -32,6 +33,7 @@ import { SurveyService } from '../../services/survey.service';
 import { APP_PARAMS } from '../../core/app-params';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { shrinkDataUrlImage } from '../../utils/shrink-data-url-image';
 
 @Component({
   selector: 'app-survey-checklist',
@@ -60,6 +62,7 @@ export class SurveyChecklistComponent implements OnInit {
   private readonly snack = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
   private readonly i18n = inject(I18nService);
+  private readonly zone = inject(NgZone);
 
   readonly location: SelectedLocation | null = this.survey.selectedLocation();
 
@@ -68,6 +71,11 @@ export class SurveyChecklistComponent implements OnInit {
   readonly loadingQuestions = signal(true);
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
+
+  /** Explicit UI state — avoids OnPush misses when form is patched async. */
+  readonly uiTitle = signal('');
+  readonly uiAnswer = signal<boolean | null>(null);
+  readonly uiImage = signal<string | null>(null);
 
   readonly questionForm: FormGroup = this.fb.group({
     surveyId: [''],
@@ -108,8 +116,12 @@ export class SurveyChecklistComponent implements OnInit {
   readonly geoError = signal<string | null>(null);
   readonly preview = signal<string | null>(null);
   readonly authError = signal<string | null>(null);
+  /** Bumped after form reset/prefill so OnPush checklist re-reads values. */
+  readonly formEpoch = signal(0);
 
   private readonly drafts = new Map<number, SurveyQuestionDraft>();
+  /** Guards against stale `existing_answer` responses when changing questions quickly. */
+  private existingAnswerBindToken = 0;
 
   ngOnInit(): void {
     if (!this.location) {
@@ -179,7 +191,11 @@ export class SurveyChecklistComponent implements OnInit {
 
   readonly boothLabel = computed(() => {
     const rows = this.location?.rows ?? [];
-    return rows.find((r) => r.icon === 'how_to_vote')?.value ?? '';
+    return (
+      rows.find((r) => r.key === 'boothId')?.value ??
+      rows.find((r) => r.icon === 'how_to_vote')?.value ??
+      ''
+    );
   });
 
   fetchLocation(): void {
@@ -218,17 +234,125 @@ export class SurveyChecklistComponent implements OnInit {
     const cached = this.drafts.get(index);
     const savedId =
       cached?.savedAnswerId ?? this.survey.savedAnswerIds()[question.id] ?? null;
+    const title = this.questionTitle(question);
+    const answer = cached?.answerYN ?? null;
+    const image = cached?.image ?? null;
+    const remark = cached?.remark ?? '';
 
     this.questionForm.reset({
       surveyId: question.id,
-      title: this.questionTitle(question),
+      title,
       photoRequired: question.photoRequired,
-      checked: cached?.answerYN ?? null,
-      image: cached?.image ?? null,
-      remark: cached?.remark ?? '',
+      checked: answer,
+      image,
+      remark,
       savedAnswerId: savedId,
     });
+    this.syncUiFromForm(title, answer, image);
     this.saveError.set(null);
+
+    // Local draft / in-session answer already present — skip server fetch.
+    if (cached || savedId) {
+      return;
+    }
+
+    const boothId = this.location?.values['boothId']?.trim() ?? '';
+    if (!boothId) {
+      return;
+    }
+
+    const bindToken = ++this.existingAnswerBindToken;
+    this.survey
+      .getExistingAnswer(boothId, question.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (existing) => {
+          void this.applyExistingAnswer(bindToken, index, question.id, existing);
+        },
+      });
+  }
+
+  private async applyExistingAnswer(
+    bindToken: number,
+    index: number,
+    questionId: string,
+    existing: {
+      id: string;
+      answerYN: boolean | null;
+      remark: string;
+      photo: string | null;
+    } | null,
+  ): Promise<void> {
+    if (
+      bindToken !== this.existingAnswerBindToken ||
+      this.currentIndex() !== index ||
+      !existing
+    ) {
+      return;
+    }
+    if (this.drafts.has(index)) {
+      return;
+    }
+
+    let photo = existing.photo;
+    if (photo) {
+      try {
+        photo = await shrinkDataUrlImage(photo);
+      } catch {
+        // keep original
+      }
+    }
+
+    // Flutter native bridge callbacks can land outside Angular zone.
+    this.zone.run(() => {
+      if (
+        bindToken !== this.existingAnswerBindToken ||
+        this.currentIndex() !== index
+      ) {
+        return;
+      }
+      if (this.drafts.has(index)) {
+        return;
+      }
+
+      const answerId = existing.id.trim() || null;
+      const title = (this.questionForm.get('title')?.value as string) ?? '';
+      this.questionForm.patchValue({
+        checked: existing.answerYN,
+        remark: existing.remark ?? '',
+        image: photo,
+        savedAnswerId: answerId,
+      });
+      this.syncUiFromForm(title, existing.answerYN, photo);
+      if (answerId) {
+        this.survey.rememberSavedAnswer(questionId, answerId);
+      }
+      this.persistDraftForIndex(index);
+    });
+  }
+
+  private syncUiFromForm(
+    title: string,
+    answer: boolean | null,
+    image: string | null,
+  ): void {
+    this.uiTitle.set(title);
+    this.uiAnswer.set(answer);
+    this.uiImage.set(image);
+    this.formEpoch.update((n) => n + 1);
+  }
+
+  onAnswerChange(answer: boolean | null): void {
+    this.uiAnswer.set(answer);
+    if (answer !== true) {
+      this.uiImage.set(null);
+    }
+    this.persistDraftForIndex(this.currentIndex());
+  }
+
+  onImageChange(image: string | null): void {
+    this.uiImage.set(image);
+    this.persistDraftForIndex(this.currentIndex());
   }
 
   private persistDraftForIndex(index: number): void {

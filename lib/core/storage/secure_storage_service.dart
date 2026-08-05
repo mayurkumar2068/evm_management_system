@@ -70,6 +70,8 @@ abstract final class SecureStorageKeys {
   static const String refreshToken = 'evm.refresh_token';
   static const String tokenExpiry = 'evm.token_expiry';
   static const String userSession = 'evm.user_session';
+  /// Presiding / survey officer service login (separate from app guest auth).
+  static const String serviceSession = 'evm.service_session';
   static const String biometricEnabled = 'evm.biometric_enabled';
   static const String encryptionKey = 'evm.db_encryption_key';
   static const String onboardingSeen = 'evm.onboarding_seen';

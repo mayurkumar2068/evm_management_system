@@ -15,6 +15,9 @@ class EnvironmentConfig {
     required this.surveyApiBaseUrl,
     required this.surveyWebBaseUrl,
     required this.voterSearchEngineUrl,
+    required this.voterSearchApiBaseUrl,
+    required this.voterSearchPassKey,
+    required this.voterSearchAesKey,
     required this.voterRegistrationUrl,
     required this.candidateExpenditureUrl,
     required this.electionId,
@@ -66,6 +69,12 @@ class EnvironmentConfig {
     final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
     final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
     final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']?.trim();
+    final String? voterSearchApiRaw =
+        dotenv.env['VOTER_SEARCH_API_BASE_URL']?.trim();
+    final String? voterSearchPassKeyRaw =
+        dotenv.env['VOTER_SEARCH_PASS_KEY']?.trim();
+    final String? voterSearchAesKeyRaw =
+        dotenv.env['VOTER_SEARCH_AES_KEY']?.trim();
     final String? voterRegistrationRaw =
         dotenv.env['VOTER_REGISTRATION_URL']?.trim();
     final String? candidateExpenditureRaw =
@@ -101,6 +110,18 @@ class EnvironmentConfig {
                   ? poElectionRaw
                   : _defaultPoElectionBaseUrl(apiBaseUrl),
             ),
+      voterSearchApiBaseUrl:
+          (voterSearchApiRaw != null && voterSearchApiRaw.isNotEmpty)
+          ? voterSearchApiRaw
+          : 'https://mpsecerms.mp.gov.in/SECSearchAPI',
+      voterSearchPassKey:
+          (voterSearchPassKeyRaw != null && voterSearchPassKeyRaw.isNotEmpty)
+          ? voterSearchPassKeyRaw
+          : '3fb7Fb5dBbl643',
+      voterSearchAesKey:
+          (voterSearchAesKeyRaw != null && voterSearchAesKeyRaw.isNotEmpty)
+          ? voterSearchAesKeyRaw
+          : '7ed64fb158a45676bef0e0c565c9be53',
       voterRegistrationUrl:
           (voterRegistrationRaw != null && voterRegistrationRaw.isNotEmpty)
           ? voterRegistrationRaw
@@ -146,8 +167,17 @@ class EnvironmentConfig {
   /// Base URL for the embedded Angular survey micro-app (`survey_web/`).
   final String surveyWebBaseUrl;
 
-  /// Voter search engine portal opened from the dashboard grid.
+  /// Legacy voter search portal URL (WebView; retained for reference).
   final String voterSearchEngineUrl;
+
+  /// SECSearchAPI base for native voter search.
+  final String voterSearchApiBaseUrl;
+
+  /// Short PassKey (AES-GCM encrypted before each SECSearchAPI request).
+  final String voterSearchPassKey;
+
+  /// AES-256-GCM private key (32 UTF-8 chars) for SECSearchAPI.
+  final String voterSearchAesKey;
 
   /// Voter registration portal opened from the dashboard grid.
   final String voterRegistrationUrl;

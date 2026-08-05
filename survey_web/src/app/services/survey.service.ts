@@ -9,6 +9,7 @@ import {
 } from '../core/session-storage.util';
 import { LocationOption, SelectedLocation } from '../models/location.model';
 import {
+  ExistingAnswer,
   SaveSurveyAnswerRequest,
   SaveSurveyAnswerResponse,
   SurveyQuestion,
@@ -87,6 +88,13 @@ export class SurveyService {
     payload: SaveSurveyAnswerRequest,
   ): Observable<SaveSurveyAnswerResponse> {
     return this.surveyApi.saveAnswer(payload);
+  }
+
+  getExistingAnswer(
+    psId: string,
+    questionId: string,
+  ): Observable<ExistingAnswer | null> {
+    return this.surveyApi.getExistingAnswer(psId, questionId);
   }
 
   rememberSavedAnswer(questionId: string, answerId: string): void {

@@ -42,7 +42,10 @@ final class PresidingElectionContext {
       boothLat!.abs() > 0 &&
       boothLong!.abs() > 0;
 
-  PresidingAreaType get resolvedAreaType => PresidingAreaType.parse(areaType);
+  PresidingAreaType get resolvedAreaType => PresidingAreaType.parse(
+    areaType,
+    fallback: PresidingAreaType.rural,
+  );
 
   bool get hasElectors => (totalElectors ?? 0) > 0;
 
@@ -60,8 +63,10 @@ final class PresidingElectionContext {
   }
 
   /// Normalises backend area-type codes to `U` or `R`.
+  ///
+  /// Returns empty string when [raw] is missing/unknown (does not invent urban).
   static String normalizeAreaType(String? raw) {
-    return PresidingAreaType.parse(raw, fallback: PresidingAreaType.urban).code;
+    return PresidingAreaType.tryParse(raw)?.code ?? '';
   }
 
   /// Turnout % for [votes] against [electors] (clamped, 2 decimals).

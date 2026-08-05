@@ -1,3 +1,4 @@
+import 'package:evm_management_system/core/time/app_time_zone.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
 
 /// Identifiers for presiding-officer workflow milestones.
@@ -120,8 +121,12 @@ abstract final class TurnoutSlots {
   );
 
   /// Rural: up to 3 PM. Urban: up to 5 PM. Both end with queue + final count.
+  /// Missing/unknown area type is treated as rural (no 5PM).
   static List<TurnoutSlotDefinition> forAreaType(String? areaType) {
-    final PresidingAreaType resolved = PresidingAreaType.parse(areaType);
+    final PresidingAreaType resolved = PresidingAreaType.parse(
+      areaType,
+      fallback: PresidingAreaType.rural,
+    );
     return <TurnoutSlotDefinition>[
       ..._baseSlots,
       if (resolved.isUrban) _slot5Pm,
@@ -159,6 +164,7 @@ final class PresidingMilestone {
   PresidingMilestone copyWith({
     PresidingMilestoneState? state,
     DateTime? completedAt,
+    bool clearCompletedAt = false,
     bool? pendingSync,
   }) {
     return PresidingMilestone(
@@ -166,7 +172,7 @@ final class PresidingMilestone {
       sectionId: sectionId,
       labelKey: labelKey,
       state: state ?? this.state,
-      completedAt: completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
       opensTurnout: opensTurnout,
       pendingSync: pendingSync ?? this.pendingSync,
     );
@@ -197,8 +203,14 @@ final class TurnoutRecord {
 
   bool get isQueueOnly => slotId == TurnoutSlotIds.queueCount;
 
-  /// Saved turnout slots must not be edited again in the UI.
-  bool get isReadOnly => isLocked || savedAt != null;
+  bool get isLivePoll => slotId == TurnoutSlotIds.livePollInfo;
+
+  /// Hourly/queue slots lock after save. Live poll stays editable until locked
+  /// (when 2–2 hourly turnout is submitted / live milestone completed).
+  bool get isReadOnly {
+    if (isLivePoll) return isLocked;
+    return isLocked || savedAt != null;
+  }
 
   TurnoutRecord copyWith({
     int? male,
@@ -246,6 +258,93 @@ final class PresidingSession {
       (electionId ?? 0) > 0 &&
       (psId?.isNotEmpty ?? false) &&
       (areaType?.isNotEmpty ?? false);
+
+  /// Earliest allowed clock hour (IST) for मॉक पोल and मतदान प्रारम्भ.
+  static const int pollStartEarliestHour = 7;
+
+  /// True once "मतदान केंद्र पहुंचे" has been marked complete.
+  bool get hasReachedPollingStation => milestones.any(
+        (PresidingMilestone m) =>
+            m.id == PresidingMilestoneIds.reachedPollingStation &&
+            m.isCompleted,
+      );
+
+  /// IST wall-clock check: मॉक पोल / मतदान cannot run before 7:00 AM.
+  static bool isPollStartTimeAllowed([DateTime? now]) {
+    final DateTime ist = now ?? AppTimeZone.now();
+    return ist.hour >= pollStartEarliestHour;
+  }
+
+  /// Milestones that must be completed in order (one-by-one).
+  /// After 2–2 hourly submit, machine seal unlocks (poll-end is not a UI step).
+  static const List<String> sequentialMilestoneIds = <String>[
+    PresidingMilestoneIds.leftMaterialCenter,
+    PresidingMilestoneIds.materialReceived,
+    PresidingMilestoneIds.reachedPollingStation,
+    PresidingMilestoneIds.mockPoll,
+    PresidingMilestoneIds.pollStart,
+    PresidingMilestoneIds.twoHourlyInfo,
+    PresidingMilestoneIds.machineSealed,
+    PresidingMilestoneIds.materialHandedOver,
+  ];
+
+  /// Locale key when [milestoneId] cannot be actioned, else `null`.
+  String? milestoneActionBlockKey(String milestoneId) {
+    if (milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
+        milestoneId == PresidingMilestoneIds.livePollInfo) {
+      if (!_isMilestoneCompleted(PresidingMilestoneIds.pollStart)) {
+        return 'presiding.reach_station_first';
+      }
+      return null;
+    }
+    // Machine seal unlocks only after 2–2 hourly + live are submitted.
+    if (milestoneId == PresidingMilestoneIds.machineSealed) {
+      if (!_isMilestoneCompleted(PresidingMilestoneIds.twoHourlyInfo) ||
+          !_isMilestoneCompleted(PresidingMilestoneIds.livePollInfo)) {
+        return 'presiding.reach_station_first';
+      }
+    }
+    // Hidden poll-end step: auto-completed from 2–2 finish, not shown in UI.
+    if (milestoneId == PresidingMilestoneIds.pollEnd) {
+      if (!_isMilestoneCompleted(PresidingMilestoneIds.twoHourlyInfo) ||
+          !_isMilestoneCompleted(PresidingMilestoneIds.livePollInfo)) {
+        return 'presiding.reach_station_first';
+      }
+      return null;
+    }
+
+    final int index = sequentialMilestoneIds.indexOf(milestoneId);
+    if (index < 0) {
+      return 'presiding.reach_station_first';
+    }
+    for (int i = 0; i < index; i++) {
+      if (!_isMilestoneCompleted(sequentialMilestoneIds[i])) {
+        return 'presiding.reach_station_first';
+      }
+    }
+    if ((milestoneId == PresidingMilestoneIds.mockPoll ||
+            milestoneId == PresidingMilestoneIds.pollStart) &&
+        !isPollStartTimeAllowed()) {
+      return milestoneId == PresidingMilestoneIds.mockPoll
+          ? 'presiding.mock_poll_before_7am'
+          : 'presiding.poll_start_before_7am';
+    }
+    return null;
+  }
+
+  /// Gates later milestones until earlier ones are completed, in order.
+  /// मॉक पोल and मतदान प्रारम्भ are also blocked before 7:00 AM IST.
+  bool isMilestoneActionEnabled(String milestoneId) =>
+      milestoneActionBlockKey(milestoneId) == null;
+
+  bool _isMilestoneCompleted(String milestoneId) {
+    for (final PresidingMilestone milestone in milestones) {
+      if (milestone.id == milestoneId) {
+        return milestone.isCompleted;
+      }
+    }
+    return false;
+  }
 
   PresidingSession copyWith({
     int? electionId,

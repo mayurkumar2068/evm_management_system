@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
@@ -36,6 +37,14 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
   late String _selectedSlotId;
   bool _isTimeSlotExpanded = true;
   final Map<String, bool> _otherSlotExpanded = <String, bool>{};
+  bool _submittingFinish = false;
+
+  bool get _isTurnoutSubmitted {
+    return widget.session.milestones.any(
+      (PresidingMilestone m) =>
+          m.id == PresidingMilestoneIds.twoHourlyInfo && m.isCompleted,
+    );
+  }
 
   @override
   void initState() {
@@ -44,6 +53,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
   }
 
   void _handleTimeTabTap(String slotId) {
+    if (_isTurnoutSubmitted) return;
     setState(() {
       if (_selectedSlotId == slotId) {
         _isTimeSlotExpanded = !_isTimeSlotExpanded;
@@ -59,7 +69,36 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
   }
 
   void _setOtherSlotExpanded(String slotId, bool expanded) {
+    if (_isTurnoutSubmitted) return;
     setState(() => _otherSlotExpanded[slotId] = expanded);
+  }
+
+  Future<void> _finishAndBack() async {
+    if (_submittingFinish || _isTurnoutSubmitted) return;
+    setState(() => _submittingFinish = true);
+    try {
+      final PresidingDashboardController dashboard =
+          Get.find<PresidingDashboardController>();
+      final PresidingActionOutcome outcome = await dashboard.completeMilestone(
+        PresidingMilestoneIds.twoHourlyInfo,
+      );
+      if (!mounted) return;
+      if (outcome.message != null && outcome.message!.isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(outcome.message!.tr())));
+        return;
+      }
+      // Lock live जानकारी too — same submit boundary as 2–2 hourly.
+      await dashboard.completeMilestone(PresidingMilestoneIds.livePollInfo);
+      if (!mounted) return;
+      // Auto-complete मतदान समाप्त (API) so machine seal can unlock next.
+      await dashboard.completeMilestone(PresidingMilestoneIds.pollEnd);
+      if (!mounted) return;
+      Get.back<void>();
+    } finally {
+      if (mounted) setState(() => _submittingFinish = false);
+    }
   }
 
   @override
@@ -115,6 +154,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
       widget.session.areaType,
     );
     final TurnoutSlotDefinition? activeSlot = _selectedSlot(timeSlots);
+    final bool turnoutSubmitted = _isTurnoutSubmitted;
     final bool allSlotsSaved = allSlots.every(
       (TurnoutSlotDefinition slot) =>
           widget.session.turnoutRecords[slot.slotId]?.savedAt != null,
@@ -128,102 +168,35 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppGradientHeader(
+          centerTitle: true,
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
-            args: <String>[widget.session.pollingStationCode, stationLabel],
+            args: <String>[
+              widget.session.pollingStationCode,
+              stationLabel,
+            ],
           ),
-          bottom: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              LocaleKeys.presidingEnterInfo.tr(),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+        ),
+        // Last label kept outside the gradient header.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Text(
+            LocaleKeys.presidingEnterInfo.tr(),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.slate700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             children: <Widget>[
-              AppCard(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.event_note_rounded,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            LocaleKeys.presidingTurnoutIntroTitle.tr(),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            LocaleKeys.presidingTurnoutIntroSubtitle.tr(),
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.slate500,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.successSurface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColors.success.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          const Icon(
-                            Icons.check_circle_outline,
-                            size: 14,
-                            color: AppColors.success,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            LocaleKeys.presidingAutoSaved.tr(),
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
               if (activeSlot != null) ...<Widget>[
                 AppCard(
-                  padding: const EdgeInsets.fromLTRB(12, 14, 12, 16),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
@@ -238,10 +211,12 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                             ),
                           ),
                           IconButton(
+                            visualDensity: VisualDensity.compact,
                             tooltip: _isTimeSlotExpanded
                                 ? 'Collapse'
                                 : 'Expand',
                             onPressed: () {
+                              if (turnoutSubmitted) return;
                               setState(
                                 () =>
                                     _isTimeSlotExpanded = !_isTimeSlotExpanded,
@@ -256,12 +231,12 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
                       _TurnoutTimeTabBar(
                         slots: timeSlots,
                         selectedSlotId: _selectedSlotId,
                         isExpanded: _isTimeSlotExpanded,
                         records: widget.session.turnoutRecords,
+                        enabled: !turnoutSubmitted,
                         onSelected: _handleTimeTabTap,
                       ),
                       AnimatedCrossFade(
@@ -275,9 +250,9 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                         firstChild: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 10),
                             const Divider(height: 1),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 10),
                             PresidingTurnoutCard(
                               key: ValueKey<String>(activeSlot.slotId),
                               title: activeSlot.labelKey.tr(),
@@ -286,6 +261,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                               initialRecord: widget
                                   .session
                                   .turnoutRecords[activeSlot.slotId],
+                              forceReadOnly: turnoutSubmitted,
                               mode: PresidingTurnoutCardMode.entry,
                               onSave:
                                   ({
@@ -309,14 +285,16 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                           slot: activeSlot,
                           record:
                               widget.session.turnoutRecords[activeSlot.slotId],
-                          onExpand: () =>
-                              setState(() => _isTimeSlotExpanded = true),
+                          onExpand: () {
+                            if (turnoutSubmitted) return;
+                            setState(() => _isTimeSlotExpanded = true);
+                          },
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
               ],
               for (final TurnoutSlotDefinition slot in otherSlots) ...<Widget>[
                 PresidingTurnoutCard(
@@ -329,6 +307,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                     _setOtherSlotExpanded(slot.slotId, expanded);
                   },
                   initialRecord: widget.session.turnoutRecords[slot.slotId],
+                  forceReadOnly: turnoutSubmitted,
                   mode: PresidingTurnoutCardMode.entry,
                   onSave:
                       ({
@@ -346,9 +325,9 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                         );
                       },
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
               ],
-              const SizedBox(height: 10),
+              const SizedBox(height: 4),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -365,17 +344,19 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.greenLight,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: allSlotsSaved ? () => Get.back<void>() : null,
+                      onPressed: allSlotsSaved && !turnoutSubmitted
+                          ? _finishAndBack
+                          : null,
                       icon: const Icon(Icons.check_box_outlined, size: 18),
                       label: Text(
                         LocaleKeys.presidingFinishAndBack.tr(),
@@ -385,10 +366,12 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: PresidingUiTokens.actionGreen,
-                        side: BorderSide(color: PresidingUiTokens.actionGreen),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(
+                          color: PresidingUiTokens.actionGreen,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         backgroundColor: PresidingUiTokens.finishButtonSurface,
                       ),
@@ -410,6 +393,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
     required this.selectedSlotId,
     required this.isExpanded,
     required this.records,
+    required this.enabled,
     required this.onSelected,
   });
 
@@ -417,6 +401,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
   final String selectedSlotId;
   final bool isExpanded;
   final Map<String, TurnoutRecord> records;
+  final bool enabled;
   final ValueChanged<String> onSelected;
 
   @override
@@ -434,7 +419,7 @@ class _TurnoutTimeTabBar extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: InkWell(
-                  onTap: () => onSelected(slot.slotId),
+                  onTap: enabled ? () => onSelected(slot.slotId) : null,
                   borderRadius: BorderRadius.circular(14),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
@@ -518,13 +503,13 @@ class _CollapsedTimeSlotSummary extends StatelessWidget {
     final bool saved = record?.savedAt != null;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 10),
       child: InkWell(
         onTap: onExpand,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: AppColors.slate50,
             borderRadius: BorderRadius.circular(12),

@@ -58,16 +58,6 @@ function areaMatchesLogin(
   return false;
 }
 
-/** Material icon for each location level (used by the summary card). */
-const LEVEL_ICONS: Record<string, string> = {
-  districtId: 'location_on',
-  blockId: 'map',
-  panchayatId: 'holiday_village',
-  bodyTypeId: 'domain',
-  bodyId: 'location_city',
-  boothId: 'how_to_vote',
-};
-
 @Component({
   selector: 'app-location-selection',
   standalone: true,
@@ -204,14 +194,17 @@ export class LocationSelectionComponent implements OnInit {
 
     const rows: LabelValue[] = [
       {
+        key: 'areaType',
         label: this.i18n.t('loc.row.areaType'),
         value: areaType === 'urban' ? this.i18n.t('area.urban') : this.i18n.t('area.rural'),
-        icon: 'category',
       },
       ...this.levels().map((level) => ({
-        label: level.label,
+        key: level.key,
+        label:
+          level.key === 'boothId'
+            ? this.i18n.t('loc.row.booth')
+            : level.label,
         value: current.labels[level.key] ?? '',
-        icon: LEVEL_ICONS[level.key] ?? 'place',
       })),
     ];
 

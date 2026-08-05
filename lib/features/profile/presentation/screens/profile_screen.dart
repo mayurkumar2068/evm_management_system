@@ -45,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
               role: data.role,
               officerId: data.primaryId,
               initials: data.name.initials,
-              isActive: session != null && !session.isExpired,
+              isActive: session != null,
             ),
             if (data.detailRows.isNotEmpty) ...<Widget>[
               const SizedBox(height: 16),

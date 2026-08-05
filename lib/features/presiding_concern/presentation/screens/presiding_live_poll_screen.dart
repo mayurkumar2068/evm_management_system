@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:evm_management_system/core/network/connectivity_service.dart';
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
@@ -37,11 +41,19 @@ class _LivePollBody extends StatefulWidget {
 }
 
 class _LivePollBodyState extends State<_LivePollBody> {
-  bool _busy = false;
+  /// Quiet period after last +/- before syncing final counts to server.
+  static const Duration _syncDebounce = Duration(milliseconds: 1500);
+
+  bool _syncing = false;
+  bool _localDirty = false;
+  Timer? _debounceTimer;
   int _liveMale = 0;
   int _liveFemale = 0;
   int _liveOther = 0;
   DateTime? _lastUpdate;
+  bool _pendingSync = false;
+  bool _isOnline = true;
+  StreamSubscription<bool>? _connectivitySub;
   int? _maleElectors;
   int? _femaleElectors;
   int? _otherElectors;
@@ -52,12 +64,37 @@ class _LivePollBodyState extends State<_LivePollBody> {
     super.initState();
     _syncFromSession();
     unawaited(_loadElectors());
+    unawaited(_initConnectivity());
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _connectivitySub?.cancel();
+    // Flush any pending local counts before leaving the screen.
+    if (_localDirty && !_isReadOnly) {
+      unawaited(_flushToServer(force: true));
+    }
+    super.dispose();
+  }
+
+  Future<void> _initConnectivity() async {
+    final ConnectivityService connectivity = AppServices.connectivity;
+    final bool online = await connectivity.isOnline;
+    if (mounted) setState(() => _isOnline = online);
+    _connectivitySub = connectivity.onStatusChange.listen((bool online) {
+      if (mounted) setState(() => _isOnline = online);
+    });
   }
 
   @override
   void didUpdateWidget(covariant _LivePollBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.session != widget.session) {
+    // Don't overwrite optimistic local counts while user is tapping / syncing.
+    if (oldWidget.session != widget.session &&
+        !_localDirty &&
+        !_syncing &&
+        !(_debounceTimer?.isActive ?? false)) {
       _syncFromSession();
     }
   }
@@ -85,14 +122,25 @@ class _LivePollBodyState extends State<_LivePollBody> {
     _liveFemale = record?.female ?? 0;
     _liveOther = record?.thirdGender ?? 0;
     _lastUpdate = record?.savedAt;
+    _pendingSync = record?.pendingSync ?? false;
   }
 
-  Future<void> _adjust({required String field, required int delta}) async {
-    if (_busy) return;
+  bool get _isReadOnly {
+    if (widget.session.turnoutRecords[TurnoutSlotIds.livePollInfo]?.isLocked ??
+        false) {
+      return true;
+    }
+    return widget.session.milestones.any(
+      (PresidingMilestone m) =>
+          (m.id == PresidingMilestoneIds.twoHourlyInfo ||
+              m.id == PresidingMilestoneIds.livePollInfo) &&
+          m.isCompleted,
+    );
+  }
 
-    final int prevMale = _liveMale;
-    final int prevFemale = _liveFemale;
-    final int prevOther = _liveOther;
+  void _adjust({required String field, required int delta}) {
+    if (_isReadOnly) return;
+    final String button = delta > 0 ? '+1' : '-1';
 
     final int nextMale = field == PoElectionRequestFields.male
         ? _liveMale + delta
@@ -105,37 +153,159 @@ class _LivePollBodyState extends State<_LivePollBody> {
         : _liveOther;
 
     if (nextMale < 0 || nextFemale < 0 || nextOther < 0) return;
+    if (nextMale > TurnoutCountValidator.maxEnterableCount ||
+        nextFemale > TurnoutCountValidator.maxEnterableCount ||
+        nextOther > TurnoutCountValidator.maxEnterableCount) {
+      return;
+    }
+
+    final TurnoutCountValidationResult validation =
+        TurnoutCountValidator.validate(
+      male: nextMale,
+      female: nextFemale,
+      other: nextOther,
+      bounds: TurnoutCountValidator.boundsFor(
+        session: widget.session,
+        slotId: TurnoutSlotIds.livePollInfo,
+        maxMale: _maleElectors,
+        maxFemale: _femaleElectors,
+        maxOther: _otherElectors,
+      ),
+    );
+    if (!validation.isOk) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(formatTurnoutValidationMessage(validation))),
+        );
+      }
+      return;
+    }
 
     setState(() {
-      _busy = true;
       _liveMale = nextMale;
       _liveFemale = nextFemale;
       _liveOther = nextOther;
+      _localDirty = true;
+      _pendingSync = true;
     });
 
+    AppLogger.i(
+      '[LivePoll] button click | $button | field=$field | '
+      'local male=$_liveMale female=$_liveFemale other=$_liveOther | '
+      'API debounce=${_syncDebounce.inMilliseconds}ms',
+    );
+
+    _scheduleServerSync();
+  }
+
+  void _scheduleServerSync() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(_syncDebounce, () {
+      unawaited(_flushToServer());
+    });
+    AppLogger.d(
+      '[LivePoll] API scheduled in ${_syncDebounce.inMilliseconds}ms '
+      '(resets on each +/- click)',
+    );
+  }
+
+  Future<void> _flushToServer({bool force = false}) async {
+    if (_isReadOnly) return;
+    if (!_localDirty && !force) return;
+    if (_syncing) {
+      // In-flight request — retry after current call with latest counts.
+      _scheduleServerSync();
+      return;
+    }
+
+    final int male = _liveMale;
+    final int female = _liveFemale;
+    final int other = _liveOther;
+
+    if (mounted) setState(() => _syncing = true);
+
+    final Stopwatch sw = Stopwatch()..start();
+    AppLogger.i(
+      '[LivePoll] API call START | saveTurnout (debounced) | '
+      'male=$male female=$female other=$other | '
+      'startedAt=${DateTime.now().toIso8601String()}',
+    );
+
     try {
-      await Get.find<PresidingTurnoutController>().saveTurnout(
+      final PresidingSession saved =
+          await Get.find<PresidingTurnoutController>().saveTurnout(
         slotId: TurnoutSlotIds.livePollInfo,
-        male: nextMale,
-        female: nextFemale,
-        thirdGender: nextOther,
+        male: male,
+        female: female,
+        thirdGender: other,
       );
-      if (mounted) {
-        setState(() => _lastUpdate = DateTime.now());
+      sw.stop();
+      final TurnoutRecord? record =
+          saved.turnoutRecords[TurnoutSlotIds.livePollInfo];
+      AppLogger.i(
+        '[LivePoll] API call SUCCESS | saveTurnout | '
+        'elapsedMs=${sw.elapsedMilliseconds}ms '
+        '(${(sw.elapsedMilliseconds / 1000).toStringAsFixed(2)}s) | '
+        'pendingSync=${record?.pendingSync} | '
+        'serverSavedAt=${record?.savedAt?.toIso8601String()} | '
+        'finishedAt=${DateTime.now().toIso8601String()}',
+      );
+
+      if (!mounted) return;
+
+      final bool countsChangedSinceFlush =
+          _liveMale != male || _liveFemale != female || _liveOther != other;
+
+      setState(() {
+        _syncing = false;
+        _lastUpdate = record?.savedAt ?? DateTime.now();
+        if (!countsChangedSinceFlush) {
+          _localDirty = false;
+          _pendingSync = record?.pendingSync ?? false;
+        } else {
+          _pendingSync = true;
+        }
+      });
+
+      if (countsChangedSinceFlush) {
+        AppLogger.i(
+          '[LivePoll] local counts changed during API — scheduling another sync',
+        );
+        _scheduleServerSync();
       }
-    } catch (_) {
+    } on TurnoutCountValidationException catch (e) {
+      sw.stop();
       if (mounted) {
         setState(() {
-          _liveMale = prevMale;
-          _liveFemale = prevFemale;
-          _liveOther = prevOther;
+          _syncing = false;
+          _localDirty = false;
+          _pendingSync = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LocaleKeys.presidingNotSaved.tr())),
+          SnackBar(content: Text(formatTurnoutValidationMessage(e.result))),
         );
       }
-    } finally {
-      if (mounted) setState(() => _busy = false);
+    } catch (e, st) {
+      sw.stop();
+      AppLogger.e(
+        '[LivePoll] API call FAILED | saveTurnout | '
+        'elapsedMs=${sw.elapsedMilliseconds}ms '
+        '(${(sw.elapsedMilliseconds / 1000).toStringAsFixed(2)}s) | '
+        'error=$e',
+        error: e,
+        stackTrace: st,
+      );
+      if (mounted) {
+        setState(() {
+          _syncing = false;
+          _pendingSync = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(LocaleKeys.commonSomethingWentWrong.tr()),
+          ),
+        );
+      }
     }
   }
 
@@ -150,49 +320,17 @@ class _LivePollBodyState extends State<_LivePollBody> {
         ? widget.session.pollingStationName.tr()
         : widget.session.pollingStationName;
     final int total = _liveMale + _liveFemale + _liveOther;
-    final String lastUpdateLabel = _lastUpdate != null
-        ? DateFormat('hh:mm a').format(_lastUpdate!)
-        : LocaleKeys.presidingNotSaved.tr();
     final String totalPercent = _formatTurnoutPercent(total, _totalElectors);
+    final bool showOnline = _isOnline && !_pendingSync && !_localDirty;
+    final bool readOnly = _isReadOnly;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppGradientHeader(
+          centerTitle: true,
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingLivePollTitle.tr(),
-          subtitle: LocaleKeys.presidingLivePollSubtitle.tr(),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(
-                  Icons.fiber_manual_record_rounded,
-                  color: PresidingUiTokens.liveAccent,
-                  size: 10,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  LocaleKeys.presidingLiveBadge.tr(),
-                  style: AppTextStyles.caption.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.sensors_rounded,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
         ),
         Expanded(
           child: ListView(
@@ -201,34 +339,16 @@ class _LivePollBodyState extends State<_LivePollBody> {
               _StationInfoCard(
                 stationCode: widget.session.pollingStationCode,
                 stationName: stationLabel,
-                lastUpdate: lastUpdateLabel,
               ),
               const SizedBox(height: 18),
-              Row(
-                children: <Widget>[
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: PresidingUiTokens.actionGreen.withValues(
-                        alpha: 0.12,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      Icons.bar_chart_rounded,
-                      color: PresidingUiTokens.actionGreen,
-                      size: 20,
-                    ),
+              Center(
+                child: Text(
+                  LocaleKeys.presidingLatestTurnoutStatus.tr(),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    LocaleKeys.presidingLatestTurnoutStatus.tr(),
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(height: 14),
               Row(
@@ -242,17 +362,19 @@ class _LivePollBodyState extends State<_LivePollBody> {
                         _liveMale,
                         _maleElectors,
                       ),
-                      busy: _busy,
-                      onAdd: () => _adjust(
-                        field: PoElectionRequestFields.male,
-                        delta: 1,
-                      ),
-                      onSubtract: _liveMale > 0
-                          ? () => _adjust(
+                      busy: false,
+                      onAdd: readOnly
+                          ? null
+                          : () => _adjust(
+                              field: PoElectionRequestFields.male,
+                              delta: 1,
+                            ),
+                      onSubtract: readOnly || _liveMale <= 0
+                          ? null
+                          : () => _adjust(
                               field: PoElectionRequestFields.male,
                               delta: -1,
-                            )
-                          : null,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -264,17 +386,19 @@ class _LivePollBodyState extends State<_LivePollBody> {
                         _liveFemale,
                         _femaleElectors,
                       ),
-                      busy: _busy,
-                      onAdd: () => _adjust(
-                        field: PoElectionRequestFields.female,
-                        delta: 1,
-                      ),
-                      onSubtract: _liveFemale > 0
-                          ? () => _adjust(
+                      busy: false,
+                      onAdd: readOnly
+                          ? null
+                          : () => _adjust(
+                              field: PoElectionRequestFields.female,
+                              delta: 1,
+                            ),
+                      onSubtract: readOnly || _liveFemale <= 0
+                          ? null
+                          : () => _adjust(
                               field: PoElectionRequestFields.female,
                               delta: -1,
-                            )
-                          : null,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -286,17 +410,19 @@ class _LivePollBodyState extends State<_LivePollBody> {
                         _liveOther,
                         _otherElectors,
                       ),
-                      busy: _busy,
-                      onAdd: () => _adjust(
-                        field: PoElectionRequestFields.other,
-                        delta: 1,
-                      ),
-                      onSubtract: _liveOther > 0
-                          ? () => _adjust(
+                      busy: false,
+                      onAdd: readOnly
+                          ? null
+                          : () => _adjust(
+                              field: PoElectionRequestFields.other,
+                              delta: 1,
+                            ),
+                      onSubtract: readOnly || _liveOther <= 0
+                          ? null
+                          : () => _adjust(
                               field: PoElectionRequestFields.other,
                               delta: -1,
-                            )
-                          : null,
+                            ),
                     ),
                   ),
                 ],
@@ -304,7 +430,10 @@ class _LivePollBodyState extends State<_LivePollBody> {
               const SizedBox(height: 18),
               _LivePollSummaryCard(total: total, totalPercent: totalPercent),
               const SizedBox(height: 18),
-              const _InfoNoteCard(),
+              _InfoNoteCard(
+                lastUpdate: _lastUpdate,
+                isOnline: showOnline,
+              ),
             ],
           ),
         ),
@@ -317,12 +446,10 @@ class _StationInfoCard extends StatelessWidget {
   const _StationInfoCard({
     required this.stationCode,
     required this.stationName,
-    required this.lastUpdate,
   });
 
   final String stationCode;
   final String stationName;
-  final String lastUpdate;
 
   @override
   Widget build(BuildContext context) {
@@ -372,37 +499,6 @@ class _StationInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Text(
-                LocaleKeys.presidingLastUpdate.tr(),
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.slate500,
-                  fontSize: 11,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Icon(
-                    Icons.access_time_rounded,
-                    color: AppColors.slate500,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    lastUpdate,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.slate700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         ],
       ),
@@ -472,16 +568,7 @@ class _LivePollStatCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            LocaleKeys.presidingIncreaseByOne.tr(),
-            style: AppTextStyles.caption.copyWith(
-              color: accentColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -497,15 +584,6 @@ class _LivePollStatCard extends StatelessWidget {
                 onTap: busy ? null : onAdd,
               ),
             ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            LocaleKeys.presidingDecreaseByOne.tr(),
-            style: AppTextStyles.caption.copyWith(
-              color: accentColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
           ),
         ],
       ),
@@ -591,7 +669,7 @@ class _SummaryMetricTile extends StatelessWidget {
         border: Border.all(color: PresidingUiTokens.cardGreenBorder),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Container(
             width: 44,
@@ -609,6 +687,7 @@ class _SummaryMetricTile extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             label,
+            textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -616,6 +695,7 @@ class _SummaryMetricTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
+            textAlign: TextAlign.center,
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w900,
               fontSize: 28,
@@ -628,34 +708,138 @@ class _SummaryMetricTile extends StatelessWidget {
 }
 
 class _InfoNoteCard extends StatelessWidget {
-  const _InfoNoteCard();
+  const _InfoNoteCard({
+    required this.lastUpdate,
+    required this.isOnline,
+  });
+
+  final DateTime? lastUpdate;
+  final bool isOnline;
 
   @override
   Widget build(BuildContext context) {
+    final DateTime? localUpdate = lastUpdate?.toLocal();
+    final String dateText = localUpdate != null
+        ? DateFormat('dd MMM yyyy').format(localUpdate)
+        : '—';
+    final String timeText = localUpdate != null
+        ? DateFormat('hh:mm a').format(localUpdate)
+        : '—';
+    final Color statusColor = isOnline
+        ? PresidingUiTokens.actionGreen
+        : AppColors.warning;
+    final String statusLabel = isOnline
+        ? LocaleKeys.offlineHubOnline.tr()
+        : LocaleKeys.offlineHubOffline.tr();
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       decoration: BoxDecoration(
         color: PresidingUiTokens.cardGreenSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: PresidingUiTokens.cardGreenBorder),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(
-            Icons.info_outline,
-            size: 20,
-            color: PresidingUiTokens.actionGreen,
+          Expanded(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 88,
+                  height: 88,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(
+                      color: PresidingUiTokens.actionGreen.withValues(
+                        alpha: 0.35,
+                      ),
+                      width: 2,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          dateText,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.slate600,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          timeText,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.slate800,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  LocaleKeys.presidingServerUpdateTime.tr(),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.slate600,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              LocaleKeys.presidingLivePollNote.tr(),
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.slate600,
-                fontSize: 12,
-                height: 1.4,
-              ),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: 88,
+                  height: 88,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: statusColor.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.45),
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    statusLabel,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  LocaleKeys.presidingServerConnection.tr(),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.slate600,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

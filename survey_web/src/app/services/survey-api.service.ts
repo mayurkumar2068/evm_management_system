@@ -5,6 +5,7 @@ import { catchError, delay, map, tap } from 'rxjs/operators';
 import { ApiClientService } from '../core/api-client.service';
 import { SurveyOfflineCacheService } from '../core/survey-offline-cache.service';
 import {
+  ExistingAnswer,
   SaveSurveyAnswerRequest,
   SaveSurveyAnswerResponse,
   SurveyQuestion,
@@ -38,6 +39,32 @@ export class SurveyApiService {
         cached.length > 0 ? of(cached) : of([] as SurveyQuestion[]),
       ),
     );
+  }
+
+  /**
+   * Loads a previously saved answer for this booth + question (if any).
+   * Returns `null` when nothing exists or the call fails.
+   */
+  getExistingAnswer(
+    psId: string,
+    questionId: string,
+  ): Observable<ExistingAnswer | null> {
+    if (!psId.trim() || !questionId.trim()) {
+      return of(null);
+    }
+    if (this.api.useMockData) {
+      return of(null);
+    }
+
+    return this.api
+      .post<unknown>('/api/PSSurvey/existing_answer', {
+        PSId: psId,
+        QuestionId: questionId,
+      })
+      .pipe(
+        map((res) => normalizeExistingAnswer(res)),
+        catchError(() => of(null)),
+      );
   }
 
   saveAnswer(payload: SaveSurveyAnswerRequest): Observable<SaveSurveyAnswerResponse> {
@@ -137,6 +164,116 @@ function normalizeSaveResponse(res: unknown): SaveSurveyAnswerResponse {
   }
 
   return { Success: false, Id: '' };
+}
+
+function normalizeExistingAnswer(res: unknown): ExistingAnswer | null {
+  if (!res || typeof res !== 'object') {
+    return null;
+  }
+  const envelope = res as {
+    Status?: boolean | string;
+    Data?: unknown;
+    data?: unknown;
+  };
+  if (envelope.Status === false || envelope.Status === 'false') {
+    return null;
+  }
+  const data = envelope.Data ?? envelope.data;
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+  const row = data as {
+    Id?: string;
+    id?: string;
+    AnswerYN?: unknown;
+    answerYN?: unknown;
+    AnswerText?: string | null;
+    answerText?: string | null;
+    Remark?: string | null;
+    remark?: string | null;
+    Lat?: number | string | null;
+    lat?: number | string | null;
+    Long?: number | string | null;
+    long?: number | string | null;
+    Photo?: string | null;
+    photo?: string | null;
+  };
+
+  const id = String(row.Id ?? row.id ?? '').trim();
+  const answerText = row.AnswerText ?? row.answerText ?? null;
+  const answerYN =
+    coerceAnswerYN(row.AnswerYN ?? row.answerYN) ??
+    coerceAnswerYNFromText(answerText);
+  const remark = String(row.Remark ?? row.remark ?? '');
+  const photoRaw = row.Photo ?? row.photo ?? null;
+  const photo = normalizePhotoDataUrl(photoRaw);
+
+  // Nothing useful to prefill.
+  if (!id && answerYN === null && !remark.trim() && !photo) {
+    return null;
+  }
+
+  return {
+    id,
+    answerYN,
+    answerText,
+    remark,
+    lat: toFiniteNumber(row.Lat ?? row.lat),
+    long: toFiniteNumber(row.Long ?? row.long),
+    photo,
+  };
+}
+
+function coerceAnswerYN(value: unknown): boolean | null {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+    return null;
+  }
+  if (typeof value === 'string') {
+    return coerceAnswerYNFromText(value);
+  }
+  return null;
+}
+
+function coerceAnswerYNFromText(value: string | null | undefined): boolean | null {
+  const raw = (value ?? '').trim().toLowerCase();
+  if (!raw) {
+    return null;
+  }
+  if (['true', '1', 'yes', 'y', 'हाँ', 'हां', 'haa', 'haan'].includes(raw)) {
+    return true;
+  }
+  if (['false', '0', 'no', 'n', 'नहीं', 'नही', 'nahi'].includes(raw)) {
+    return false;
+  }
+  return null;
+}
+
+function normalizePhotoDataUrl(photo: string | null | undefined): string | null {
+  const raw = (photo ?? '').trim();
+  if (!raw) {
+    return null;
+  }
+  if (raw.startsWith('data:')) {
+    return raw;
+  }
+  // API may return bare base64.
+  return `data:image/jpeg;base64,${raw}`;
+}
+
+function toFiniteNumber(value: number | string | null | undefined): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
 }
 
 const MOCK_QUESTIONS: SurveyQuestion[] = [

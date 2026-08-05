@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/routes/app_pages.dart';
+import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/providers/session_event_bus.dart';
 import 'package:evm_management_system/core/security/screen_security_service.dart';
@@ -59,14 +60,13 @@ class _EvmAppState extends State<EvmApp> {
   }
 
   Future<void> _runSplashBootstrap() async {
-    // Location prompt as soon as the splash UI is visible.
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    // Auth restore must not wait on permission dialogs — those can hang on
+    // some iOS/simulator builds and leave the user stuck on splash forever.
+    unawaited(_requestLocationPermission());
+    await AppServices.auth.restoreSession();
     if (!mounted) return;
-    await _requestLocationPermission();
 
-    unawaited(AppServices.auth.restoreSession());
-    await Future<void>.delayed(const Duration(seconds: 5));
-    if (!mounted) return;
+    // Safety net if restore left status as unknown.
     if (AppServices.auth.authState.value.status == AuthStatus.unknown) {
       if (AppServices.onboarding.seen) {
         await AppServices.auth.continueAsGuest();
@@ -74,6 +74,9 @@ class _EvmAppState extends State<EvmApp> {
         AppServices.auth.authState.value = const AuthState.unauthenticated();
       }
     }
+
+    // Ensure redirect runs even if the auth worker missed a frame.
+    AuthNavigationGuard.apply();
 
     // Camera can follow after the user lands in the app.
     unawaited(_requestCameraPermission());
@@ -111,7 +114,9 @@ class _EvmAppState extends State<EvmApp> {
     final SessionTimeoutManager? timeout = _idleTimeout;
     if (timeout == null) return;
     if (next.isAuthenticated) {
-      timeout.start(() => AppServices.sessionBus.emit(SessionEvent.expired));
+      // Keep login session alive until explicit logout.
+      // Idle tracking continues only to keep heartbeat plumbing intact.
+      timeout.dispose();
     } else {
       timeout.dispose();
     }

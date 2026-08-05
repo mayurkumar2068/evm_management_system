@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 
 import { LabelValue } from '../../models/location.model';
 
@@ -11,18 +10,13 @@ import { LabelValue } from '../../models/location.model';
 @Component({
   selector: 'app-location-card',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="loc-card">
       @for (row of rows; track row.label) {
         <div class="loc-row">
-          <span class="loc-row__label">
-            @if (row.icon) {
-              <mat-icon>{{ row.icon }}</mat-icon>
-            }
-            {{ row.label }}
-          </span>
+          <span class="loc-row__label">{{ row.label }}</span>
           <span class="loc-row__value">{{ row.value || '—' }}</span>
         </div>
       }
@@ -40,7 +34,7 @@ import { LabelValue } from '../../models/location.model';
       }
       .loc-row {
         display: grid;
-        grid-template-columns: 140px 1fr;
+        grid-template-columns: minmax(120px, 1.1fr) 1fr;
         align-items: center;
         padding: 9px 0;
         gap: 10px;
@@ -49,18 +43,10 @@ import { LabelValue } from '../../models/location.model';
         border-top: 1px dashed var(--ec-border);
       }
       .loc-row__label {
-        display: flex;
-        align-items: center;
-        gap: 7px;
         font-weight: 500;
         color: var(--ec-text-secondary);
         font-size: 13.5px;
-      }
-      .loc-row__label mat-icon {
-        font-size: 17px;
-        width: 17px;
-        height: 17px;
-        color: var(--ec-primary);
+        line-height: 1.35;
       }
       .loc-row__value {
         color: var(--ec-text);
@@ -71,7 +57,7 @@ import { LabelValue } from '../../models/location.model';
       }
       @media (max-width: 340px) {
         .loc-row {
-          grid-template-columns: 116px 1fr;
+          grid-template-columns: minmax(100px, 1fr) 1fr;
         }
       }
     `,

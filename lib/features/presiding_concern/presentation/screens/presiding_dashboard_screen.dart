@@ -1,14 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_booth_map_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_milestone_section.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
@@ -31,8 +30,33 @@ class _DashboardBody extends StatelessWidget {
 
   final PresidingSession session;
 
+  Future<void> _onRefresh(BuildContext context) async {
+    final PresidingDashboardController controller =
+        Get.find<PresidingDashboardController>();
+    final bool ok = await controller.syncNow();
+    if (!context.mounted) return;
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    if (!controller.isOnline.value) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(LocaleKeys.presidingSyncOffline.tr())),
+      );
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? LocaleKeys.presidingSyncSuccess.tr()
+              : LocaleKeys.presidingSyncFailed.tr(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final PresidingDashboardController controller =
+        Get.find<PresidingDashboardController>();
     final String stationLabel =
         session.pollingStationName.startsWith('presiding.')
         ? session.pollingStationName.tr()
@@ -41,6 +65,8 @@ class _DashboardBody extends StatelessWidget {
     final Map<String, List<PresidingMilestone>> grouped =
         <String, List<PresidingMilestone>>{};
     for (final PresidingMilestone milestone in session.milestones) {
+      // मतदान समाप्त is submitted via 2–2 hourly finish — hide from section 4.
+      if (milestone.id == PresidingMilestoneIds.pollEnd) continue;
       grouped.putIfAbsent(milestone.sectionId, () => <PresidingMilestone>[]);
       grouped[milestone.sectionId]!.add(milestone);
     }
@@ -69,32 +95,83 @@ class _DashboardBody extends StatelessWidget {
     ];
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppGradientHeader(
+          centerTitle: true,
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
             args: <String>[session.pollingStationCode, stationLabel],
           ),
-          bottom: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              LocaleKeys.presidingEnterInfo.tr(),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.slate100,
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+          trailing: Obx(() {
+            final bool syncing = controller.isSyncing.value;
+            final bool online = controller.isOnline.value;
+            return IconButton(
+              tooltip: LocaleKeys.presidingSyncRefresh.tr(),
+              onPressed: syncing ? null : () => _onRefresh(context),
+              icon: syncing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      online ? Icons.sync_rounded : Icons.cloud_off_rounded,
+                      color: Colors.white,
+                    ),
+            );
+          }),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  LocaleKeys.presidingEnterInfo.tr(),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.slate700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
+              Obx(() {
+                final bool online = controller.isOnline.value;
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: online
+                        ? const Color(0xFFE8F5E9)
+                        : const Color(0xFFFFF3E0),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    online
+                        ? LocaleKeys.presidingOnline.tr()
+                        : LocaleKeys.presidingOffline.tr(),
+                    style: AppTextStyles.caption.copyWith(
+                      color: online
+                          ? const Color(0xFF2E7D32)
+                          : const Color(0xFFE65100),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                );
+              }),
+            ],
           ),
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: MpSecTokens.sectionSpacing,
-                ),
-                child: PresidingBoothMapCard(stationName: stationLabel),
-              ),
               for (final _SectionMeta section in sections)
                 if ((grouped[section.id] ?? <PresidingMilestone>[]).isNotEmpty)
                   Padding(
@@ -105,8 +182,22 @@ class _DashboardBody extends StatelessWidget {
                       index: section.index,
                       title: section.title,
                       milestones: grouped[section.id]!,
+                      boothMapStationName:
+                          section.index == 1 ? stationLabel : null,
+                      isMilestoneEnabled: (PresidingMilestone milestone) =>
+                          session.isMilestoneActionEnabled(milestone.id),
                       onMilestoneTap: (PresidingMilestone milestone) async {
-                        // Navigate to specific turnout entry screen based on milestone
+                        if (milestone.isCompleted) return;
+
+                        final String? blockKey =
+                            session.milestoneActionBlockKey(milestone.id);
+                        if (blockKey != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(blockKey.tr())),
+                          );
+                          return;
+                        }
+
                         if (milestone.id ==
                             PresidingMilestoneIds.livePollInfo) {
                           await Get.toNamed<void>(
@@ -122,21 +213,24 @@ class _DashboardBody extends StatelessWidget {
                           return;
                         }
 
-                        if (milestone.isCompleted) return;
-
-                        final PresidingDashboardController controller =
-                            Get.find<PresidingDashboardController>();
                         final PresidingActionOutcome outcome = await controller
                             .completeMilestone(milestone.id);
                         if (!context.mounted) return;
+                        final String? msg = outcome.message;
+                        if (msg == LocaleKeys.presidingPollStartBefore7Am ||
+                            msg == LocaleKeys.presidingReachStationFirst) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(msg!.tr())),
+                          );
+                          return;
+                        }
                         if (outcome.alreadyRegistered) {
-                          final String message =
-                              outcome.message?.isNotEmpty ?? false
-                              ? outcome.message!
+                          final String text = msg?.isNotEmpty ?? false
+                              ? msg!
                               : LocaleKeys.presidingAlreadyRegistered.tr();
                           ScaffoldMessenger.of(
                             context,
-                          ).showSnackBar(SnackBar(content: Text(message)));
+                          ).showSnackBar(SnackBar(content: Text(text)));
                         }
                       },
                     ),

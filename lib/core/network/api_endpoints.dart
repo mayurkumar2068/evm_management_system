@@ -22,9 +22,8 @@ abstract final class PoElectionEndpoints {
   // Account / Auth
   static const String loginPoPass = '/api/Account/login-po-pass';
 
-  /// GET `/api/POElection/get-po-status?id={userId}`
-  static String getPoStatus(String userId) =>
-      '/api/POElection/get-po-status?id=$userId';
+  /// POST `/api/POElection/po-status`
+  static const String poStatus = '/api/POElection/po-status';
 
   // Milestones
   static const String savePollLive = '/api/POElection/save-poll-live';

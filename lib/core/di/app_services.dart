@@ -159,6 +159,7 @@ abstract final class AppServices {
       ),
       permanent: true,
     );
+    // Voter search: Dio/repo created lazily via VoterSearchModule on first open.
 
     Get.put<DeviceRecordsController>(
       DeviceRecordsController(database),

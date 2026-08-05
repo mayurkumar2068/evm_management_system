@@ -1,9 +1,13 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
+  inject,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
@@ -19,9 +23,8 @@ type Answer = boolean | null;
  *   ─────────────────────────────────────────
  *   [ हाँ | नहीं ]  segmented toggle        [photo]
  *
- * Driven by a reactive `FormGroup`
- * ({ surveyId, title, photoRequired, checked, image }) where `checked`
- * is tri-state: `null` = unanswered, `true` = हाँ, `false` = नहीं.
+ * Answer / image are driven by explicit inputs (signals from parent) so async
+ * prefill always re-renders under OnPush.
  */
 @Component({
   selector: 'app-checklist-item',
@@ -42,7 +45,7 @@ type Answer = boolean | null;
         <p class="ci__title">{{ title }}</p>
       </div>
 
-        <div class="ci__bar">
+      <div class="ci__bar">
         <div class="seg" role="group" [attr.aria-label]="'ci.yesno.aria' | t">
           <button
             type="button"
@@ -76,10 +79,6 @@ type Answer = boolean | null;
           </div>
         }
       </div>
-
-      @if (answer === true && !image) {
-        <span class="ci__req">{{ 'ci.photoHint' | t }}</span>
-      }
     </div>
   `,
   styles: [
@@ -152,7 +151,6 @@ type Answer = boolean | null;
         margin-top: 4px;
       }
 
-      /* segmented हाँ/नहीं toggle */
       .seg {
         display: inline-flex;
         background: #eef2f7;
@@ -194,63 +192,44 @@ type Answer = boolean | null;
         font-weight: 500;
         color: var(--ec-text-muted);
       }
-
-      .ci__req {
-        display: block;
-        margin: 10px 0 0 34px;
-        font-size: 11.5px;
-        font-weight: 500;
-        color: #ef4444;
-      }
-      .ci--compact .ci__req {
-        margin-left: 0;
-      }
     `,
   ],
 })
-export class ChecklistItemComponent {
+export class ChecklistItemComponent implements OnChanges {
+  private readonly cdr = inject(ChangeDetectorRef);
+
   @Input({ required: true }) group!: FormGroup;
-  /** Zero-based position used for the row badge. */
+  @Input() title = '';
+  @Input() answer: Answer = null;
+  @Input() image: string | null = null;
   @Input() index = 0;
-  /** Hides row badge when parent already shows progress. */
   @Input() compact = false;
-  /** True when the global max-images budget is exhausted. */
   @Input() uploadDisabled = false;
 
+  @Output() answerChange = new EventEmitter<Answer>();
+  @Output() imageChange = new EventEmitter<string | null>();
   @Output() enlarge = new EventEmitter<string>();
 
-  get title(): string {
-    return (this.group.get('title')?.value as string) ?? '';
-  }
-
-  get answer(): Answer {
-    return (this.group.get('checked')?.value as Answer) ?? null;
-  }
-
-  get image(): string | null {
-    return (this.group.get('image')?.value as string | null) ?? null;
-  }
-
-  get photoRequired(): boolean {
-    // Photo is mandatory only when the officer answers हाँ / Yes.
-    return this.answer === true;
-  }
-
-  setAnswer(value: boolean): void {
-    const control = this.group.get('checked');
-    // tapping the active option again clears it back to "unanswered"
-    const next = this.answer === value ? null : value;
-    control?.setValue(next);
-    control?.markAsDirty();
-    // नहीं → photo not required; clear any attached image
-    if (next !== true) {
-      this.group.get('image')?.setValue(null);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['answer'] || changes['image'] || changes['title'] || changes['index']) {
+      this.cdr.markForCheck();
     }
   }
 
+  setAnswer(value: boolean): void {
+    const next: Answer = this.answer === value ? null : value;
+    this.group.get('checked')?.setValue(next);
+    this.group.get('checked')?.markAsDirty();
+    if (next !== true) {
+      this.group.get('image')?.setValue(null);
+      this.imageChange.emit(null);
+    }
+    this.answerChange.emit(next);
+  }
+
   onImage(image: string | null): void {
-    const control = this.group.get('image');
-    control?.setValue(image);
-    control?.markAsDirty();
+    this.group.get('image')?.setValue(image);
+    this.group.get('image')?.markAsDirty();
+    this.imageChange.emit(image);
   }
 }

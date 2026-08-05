@@ -66,6 +66,6 @@ class TokenVault {
     _cached = null;
     await _storage.delete(SecureStorageKeys.accessToken);
     await _storage.delete(SecureStorageKeys.refreshToken);
-    await _storage.delete(SecureStorageKeys.userSession);
+    // Do not delete userSession here — that belongs to ServiceAuthController.signOut.
   }
 }
