@@ -45,6 +45,10 @@ class VoterSearchController extends GetxController {
   final RxList<VoterUrbanBody> urbanBodies = <VoterUrbanBody>[].obs;
   final RxList<VoterElector> results = <VoterElector>[].obs;
 
+  /// Client-side filters on [results] (ward + age).
+  final RxnString filterWardNo = RxnString();
+  final RxnString filterAge = RxnString();
+
   final Rxn<VoterDistrict> selectedDistrict = Rxn<VoterDistrict>();
   final Rxn<VoterBlock> selectedBlock = Rxn<VoterBlock>();
   final Rxn<VoterUrbanBody> selectedUrbanBody = Rxn<VoterUrbanBody>();
@@ -279,6 +283,92 @@ class VoterSearchController extends GetxController {
   void backToSearch() {
     showingResults.value = false;
     results.clear();
+    clearResultFilters();
+  }
+
+  bool get hasActiveResultFilters =>
+      (filterWardNo.value?.trim().isNotEmpty ?? false) ||
+      (filterAge.value?.trim().isNotEmpty ?? false);
+
+  /// Results after ward / age filters.
+  List<VoterElector> get filteredResults {
+    final String? ward = filterWardNo.value?.trim();
+    final String? age = filterAge.value?.trim();
+    if ((ward == null || ward.isEmpty) && (age == null || age.isEmpty)) {
+      return results.toList(growable: false);
+    }
+    return results.where((VoterElector e) {
+      if (ward != null && ward.isNotEmpty) {
+        final String electorWard = _wardForFilter(e);
+        if (electorWard != ward) return false;
+      }
+      if (age != null && age.isNotEmpty) {
+        if (e.age.trim() != age) return false;
+      }
+      return true;
+    }).toList(growable: false);
+  }
+
+  String _wardForFilter(VoterElector e) {
+    if (areaType.value == VoterAreaType.urban) {
+      return e.urbanWardNo.trim().isNotEmpty
+          ? e.urbanWardNo.trim()
+          : e.wardNo.trim();
+    }
+    return e.ruralWardNo.trim().isNotEmpty
+        ? e.ruralWardNo.trim()
+        : e.wardNo.trim();
+  }
+
+  String _wardDisplayName(VoterElector e) {
+    if (areaType.value == VoterAreaType.urban) {
+      return e.wardName.trim();
+    }
+    // Rural APIs often have no separate ward name — village / panchayat helps.
+    if (e.villName.trim().isNotEmpty) return e.villName.trim();
+    if (e.panchayatName.trim().isNotEmpty) return e.panchayatName.trim();
+    return '';
+  }
+
+  /// Unique wards from results: number + display name for the filter sheet.
+  List<VoterFilterWardOption> get availableFilterWards {
+    final Map<String, String> byNo = <String, String>{};
+    for (final VoterElector e in results) {
+      final String no = _wardForFilter(e);
+      if (no.isEmpty) continue;
+      final String name = _wardDisplayName(e);
+      final String? existing = byNo[no];
+      if (existing == null || (existing.isEmpty && name.isNotEmpty)) {
+        byNo[no] = name;
+      }
+    }
+    final List<VoterFilterWardOption> list = byNo.entries
+        .map(
+          (MapEntry<String, String> e) => VoterFilterWardOption(
+            wardNo: e.key,
+            wardName: e.value,
+          ),
+        )
+        .toList();
+    list.sort((VoterFilterWardOption a, VoterFilterWardOption b) {
+      final int? ai = int.tryParse(a.wardNo);
+      final int? bi = int.tryParse(b.wardNo);
+      if (ai != null && bi != null) return ai.compareTo(bi);
+      return a.wardNo.compareTo(b.wardNo);
+    });
+    return list;
+  }
+
+  void applyResultFilters({String? wardNo, String? age}) {
+    final String? w = wardNo?.trim();
+    final String? a = age?.trim();
+    filterWardNo.value = (w == null || w.isEmpty) ? null : w;
+    filterAge.value = (a == null || a.isEmpty) ? null : a;
+  }
+
+  void clearResultFilters() {
+    filterWardNo.value = null;
+    filterAge.value = null;
   }
 
   Future<void> search() async {
@@ -302,6 +392,7 @@ class VoterSearchController extends GetxController {
     try {
       final List<VoterElector> list = await _repository.searchElectors(query);
       if (token != _searchToken) return;
+      clearResultFilters();
       results.assignAll(list);
       showingResults.value = true;
     } on VoterSearchApiException catch (e) {
@@ -387,10 +478,26 @@ class VoterSearchController extends GetxController {
   bool isPhotoLoading(String electorId) =>
       _photoFutures.containsKey(electorId) && !photoCache.containsKey(electorId);
 
+  /// District number for photo API — elector payload, else selected district.
+  String resolveDistNo(VoterElector elector) {
+    final String fromElector = elector.distNo.trim();
+    if (fromElector.isNotEmpty) return fromElector;
+    return selectedDistrict.value?.distNo.trim() ?? '';
+  }
+
   /// Loads voter photo once and caches it. Concurrent callers share one request.
-  /// Failed fetches (e.g. HTTP 403) are negative-cached so card + slip don't re-hit.
-  Future<String?> loadPhoto(VoterElector elector) {
+  ///
+  /// [forceRefresh] clears a previous miss so slip generation can retry.
+  /// Transient network errors are NOT negative-cached (only empty/unavailable).
+  Future<String?> loadPhoto(
+    VoterElector elector, {
+    bool forceRefresh = false,
+  }) {
     final String key = elector.id;
+    if (forceRefresh) {
+      photoCache.remove(key);
+      _photoFutures.remove(key);
+    }
     if (photoCache.containsKey(key)) {
       final String? cached = photoCache[key];
       return Future<String?>.value(
@@ -408,22 +515,70 @@ class VoterSearchController extends GetxController {
     }
     _photoFetchBusy = true;
     try {
+      final String distNo = resolveDistNo(elector);
+      if (distNo.isEmpty || elector.id.trim().isEmpty) {
+        debugPrint(
+          '[VoterSearch] photo skipped — missing distNo/id '
+          'distNo="$distNo" id="${elector.id}"',
+        );
+        // Don't negative-cache missing keys — district may load later.
+        return null;
+      }
       final String? photo = await _repository.fetchPhoto(
-        distNo: elector.distNo,
+        distNo: distNo,
         electorId: elector.id,
       );
-      // Empty string = known-unavailable (403 / empty). Keeps containsKey true.
-      photoCache[key] = (photo != null && photo.isNotEmpty) ? photo : '';
-      update(<Object>['photo_$key']);
-      return (photo != null && photo.isNotEmpty) ? photo : null;
-    } catch (_) {
+      if (photo != null && photo.isNotEmpty) {
+        photoCache[key] = photo;
+        update(<Object>['photo_$key']);
+        return photo;
+      }
+      // Definite miss from API (empty / Status:false) — avoid hammering.
       photoCache[key] = '';
       update(<Object>['photo_$key']);
+      return null;
+    } catch (e) {
+      // Transient errors: do not cache so next open / slip can retry.
+      debugPrint('[VoterSearch] photo fetch error (not cached): $e');
       return null;
     } finally {
       _photoFetchBusy = false;
       // ignore: unawaited_futures
       _photoFutures.remove(key);
     }
+  }
+}
+
+/// Ward choice for results filter sheet (number + optional name).
+class VoterFilterWardOption {
+  const VoterFilterWardOption({
+    required this.wardNo,
+    this.wardName = '',
+  });
+
+  final String wardNo;
+  final String wardName;
+
+  String get label {
+    final String name = wardName.trim();
+    if (name.isEmpty) return wardNo;
+    return '$wardNo - $name';
+  }
+
+  /// Single-row display: `15 - इंदिरा गांधी वार्ड` (or just number).
+  String get rowLabel => label;
+
+  /// Compact primary line for filter tiles (name preferred, else number).
+  String get shortLabel {
+    final String name = wardName.trim();
+    if (name.isNotEmpty) return name;
+    return wardNo;
+  }
+
+  /// Secondary line — ward number when a name is shown.
+  String? get subtitle {
+    final String name = wardName.trim();
+    if (name.isEmpty) return null;
+    return wardNo;
   }
 }

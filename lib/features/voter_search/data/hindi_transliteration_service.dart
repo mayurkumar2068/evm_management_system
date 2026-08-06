@@ -24,19 +24,26 @@ class HindiTransliterationService {
   static final RegExp _latinWord = RegExp(r'[A-Za-z]');
 
   /// Transliterates Latin tokens in [text]; Devanagari/other stays unchanged.
+  ///
+  /// Multi-word input keeps spaces: `mayur bobade` → `मयूर बोबाडे`.
   Future<String> transliterateText(String text) async {
     if (text.trim().isEmpty) return text;
-    final List<String> parts = text.split(RegExp(r'(\s+)'));
-    final StringBuffer out = StringBuffer();
-    for (final String part in parts) {
-      if (part.isEmpty) continue;
-      if (part.trim().isEmpty || !_latinWord.hasMatch(part)) {
-        out.write(part);
+
+    final String leading = RegExp(r'^\s*').firstMatch(text)?.group(0) ?? '';
+    final String trailing = RegExp(r'\s*$').firstMatch(text)?.group(0) ?? '';
+    final List<String> words = text.trim().split(RegExp(r'\s+'));
+    final List<String> converted = <String>[];
+
+    for (final String word in words) {
+      if (word.isEmpty) continue;
+      if (!_latinWord.hasMatch(word)) {
+        converted.add(word);
         continue;
       }
-      out.write(await transliterateWord(part));
+      converted.add(await transliterateWord(word));
     }
-    return out.toString();
+
+    return '$leading${converted.join(' ')}$trailing';
   }
 
   Future<String> transliterateWord(String word) async {

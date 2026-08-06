@@ -95,6 +95,7 @@ class EnvironmentConfig {
               flavor,
               'SURVEY_API_BASE_URL',
               'http://10.115.197.192/POElectionAPI/api',
+              nonDevFallback: apiBaseUrl,
             ),
       surveyWebBaseUrl: (surveyWebRaw != null && surveyWebRaw.isNotEmpty)
           ? surveyWebRaw
@@ -221,14 +222,21 @@ class EnvironmentConfig {
     return '$origin/SECSearchEngine';
   }
 
-  /// DEV may omit survey URLs (localhost defaults). UAT/PROD must set env keys.
+  /// DEV may omit survey URLs (localhost defaults).
+  /// UAT/PROD should set env keys; if survey API is blank, reuse [nonDevFallback]
+  /// (typically [apiBaseUrl]) so boot does not crash.
   static String _localServiceDefault(
     Flavor flavor,
     String key,
-    String devDefault,
-  ) {
+    String devDefault, {
+    String? nonDevFallback,
+  }) {
     if (flavor == Flavor.dev) {
       return devDefault;
+    }
+    final String? fallback = nonDevFallback?.trim();
+    if (fallback != null && fallback.isNotEmpty) {
+      return fallback;
     }
     throw StateError('Missing required env key: $key');
   }

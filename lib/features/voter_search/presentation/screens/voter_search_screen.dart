@@ -3,6 +3,7 @@ import 'package:evm_management_system/features/voter_search/data/models/voter_se
 import 'package:evm_management_system/features/voter_search/di/voter_search_module.dart';
 import 'package:evm_management_system/features/voter_search/presentation/controllers/voter_search_controller.dart';
 import 'package:evm_management_system/features/voter_search/presentation/widgets/voter_elector_result_card.dart';
+import 'package:evm_management_system/features/voter_search/presentation/widgets/voter_results_filter_sheet.dart';
 import 'package:evm_management_system/features/voter_search/presentation/widgets/voter_search_widgets.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -387,42 +388,109 @@ class _ResultsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final List<VoterElector> list = controller.results.toList(growable: false);
+      final List<VoterElector> list = controller.filteredResults;
+      final int total = controller.results.length;
+      final bool filtered = controller.hasActiveResultFilters;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        LocaleKeys.voterSearchResultsTitle.tr(),
-                        style: AppTextStyles.titleSmall.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        LocaleKeys.voterSearchResultsCount.tr(
-                          args: <String>['${list.length}'],
-                        ),
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.slate500,
-                        ),
-                      ),
-                    ],
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.fact_check_outlined,
+                      size: 20,
+                      color: AppColors.primaryDark,
+                    ),
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: controller.backToSearch,
-                  icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                  label: Text(LocaleKeys.voterSearchBackToSearch.tr()),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          LocaleKeys.voterSearchResultsTitle.tr(),
+                          style: AppTextStyles.titleSmall.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          filtered
+                              ? '${LocaleKeys.voterSearchResultsCount.tr(args: <String>['${list.length}'])} / $total'
+                              : LocaleKeys.voterSearchResultsCount.tr(
+                                  args: <String>['$total'],
+                                ),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.slate600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Material(
+                    color: filtered
+                        ? AppColors.primary
+                        : AppColors.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => showVoterResultsFilterSheet(
+                        context: context,
+                        controller: controller,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.tune_rounded,
+                              size: 18,
+                              color: filtered
+                                  ? AppColors.onPrimary
+                                  : AppColors.primaryDark,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              LocaleKeys.voterSearchFilter.tr(),
+                              style: AppTextStyles.caption.copyWith(
+                                color: filtered
+                                    ? AppColors.onPrimary
+                                    : AppColors.primaryDark,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(

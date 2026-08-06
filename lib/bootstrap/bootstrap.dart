@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
+import 'package:evm_management_system/core/cache/app_startup_cache.dart';
 import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/database/json_local_database.dart';
 import 'package:evm_management_system/core/database/local_database.dart';
@@ -41,6 +42,9 @@ Future<void> bootstrap(Flavor flavor) async {
         enabled: config.enableLogging,
         verbose: !config.isProduction,
       );
+
+      // Fresh runtime caches every cold start (images + WebView). Auth/session kept.
+      await AppStartupCache.clearOnLaunch();
       // Always print endpoints so flavor/URL mixups are visible in debug consoles.
       // ignore: avoid_print
       print(

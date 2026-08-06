@@ -360,8 +360,19 @@ abstract final class LocaleKeys {
   static const String voterSearchBoothLabel = 'voter_search.booth_label';
   static const String voterSearchHouseLabel = 'voter_search.house_label';
   static const String voterSearchPanchayatName = 'voter_search.panchayat_name';
+  static const String voterSearchBlockName = 'voter_search.block_name';
+  static const String voterSearchVillageName = 'voter_search.village_name';
+  static const String voterSearchUrbanBodyName = 'voter_search.urban_body_name';
   static const String voterSearchWardNo = 'voter_search.ward_no';
+  static const String voterSearchUrbanWardNo = 'voter_search.urban_ward_no';
+  static const String voterSearchRuralWardNo = 'voter_search.rural_ward_no';
+  static const String voterSearchWardName = 'voter_search.ward_name';
   static const String voterSearchVoterNo = 'voter_search.voter_no';
+  static const String voterSearchHouseNo = 'voter_search.house_no';
+  static const String voterSearchMohallaNo = 'voter_search.mohalla_no';
+  static const String voterSearchPartNo = 'voter_search.part_no';
+  static const String voterSearchRelativeNameTable =
+      'voter_search.relative_name_table';
   static const String voterSearchAddress = 'voter_search.address';
   static const String voterSearchBoothFullLabel =
       'voter_search.booth_full_label';
@@ -370,6 +381,15 @@ abstract final class LocaleKeys {
   static const String voterSearchSlipGenerating =
       'voter_search.slip_generating';
   static const String voterSearchSlipFailed = 'voter_search.slip_failed';
+  static const String voterSearchFilter = 'voter_search.filter';
+  static const String voterSearchFilterTitle = 'voter_search.filter_title';
+  static const String voterSearchFilterApply = 'voter_search.filter_apply';
+  static const String voterSearchFilterClear = 'voter_search.filter_clear';
+  static const String voterSearchFilterWardAll = 'voter_search.filter_ward_all';
+  static const String voterSearchFilterRuralHint =
+      'voter_search.filter_rural_hint';
+  static const String voterSearchFilterUrbanHint =
+      'voter_search.filter_urban_hint';
 
   // Online nomination
   static const String nominationTitle = 'nomination.title';

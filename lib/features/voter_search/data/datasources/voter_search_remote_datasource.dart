@@ -143,14 +143,10 @@ class VoterSearchRemoteDatasource {
         return null;
       }
 
-      // Postman sample: Data is already {"photo":"/9j/..."} (plaintext JSON).
-      // Prod may also return AES ciphertext of that same JSON.
-      final String plain = await _crypto.decryptDataField(raw.data);
-      final String? photo = _extractPhotoBase64FromPlain(plain);
+      final String? photo = await _resolvePhotoBase64(raw.data);
       debugPrint(
-        '[VoterSearchAPI] photo plainLen=${plain.length} '
-        'extractedLen=${photo?.length ?? 0} '
-        'prefix=${plain.substring(0, plain.length.clamp(0, 28))}',
+        '[VoterSearchAPI] photo extractedLen=${photo?.length ?? 0} '
+        'ms=${sw.elapsedMilliseconds}',
       );
       return photo;
     } on VoterSearchApiException catch (e) {
@@ -161,13 +157,86 @@ class VoterSearchRemoteDatasource {
         '[VoterSearchAPI] ✕ photo dio=${e.type} '
         'http=${e.response?.statusCode} ms=${sw.elapsedMilliseconds}',
       );
-      return null;
+      rethrow;
     } catch (e) {
       debugPrint(
         '[VoterSearchAPI] ✕ photo error=$e ms=${sw.elapsedMilliseconds}',
       );
-      return null;
+      rethrow;
     }
+  }
+
+  /// Resolves photo [Data]: plaintext JSON, AES JSON, or AES raw JPEG bytes.
+  Future<String?> _resolvePhotoBase64(String data) async {
+    final String trimmed = data.trim();
+    if (trimmed.isEmpty) return null;
+
+    // 1) Plaintext JSON / already-decrypted string field.
+    try {
+      final String plain = await _crypto.decryptDataField(trimmed);
+      final String? fromPlain = _extractPhotoBase64FromPlain(plain);
+      if (fromPlain != null && fromPlain.isNotEmpty) {
+        debugPrint(
+          '[VoterSearchAPI] photo via decryptDataField '
+          'plainLen=${plain.length} prefix=${plain.substring(0, plain.length.clamp(0, 24))}',
+        );
+        return fromPlain;
+      }
+    } catch (e) {
+      debugPrint('[VoterSearchAPI] photo decryptDataField failed: $e');
+    }
+
+    // 2) AES → bytes (JSON UTF-8 or raw image).
+    try {
+      final Uint8List bytes = await _crypto.decryptToBytes(trimmed);
+      if (_looksLikeImageBytes(bytes)) {
+        debugPrint(
+          '[VoterSearchAPI] photo via decryptToBytes image bytes=${bytes.length}',
+        );
+        return base64Encode(bytes);
+      }
+      final String asText = utf8.decode(bytes);
+      final String? fromText = _extractPhotoBase64FromPlain(asText);
+      if (fromText != null && fromText.isNotEmpty) {
+        debugPrint(
+          '[VoterSearchAPI] photo via decryptToBytes json len=${fromText.length}',
+        );
+        return fromText;
+      }
+    } catch (e) {
+      debugPrint('[VoterSearchAPI] photo decryptToBytes failed: $e');
+    }
+
+    // 3) Data itself may be raw base64 JPEG.
+    return _normalizeBase64(trimmed);
+  }
+
+  static bool _looksLikeImageBytes(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+    // JPEG
+    if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
+    // PNG
+    if (bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return true;
+    }
+    // GIF
+    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) return true;
+    // WEBP (RIFF....WEBP)
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return true;
+    }
+    return false;
   }
 
   /// Normalizes Dio [ResponseType.plain] / json body into a map.
