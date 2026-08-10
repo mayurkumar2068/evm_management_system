@@ -140,6 +140,7 @@ class NominationLargeOptionCard extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.featured = false,
+    this.tag,
     super.key,
   });
 
@@ -148,6 +149,9 @@ class NominationLargeOptionCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool featured;
+
+  /// Optional corner badge (e.g. "Login required").
+  final String? tag;
 
   @override
   Widget build(BuildContext context) {
@@ -160,16 +164,27 @@ class NominationLargeOptionCard extends StatelessWidget {
         border: Border.all(color: context.appOutline),
         child: Column(
           children: <Widget>[
-            Container(
-              width: double.infinity,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(
-                  alpha: context.isAppDark ? 0.18 : 0.12,
+            Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(
+                      alpha: context.isAppDark ? 0.18 : 0.12,
+                    ),
+                    borderRadius: AppRadius.brLg,
+                  ),
+                  child: Icon(icon, size: 56, color: AppColors.primary),
                 ),
-                borderRadius: AppRadius.brLg,
-              ),
-              child: Icon(icon, size: 56, color: AppColors.primary),
+                if (tag != null && tag!.trim().isNotEmpty)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _OptionTag(label: tag!.trim()),
+                  ),
+              ],
             ),
             AppSpacing.vGapMd,
             NominationGradientText(
@@ -209,13 +224,23 @@ class NominationLargeOptionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  title,
-                  style: AppTextStyles.variant(
-                    AppTextStyles.titleSmall,
-                    color: context.appOnSurface,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: AppTextStyles.variant(
+                          AppTextStyles.titleSmall,
+                          color: context.appOnSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    if (tag != null && tag!.trim().isNotEmpty) ...<Widget>[
+                      const SizedBox(width: 8),
+                      _OptionTag(label: tag!.trim()),
+                    ],
+                  ],
                 ),
                 AppSpacing.vGapXs,
                 Text(
@@ -234,6 +259,35 @@ class NominationLargeOptionCard extends StatelessWidget {
             color: AppColors.primary,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OptionTag extends StatelessWidget {
+  const _OptionTag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.28),
+        ),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.caption.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w700,
+          fontSize: 10,
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }

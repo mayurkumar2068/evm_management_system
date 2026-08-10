@@ -7,6 +7,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/turnout_
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -411,53 +412,50 @@ class _SaveActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool disabled = busy || isReadOnly || onPressed == null;
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton(
-        onPressed: disabled ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isReadOnly
-              ? AppColors.slate400
-              : isSaved
-              ? AppColors.success
-              : PresidingUiTokens.actionGreen,
-          disabledBackgroundColor: AppColors.slate200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+    if (isReadOnly) {
+      return SizedBox(
+        height: 48,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.slate400,
+            disabledBackgroundColor: AppColors.slate200,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            minimumSize: const Size(108, 48),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          minimumSize: const Size(108, 48),
-        ),
-        child: busy
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Icon(Icons.lock_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 6),
+              Text(
+                LocaleKeys.commonSaved.tr(),
+                style: AppTextStyles.caption.copyWith(
                   color: Colors.white,
+                  fontWeight: FontWeight.w700,
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(
-                    isSaved ? Icons.check_rounded : Icons.save_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isSaved
-                        ? LocaleKeys.commonSaved.tr()
-                        : LocaleKeys.commonSave.tr(),
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
               ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: 120,
+      child: PresidingThemeButton(
+        onPressed: disabled ? null : onPressed,
+        isLoading: busy,
+        icon: isSaved ? Icons.check_rounded : Icons.save_outlined,
+        label: isSaved
+            ? LocaleKeys.commonSaved.tr()
+            : LocaleKeys.commonSave.tr(),
+        height: 48,
+        expanded: true,
       ),
     );
   }

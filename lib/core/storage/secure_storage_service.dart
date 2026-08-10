@@ -77,4 +77,8 @@ abstract final class SecureStorageKeys {
   static const String onboardingSeen = 'evm.onboarding_seen';
   static const String presidingElectionContext =
       'evm.presiding_election_context';
+
+  /// PO party details + OTP completed for a presiding officer session.
+  static String poPartyComplete(String poUserId) =>
+      'evm.po_party_complete.$poUserId';
 }

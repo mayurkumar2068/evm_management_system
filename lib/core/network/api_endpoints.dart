@@ -21,9 +21,26 @@ abstract final class ApiEndpoints {
 abstract final class PoElectionEndpoints {
   // Account / Auth
   static const String loginPoPass = '/api/Account/login-po-pass';
+  static const String poLogout = '/api/Account/po-logout';
 
   /// POST `/api/POElection/po-status`
   static const String poStatus = '/api/POElection/po-status';
+
+  /// POST `/api/POElection/po-party-details`
+  static const String poPartyDetails = '/api/POElection/po-party-details';
+
+  /// POST `/api/POElection/save-po-party`
+  static const String savePoParty = '/api/POElection/save-po-party';
+
+  /// POST `/api/POElection/po-details` — PO name/mobile profile.
+  static const String poDetails = '/api/POElection/po-details';
+
+  /// POST `/api/POElection/po-send-otp`
+  static const String poSendOtp = '/api/POElection/po-send-otp';
+
+  /// POST `/api/POElection/po-detail-save-with-otp`
+  static const String poDetailSaveWithOtp =
+      '/api/POElection/po-detail-save-with-otp';
 
   // Milestones
   static const String savePollLive = '/api/POElection/save-poll-live';

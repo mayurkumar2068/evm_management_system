@@ -25,6 +25,9 @@ import 'package:evm_management_system/features/online_nomination/presentation/sc
 import 'package:evm_management_system/features/online_nomination/presentation/screens/urban_nomination_selection_screen.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_dashboard_screen.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_live_poll_screen.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_party_details_screen.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_party_otp_screen.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_po_details_screen.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_turnout_screen.dart';
 import 'package:evm_management_system/features/profile/presentation/screens/profile_screen.dart';
 import 'package:evm_management_system/features/reports/presentation/screens/reports_screen.dart';
@@ -106,6 +109,21 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoute.presidingDashboard.path,
       page: () => const PresidingDashboardScreen(),
+      middlewares: <GetMiddleware>[AuthMiddleware()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoute.presidingPoDetails.path,
+      page: () => const PresidingPoDetailsScreen(),
+      middlewares: <GetMiddleware>[AuthMiddleware()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoute.presidingPartyDetails.path,
+      page: () => const PresidingPartyDetailsScreen(),
+      middlewares: <GetMiddleware>[AuthMiddleware()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoute.presidingPartyOtp.path,
+      page: () => const PresidingPartyOtpScreen(),
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
     GetPage<dynamic>(

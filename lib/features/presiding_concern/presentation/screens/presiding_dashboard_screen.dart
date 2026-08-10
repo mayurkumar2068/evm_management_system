@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_milestone_section.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_details_sheet.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_mandatory_banner.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -25,10 +30,31 @@ class PresidingDashboardScreen extends StatelessWidget {
   }
 }
 
-class _DashboardBody extends StatelessWidget {
+class _DashboardBody extends StatefulWidget {
   const _DashboardBody({required this.session});
 
   final PresidingSession session;
+
+  @override
+  State<_DashboardBody> createState() => _DashboardBodyState();
+}
+
+class _DashboardBodyState extends State<_DashboardBody> {
+  PresidingPartyController get _partyCtrl =>
+      Get.find<PresidingPartyController>();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_partyCtrl.refresh());
+  }
+
+  Future<void> _openPartySheet() async {
+    await showPresidingPartyDetailsSheet(
+      context,
+      onCompleted: () => unawaited(_partyCtrl.refresh()),
+    );
+  }
 
   Future<void> _onRefresh(BuildContext context) async {
     final PresidingDashboardController controller =
@@ -58,13 +84,13 @@ class _DashboardBody extends StatelessWidget {
     final PresidingDashboardController controller =
         Get.find<PresidingDashboardController>();
     final String stationLabel =
-        session.pollingStationName.startsWith('presiding.')
-        ? session.pollingStationName.tr()
-        : session.pollingStationName;
+        widget.session.pollingStationName.startsWith('presiding.')
+        ? widget.session.pollingStationName.tr()
+        : widget.session.pollingStationName;
 
     final Map<String, List<PresidingMilestone>> grouped =
         <String, List<PresidingMilestone>>{};
-    for (final PresidingMilestone milestone in session.milestones) {
+    for (final PresidingMilestone milestone in widget.session.milestones) {
       // मतदान समाप्त is submitted via 2–2 hourly finish — hide from section 4.
       if (milestone.id == PresidingMilestoneIds.pollEnd) continue;
       grouped.putIfAbsent(milestone.sectionId, () => <PresidingMilestone>[]);
@@ -101,9 +127,13 @@ class _DashboardBody extends StatelessWidget {
           centerTitle: true,
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
-            args: <String>[session.pollingStationCode, stationLabel],
+            args: <String>[
+              widget.session.pollingStationCode,
+              stationLabel,
+            ],
           ),
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+          leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           trailing: Obx(() {
             final bool syncing = controller.isSyncing.value;
             final bool online = controller.isOnline.value;
@@ -168,6 +198,10 @@ class _DashboardBody extends StatelessWidget {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: PresidingPartyMandatoryBanner(onTap: _openPartySheet),
+        ),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
@@ -185,12 +219,12 @@ class _DashboardBody extends StatelessWidget {
                       boothMapStationName:
                           section.index == 1 ? stationLabel : null,
                       isMilestoneEnabled: (PresidingMilestone milestone) =>
-                          session.isMilestoneActionEnabled(milestone.id),
+                          widget.session.isMilestoneActionEnabled(milestone.id),
                       onMilestoneTap: (PresidingMilestone milestone) async {
                         if (milestone.isCompleted) return;
 
                         final String? blockKey =
-                            session.milestoneActionBlockKey(milestone.id);
+                            widget.session.milestoneActionBlockKey(milestone.id);
                         if (blockKey != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(blockKey.tr())),

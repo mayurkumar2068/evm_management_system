@@ -737,6 +737,11 @@ class DashboardServicesGrid extends StatelessWidget {
 
     // 2. Handle Native Routes
     if (s.routeName != null && s.routeName!.isNotEmpty) {
+      // PO: login → officer details gate → presiding dashboard
+      if (s.routeName == AppRoute.presidingDashboard.path) {
+        await Get.toNamed<dynamic>(AppRoute.presidingPoDetails.path);
+        return;
+      }
       await Get.toNamed<dynamic>(s.routeName!);
       return;
     }

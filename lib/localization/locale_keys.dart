@@ -189,6 +189,13 @@ abstract final class LocaleKeys {
   static const String profileSignOut = 'profile.sign_out';
   static const String profileSignOutTitle = 'profile.sign_out_title';
   static const String profileSignOutMessage = 'profile.sign_out_message';
+  static const String profileSignOutSuccess = 'profile.sign_out_success';
+  static const String profileLoginRequiredTag = 'profile.login_required_tag';
+  static const String profileLoginPickTitle = 'profile.login_pick_title';
+  static const String profileLoginPickSubtitle = 'profile.login_pick_subtitle';
+  static const String profileLoginPickBoothSub = 'profile.login_pick_booth_sub';
+  static const String profileLoginPickExpenditureSub =
+      'profile.login_pick_expenditure_sub';
   static const String profileThisWeek = 'profile.this_week';
   static const String profileRegisteredBy = 'profile.registered_by';
   static const String profileTimeline = 'profile.timeline';
@@ -726,6 +733,89 @@ abstract final class LocaleKeys {
   static const String presidingBoothNavigate = 'presiding.booth_navigate';
   static const String presidingBoothOpenMap = 'presiding.booth_open_map';
   static const String presidingBoothMapError = 'presiding.booth_map_error';
+  static const String presidingPartyTitle = 'presiding.party_title';
+  static const String presidingPartySubtitle = 'presiding.party_subtitle';
+  static const String presidingPartyNo = 'presiding.party_no';
+  static const String presidingPartyMemberP1 = 'presiding.party_member_p1';
+  static const String presidingPartyMemberP2 = 'presiding.party_member_p2';
+  static const String presidingPartyMemberP3 = 'presiding.party_member_p3';
+  static const String presidingPartyMemberP4 = 'presiding.party_member_p4';
+  static const String presidingPartyName = 'presiding.party_name';
+  static const String presidingPartyMobile = 'presiding.party_mobile';
+  static const String presidingPartySaveContinue =
+      'presiding.party_save_continue';
+  static const String presidingPartyUpdate = 'presiding.party_update';
+  static const String presidingPartyP1NameRequired =
+      'presiding.party_p1_name_required';
+  static const String presidingPartyP1MobileRequired =
+      'presiding.party_p1_mobile_required';
+  static const String presidingPartyMobileInvalid =
+      'presiding.party_mobile_invalid';
+  static const String presidingPartySessionMissing =
+      'presiding.party_session_missing';
+  static const String presidingPartyLoadFailed = 'presiding.party_load_failed';
+  static const String presidingPartySaveFailed = 'presiding.party_save_failed';
+  static const String presidingPartyApiNotDeployed =
+      'presiding.party_api_not_deployed';
+  static const String presidingPartyMandatoryTitle =
+      'presiding.party_mandatory_title';
+  static const String presidingPartyMandatoryBanner =
+      'presiding.party_mandatory_banner';
+  static const String presidingPartyFillButton = 'presiding.party_fill_button';
+  static const String presidingPartyOtpTitle = 'presiding.party_otp_title';
+  static const String presidingPartyOtpSubtitle =
+      'presiding.party_otp_subtitle';
+  static const String presidingPartyOtpHint = 'presiding.party_otp_hint';
+  static const String presidingPartyOtpRequired =
+      'presiding.party_otp_required';
+  static const String presidingPartyOtpInvalid = 'presiding.party_otp_invalid';
+  static const String presidingPartyOtpVerify = 'presiding.party_otp_verify';
+
+  static const String presidingPoDetailsTitle = 'presiding.po_details_title';
+  static const String presidingPoDetailsSubtitle =
+      'presiding.po_details_subtitle';
+  static const String presidingPoDetailsName = 'presiding.po_details_name';
+  static const String presidingPoDetailsNameHint =
+      'presiding.po_details_name_hint';
+  static const String presidingPoDetailsMobile = 'presiding.po_details_mobile';
+  static const String presidingPoDetailsMobileHint =
+      'presiding.po_details_mobile_hint';
+  static const String presidingPoDetailsNameRequired =
+      'presiding.po_details_name_required';
+  static const String presidingPoDetailsMobileRequired =
+      'presiding.po_details_mobile_required';
+  static const String presidingPoDetailsMobileInvalid =
+      'presiding.po_details_mobile_invalid';
+  static const String presidingPoDetailsSendOtp =
+      'presiding.po_details_send_otp';
+  static const String presidingPoDetailsResendOtp =
+      'presiding.po_details_resend_otp';
+  static const String presidingPoDetailsVerify = 'presiding.po_details_verify';
+  static const String presidingPoDetailsContinue =
+      'presiding.po_details_continue';
+  static const String presidingPoDetailsOtpLabel =
+      'presiding.po_details_otp_label';
+  static const String presidingPoDetailsOtpHint =
+      'presiding.po_details_otp_hint';
+  static const String presidingPoDetailsOtpSubtitle =
+      'presiding.po_details_otp_subtitle';
+  static const String presidingPoDetailsOtpRequired =
+      'presiding.po_details_otp_required';
+  static const String presidingPoDetailsOtpSendFailed =
+      'presiding.po_details_otp_send_failed';
+  static const String presidingPoDetailsOtpSent = 'presiding.po_details_otp_sent';
+  static const String presidingPoDetailsOtpResent =
+      'presiding.po_details_otp_resent';
+  static const String presidingPoDetailsMobileChanged =
+      'presiding.po_details_mobile_changed';
+  static const String presidingPoDetailsSessionMissing =
+      'presiding.po_details_session_missing';
+  static const String presidingPoDetailsLoadFailed =
+      'presiding.po_details_load_failed';
+  static const String presidingPoDetailsSaveFailed =
+      'presiding.po_details_save_failed';
+  static const String presidingPoDetailsAlreadySaved =
+      'presiding.po_details_already_saved';
 
   // WebView
   static const String webviewLoadFailedSubtitle =

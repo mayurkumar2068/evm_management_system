@@ -93,16 +93,6 @@ class _OnlineNominationHomeScreenState
                     onContinue: _continueDraft,
                     onStartFresh: _startFresh,
                   ),
-                NominationFeatureBullet(
-                  icon: Icons.security_rounded,
-                  title: LocaleKeys.nominationFeatureSecurityTitle.tr(),
-                  subtitle: LocaleKeys.nominationFeatureSecurityDesc.tr(),
-                ),
-                NominationFeatureBullet(
-                  icon: Icons.visibility_rounded,
-                  title: LocaleKeys.nominationFeatureTransparencyTitle.tr(),
-                  subtitle: LocaleKeys.nominationFeatureTransparencyDesc.tr(),
-                ),
                 AppSpacing.vGapLg,
                 NominationGovButton(
                   label: LocaleKeys.nominationActionStart.tr(),

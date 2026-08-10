@@ -3,8 +3,8 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -331,50 +331,23 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
               Row(
                 children: <Widget>[
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: PresidingThemeButton(
                       onPressed: () => Get.back<void>(),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                      label: Text(
-                        LocaleKeys.presidingBack.tr(),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.greenLight,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
+                      icon: Icons.arrow_back_rounded,
+                      label: LocaleKeys.presidingBack.tr(),
+                      height: 50,
+                      outlined: true,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: PresidingThemeButton(
                       onPressed: allSlotsSaved && !turnoutSubmitted
                           ? _finishAndBack
                           : null,
-                      icon: const Icon(Icons.check_box_outlined, size: 18),
-                      label: Text(
-                        LocaleKeys.presidingFinishAndBack.tr(),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: PresidingUiTokens.actionGreen,
-                        side: const BorderSide(
-                          color: PresidingUiTokens.actionGreen,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        backgroundColor: PresidingUiTokens.finishButtonSurface,
-                      ),
+                      icon: Icons.check_circle_outline_rounded,
+                      label: LocaleKeys.presidingFinishAndBack.tr(),
+                      height: 50,
                     ),
                   ),
                 ],
@@ -428,15 +401,23 @@ class _TurnoutTimeTabBar extends StatelessWidget {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? PresidingUiTokens.actionGreen
-                          : AppColors.slate100,
+                      gradient: selected ? AppGradients.primaryButton : null,
+                      color: selected ? null : AppColors.slate100,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: selected
-                            ? PresidingUiTokens.actionGreen
+                            ? AppColors.primary.withValues(alpha: 0.35)
                             : AppColors.slate200,
                       ),
+                      boxShadow: selected
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.22),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -451,13 +432,13 @@ class _TurnoutTimeTabBar extends StatelessWidget {
                           Icon(
                             Icons.check_circle_rounded,
                             size: 14,
-                            color: selected ? Colors.white : AppColors.success,
+                            color: selected ? Colors.white : AppColors.primary,
                           ),
                         if (readOnly || saved) const SizedBox(width: 4),
                         Text(
                           slot.labelKey.tr(),
                           style: AppTextStyles.caption.copyWith(
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: selected ? Colors.white : AppColors.slate700,
                           ),
                         ),

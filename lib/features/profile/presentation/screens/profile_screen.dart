@@ -6,6 +6,7 @@ import 'package:evm_management_system/core/settings/app_preferences_actions.dart
 import 'package:evm_management_system/core/utils/string_extensions.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/features/profile/presentation/widgets/profile_login_required_sheet.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/device_record.dart';
@@ -110,7 +111,7 @@ class ProfileScreen extends StatelessWidget {
             if (hasOfficerSession)
               _SignOutButton(onTap: () => _confirmSignOut(context))
             else
-              _SignInButton(onTap: () => _goToSignIn()),
+              _SignInButton(onTap: () => _goToSignIn(context)),
           ],
         ),
       );
@@ -133,13 +134,23 @@ class ProfileScreen extends StatelessWidget {
     // Sign Out button then hides and Sign In is shown instead.
     if (user?.isGuest == true) {
       await AppServices.serviceAuth.signOut();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.profileSignOutSuccess.tr())),
+      );
       return;
+    }
+    // Show before auth navigation tear-down.
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.profileSignOutSuccess.tr())),
+      );
     }
     await AppServices.auth.signOut();
   }
 
-  Future<void> _goToSignIn() async {
-    await AppServices.auth.signOut();
+  Future<void> _goToSignIn(BuildContext context) async {
+    await showProfileLoginRequiredSheet(context);
   }
 
   Future<void> _showLanguagePicker(BuildContext context) async {

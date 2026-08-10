@@ -11,6 +11,7 @@ import 'package:evm_management_system/core/network/po_election_api_client.dart';
 import 'package:evm_management_system/core/security/token_vault.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
@@ -402,7 +403,20 @@ class ServiceAuthController extends GetxController {
     return LocaleKeys.errorNetwork;
   }
 
-  Future<void> signOut() async {
+  /// Clears local PO/service session. Returns `true` when remote logout succeeded.
+  Future<bool> signOut() async {
+    bool remoteOk = false;
+    final ServiceSession? current = session.value;
+    if (current != null &&
+        current.kind == ServiceLoginKind.presiding &&
+        current.userId.trim().isNotEmpty) {
+      // Best-effort remote logout; local clear always continues.
+      remoteOk = await PoPartyRemoteDatasource(AppServices.config).logout(
+        poUserId: current.userId,
+        sessionId: null,
+      );
+    }
+
     session.value = null;
     _surveyDio = null;
     PoElectionApiClient.reset();
@@ -415,5 +429,6 @@ class ServiceAuthController extends GetxController {
       AppServices.secureStorage,
     );
     await store.clear();
+    return remoteOk;
   }
 }

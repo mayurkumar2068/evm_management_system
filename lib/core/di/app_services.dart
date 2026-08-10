@@ -40,6 +40,7 @@ import 'package:evm_management_system/core/network/olin_api_client.dart';
 import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
 import 'package:evm_management_system/shared/controllers/activity_log_controller.dart';
 import 'package:evm_management_system/shared/controllers/device_records_controller.dart';
@@ -172,6 +173,10 @@ abstract final class AppServices {
     Get.put<DashboardController>(DashboardController(), permanent: true);
     Get.put<PresidingDashboardController>(
       PresidingDashboardController(),
+      permanent: true,
+    );
+    Get.put<PresidingPartyController>(
+      PresidingPartyController(),
       permanent: true,
     );
     Get.put<PresidingTurnoutController>(
