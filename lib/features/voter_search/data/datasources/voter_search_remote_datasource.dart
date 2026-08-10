@@ -69,6 +69,21 @@ class VoterSearchRemoteDatasource {
     return _parseList(envelope, VoterElector.fromJson);
   }
 
+  Future<List<VoterElector>> searchElectorsByEpic(
+    ElectorEpicSearchQuery query,
+  ) async {
+    final String reqData = jsonEncode(query.toJson());
+    debugPrint(
+      '[VoterSearchAPI] search-elector-epic '
+      'distNo=${query.distNo} epic=${query.epicNo}',
+    );
+    final VoterSearchEnvelope envelope = await _post(
+      VoterSearchEndpoints.searchElectorEpic,
+      reqData: reqData,
+    );
+    return _parseList(envelope, VoterElector.fromJson);
+  }
+
   String _nameScript(String name) {
     if (name.trim().isEmpty) return 'empty';
     if (RegExp(r'[\u0900-\u097F]').hasMatch(name)) return 'hindi';

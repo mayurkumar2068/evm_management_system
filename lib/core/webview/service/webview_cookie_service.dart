@@ -124,6 +124,7 @@ class WebViewCookieService {
       config.voterSearchEngineUrl,
       config.voterRegistrationUrl,
       config.candidateExpenditureUrl,
+      config.emsUrl,
     ]) {
       final Uri? uri = Uri.tryParse(raw.trim());
       if (uri == null || uri.host.isEmpty) continue;

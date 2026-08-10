@@ -382,15 +382,25 @@ class VoterSearchController extends GetxController {
         : _validateEpic();
     if (!ok) return;
 
-    final ElectorSearchQuery? query = activeTab.value == VoterSearchTab.details
-        ? _buildDetailsQuery()
-        : _buildEpicQuery();
-    if (query == null) return;
-
     final int token = ++_searchToken;
     searching.value = true;
     try {
-      final List<VoterElector> list = await _repository.searchElectors(query);
+      final List<VoterElector> list;
+      if (activeTab.value == VoterSearchTab.epic) {
+        final ElectorEpicSearchQuery? epicQuery = _buildEpicQuery();
+        if (epicQuery == null) {
+          searching.value = false;
+          return;
+        }
+        list = await _repository.searchElectorsByEpic(epicQuery);
+      } else {
+        final ElectorSearchQuery? query = _buildDetailsQuery();
+        if (query == null) {
+          searching.value = false;
+          return;
+        }
+        list = await _repository.searchElectors(query);
+      }
       if (token != _searchToken) return;
       clearResultFilters();
       results.assignAll(list);
@@ -464,14 +474,12 @@ class VoterSearchController extends GetxController {
     );
   }
 
-  ElectorSearchQuery? _buildEpicQuery() {
+  ElectorEpicSearchQuery? _buildEpicQuery() {
     final VoterDistrict? district = selectedDistrict.value;
     if (district == null) return null;
-    final bool rural = areaType.value == VoterAreaType.rural;
-    return ElectorSearchQuery(
-      elecType: rural ? 'R' : 'U',
-      distNo: district.distNo,
+    return ElectorEpicSearchQuery(
       epicNo: epicController.text.trim().toUpperCase(),
+      distNo: district.distNo,
     );
   }
 

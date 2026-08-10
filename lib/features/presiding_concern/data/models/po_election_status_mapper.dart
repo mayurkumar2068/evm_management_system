@@ -57,7 +57,6 @@ abstract final class PoElectionStatusMapper {
             data,
             current: milestone,
           );
-          // null ⇒ keep local state unchanged.
           if (status == null) return milestone;
 
           if (status.isCompleted) {

@@ -115,6 +115,9 @@
     "voter_registration": {
       "title": "Claim / Objection Application"
     },
+    "ems": {
+      "title": "EMS"
+    },
     "booth": {
       "title": "Polling Station Survey"
     },

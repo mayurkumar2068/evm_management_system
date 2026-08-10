@@ -106,6 +106,7 @@ class DashboardController extends GetxController {
     final String surveyWebUrl = AppServices.config.surveyWebBaseUrl;
     final String voterRegistrationUrl = AppServices.config.voterRegistrationUrl;
     final String expenditureUrl = AppServices.config.candidateExpenditureUrl;
+    final String emsUrl = AppServices.config.emsUrl;
     final ServiceSession? session = AppServices.serviceAuth.session.value;
     final AuthUser? authUser = Get.isRegistered<AuthController>()
         ? AppServices.auth.authState.value.user
@@ -142,6 +143,7 @@ class DashboardController extends GetxController {
         surveyWebUrl: surveyWebUrl,
         voterRegistrationUrl: voterRegistrationUrl,
         expenditureUrl: expenditureUrl,
+        emsUrl: emsUrl,
       ),
       activity: _activityFromSubmissions(submissions),
     );
@@ -223,6 +225,7 @@ class DashboardController extends GetxController {
     required String surveyWebUrl,
     required String voterRegistrationUrl,
     required String expenditureUrl,
+    required String emsUrl,
   }) {
     return <DashboardService>[
       // Tab 1 — Voter Services
@@ -246,6 +249,17 @@ class DashboardController extends GetxController {
         category: DashboardCategory.voterServices,
         routeName: AppRoute.voterSearch.path,
         requiresServiceLogin: false,
+      ),
+      DashboardService(
+        title: LocaleKeys.serviceEmsTitle.tr(),
+        desc: '',
+        icon: Icons.dns_outlined,
+        color: AppColors.primaryBright,
+        url: emsUrl,
+        category: DashboardCategory.voterServices,
+        requiresServiceLogin: false,
+        passSessionContext: false,
+        openAsExternalPortal: true,
       ),
       // Tab 2 — About Elections
       if (!kHideOnlineNomination)

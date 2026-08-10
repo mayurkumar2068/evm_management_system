@@ -307,6 +307,7 @@ abstract final class LocaleKeys {
       'services.voter_search_engine.title';
   static const String serviceVoterRegistrationTitle =
       'services.voter_registration.title';
+  static const String serviceEmsTitle = 'services.ems.title';
   static const String serviceBoothTitle = 'services.booth.title';
   static const String servicePresidingTitle = 'services.presiding.title';
   static const String servicePresidingDesc = 'services.presiding.desc';

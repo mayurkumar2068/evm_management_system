@@ -18,6 +18,10 @@ class VoterSearchRepository {
   Future<List<VoterElector>> searchElectors(ElectorSearchQuery query) =>
       _remote.searchElectors(query);
 
+  Future<List<VoterElector>> searchElectorsByEpic(
+    ElectorEpicSearchQuery query,
+  ) => _remote.searchElectorsByEpic(query);
+
   Future<String?> fetchPhoto({
     required String distNo,
     required String electorId,

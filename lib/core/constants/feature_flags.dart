@@ -11,7 +11,7 @@ const bool kHideDashboardStats = true;
 const bool kHideReports = true;
 
 /// Hides Online Nomination tile (dashboard + related entry points).
-const bool kHideOnlineNomination = true;
+const bool kHideOnlineNomination = false;
 
 /// Hides Election Expenditure Account (व्यय लेखा) tile.
 const bool kHideExpenditureAccount = true;

@@ -6,7 +6,6 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 
 /// Maps presiding-officer domain actions to PO Election API request bodies.
 abstract final class PoElectionApiMapper {
-  /// Builds the request body for a milestone completion action.
   static Map<String, dynamic>? milestoneBody({
     required PresidingElectionContext context,
     required String milestoneId,

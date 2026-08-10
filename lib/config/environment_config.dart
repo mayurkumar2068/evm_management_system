@@ -20,6 +20,7 @@ class EnvironmentConfig {
     required this.voterSearchAesKey,
     required this.voterRegistrationUrl,
     required this.candidateExpenditureUrl,
+    required this.emsUrl,
     required this.electionId,
     required this.devPoPsId,
     required this.devPoAreaType,
@@ -79,6 +80,7 @@ class EnvironmentConfig {
         dotenv.env['VOTER_REGISTRATION_URL']?.trim();
     final String? candidateExpenditureRaw =
         dotenv.env['CANDIDATE_EXPENDITURE_URL']?.trim();
+    final String? emsRaw = dotenv.env['EMS_URL']?.trim();
 
     return EnvironmentConfig(
       flavor: flavor,
@@ -132,6 +134,9 @@ class EnvironmentConfig {
               candidateExpenditureRaw.isNotEmpty)
           ? candidateExpenditureRaw
           : 'http://10.115.197.192/CandidateExpenditure/Home.aspx',
+      emsUrl: (emsRaw != null && emsRaw.isNotEmpty)
+          ? emsRaw
+          : 'https://www.mplocalelection.mp.gov.in/iems/EMS/Login.aspx',
       electionId: optionalInt('ELECTION_ID'),
       devPoPsId: optionalString('DEV_PO_PS_ID'),
       devPoAreaType: optionalString('DEV_PO_AREA_TYPE'),
@@ -185,6 +190,9 @@ class EnvironmentConfig {
 
   /// Candidate expenditure portal opened from the dashboard grid.
   final String candidateExpenditureUrl;
+
+  /// EMS (IEMS) portal opened from the dashboard grid.
+  final String emsUrl;
 
   /// Active election cycle ID sent with officer login (deployment config).
   final int? electionId;

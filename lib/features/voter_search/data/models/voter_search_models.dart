@@ -358,3 +358,19 @@ class ElectorSearchQuery {
     if (epicNo.isNotEmpty) 'epicNo': epicNo,
   };
 }
+
+/// Payload for `/api/Search/search-elector-epic`.
+class ElectorEpicSearchQuery {
+  const ElectorEpicSearchQuery({
+    required this.epicNo,
+    required this.distNo,
+  });
+
+  final String epicNo;
+  final String distNo;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'epicNo': epicNo,
+    'distNo': distNo,
+  };
+}

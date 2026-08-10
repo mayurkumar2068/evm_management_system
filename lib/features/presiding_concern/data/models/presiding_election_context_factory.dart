@@ -5,7 +5,6 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 
 /// Builds [PresidingElectionContext] from auth user payloads.
 abstract final class PresidingElectionContextFactory {
-  /// Returns a complete context when login/profile includes required fields.
   static PresidingElectionContext? fromUserModel(
     UserModel user, {
     int? fallbackElectionId,

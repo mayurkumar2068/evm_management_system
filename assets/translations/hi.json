@@ -115,6 +115,9 @@
     "voter_registration": {
       "title": "दावा / आपत्ति आवेदन"
     },
+    "ems": {
+      "title": "ईएमएस"
+    },
     "booth": {
       "title": "मतदान केंद्र सर्वे"
     },
