@@ -44,6 +44,7 @@ abstract final class DashboardWebViewLauncher {
     required String title,
     required String url,
     required bool openAsExternalPortal,
+    bool showLogoutButton = false,
   }) {
     return WebViewArgs(
       title: title,
@@ -59,6 +60,7 @@ abstract final class DashboardWebViewLauncher {
       injectSessionContext: !openAsExternalPortal,
       enableJsBridge: !openAsExternalPortal,
       bootstrapSession: !openAsExternalPortal,
+      showLogoutButton: showLogoutButton,
     );
   }
 }

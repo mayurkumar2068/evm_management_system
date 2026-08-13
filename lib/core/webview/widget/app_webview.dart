@@ -183,6 +183,27 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
+  /// Header logout action — same [ServiceAuthController.signOut] call used
+  /// by the Presiding Officer flow, then leaves the WebView.
+  Future<void> _confirmLogout() async {
+    final bool confirmed = await AppDialog.confirm(
+      context,
+      title: LocaleKeys.profileSignOutTitle.tr(),
+      message: LocaleKeys.profileSignOutMessage.tr(),
+      confirmLabel: LocaleKeys.profileSignOut.tr(),
+      cancelLabel: LocaleKeys.commonCancel.tr(),
+      destructive: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    await AppServices.serviceAuth.signOut();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(LocaleKeys.profileSignOutSuccess.tr())),
+    );
+    await _goBackOrClose();
+  }
+
   /// Returns the app-managed headers for the initial request.
   Map<String, String> _buildHeaders() {
     return switch (_config.headerPolicy) {
@@ -666,6 +687,7 @@ class _AppWebViewState extends State<AppWebView> {
                 icon: _favicon,
                 onBack: _goBackOrClose,
                 onReload: _reload,
+                onLogout: _config.showLogoutButton ? _confirmLogout : null,
               ),
             if (_loading) _loadingBar(context),
             Expanded(

@@ -169,6 +169,7 @@ class ServiceAuthController extends GetxController {
       createdAt: DateTime.now(),
     );
 
+    await _logoutStaleSessionIfSwitching(next.token);
     await _persistPoAccessToken(
       accessToken: next.token,
       ttlHours: ttlHours,
@@ -260,6 +261,125 @@ class ServiceAuthController extends GetxController {
       throw ServiceAuthException(message);
     }
 
+    return _buildSurveySession(
+      data: data,
+      token: token,
+      fallbackName: userName,
+    );
+  }
+
+  /// Sends a login OTP to [mobileNo] for the Booth/PS Survey OTP login.
+  /// Throws [ServiceAuthException] on failure.
+  Future<void> sendSurveyLoginOtp({required String mobileNo}) async {
+    final Response<dynamic> res;
+    try {
+      res = await _surveyDioClient().post<dynamic>(
+        ApiEndpoints.surveyIsPsUserExistsOtp,
+        data: <String, dynamic>{'mobileNo': mobileNo.trim()},
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: <String, dynamic>{'skipAuth': true},
+        ),
+      );
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
+    }
+
+    final dynamic body = res.data;
+    final Map<String, dynamic> envelope = body is Map<String, dynamic>
+        ? body
+        : <String, dynamic>{};
+    final bool ok = envelope['Status'] == true;
+
+    if (res.statusCode != 200 || !ok) {
+      final String message =
+          (envelope['Message'] as String?) ?? LocaleKeys.authOtpSendFailed;
+      throw ServiceAuthException(message);
+    }
+  }
+
+  /// Logs in a Booth/PS Survey user via mobile number + OTP.
+  Future<ServiceSession> signInSurveyUserWithOtp({
+    required String mobileNo,
+    required String otp,
+  }) async {
+    final Response<dynamic> res;
+    try {
+      res = await _surveyDioClient().post<dynamic>(
+        ApiEndpoints.surveyPsLoginWithOtp,
+        data: <String, dynamic>{
+          'mobileNo': mobileNo.trim(),
+          'otp': otp.trim(),
+        },
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: <String, dynamic>{'skipAuth': true},
+        ),
+      );
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
+    }
+
+    final dynamic body = res.data;
+    final Map<String, dynamic> envelope = body is Map<String, dynamic>
+        ? body
+        : <String, dynamic>{};
+    final Map<String, dynamic> data =
+        (envelope['Data'] as Map?)?.cast<String, dynamic>() ??
+        <String, dynamic>{};
+    final bool ok = envelope['Status'] == true;
+    final String? token = data['AccessToken']?.toString();
+
+    if (res.statusCode != 200 || !ok || token == null || token.isEmpty) {
+      final String message =
+          (envelope['Message'] as String?) ?? LocaleKeys.authOtpInvalid;
+      throw ServiceAuthException(message);
+    }
+
+    return _buildSurveySession(
+      data: data,
+      token: token,
+      fallbackName: mobileNo,
+    );
+  }
+
+  /// Best-effort remote logout of whatever session is currently active
+  /// *before* it gets overwritten by [newToken].
+  ///
+  /// [session] holds exactly one [ServiceSession] at a time. If an officer
+  /// logs in as PO and then, without signing out, logs into Survey (or vice
+  /// versa) — or simply re-logs in as a different user — the previous
+  /// session is silently replaced in local storage. The server is never
+  /// told, so its `SessionId` is never released and stays "active" in the
+  /// DB until it naturally expires. Call this right before saving a new
+  /// session so the old one is properly closed first — mirrors the same
+  /// `po-logout` call [signOut] uses.
+  Future<void> _logoutStaleSessionIfSwitching(String newToken) async {
+    final ServiceSession? existing = session.value;
+    if (existing == null ||
+        existing.token == newToken ||
+        existing.userId.trim().isEmpty) {
+      return;
+    }
+    try {
+      // `session.value` is still `existing` here, so the resolved token
+      // (and its SessionId claim) is the OLD session's, not the new one.
+      await PoPartyRemoteDatasource(AppServices.config).logout(
+        poUserId: existing.userId,
+        sessionId: null,
+      );
+    } catch (e) {
+      AppLogger.w('[ServiceAuth] stale session logout failed: $e');
+    }
+  }
+
+  /// Shared session assembly for both password and OTP survey logins.
+  Future<ServiceSession> _buildSurveySession({
+    required Map<String, dynamic> data,
+    required String token,
+    required String fallbackName,
+  }) async {
+    await _logoutStaleSessionIfSwitching(token);
     int? ttlHours;
     final String? expirationIso = data['Expiration']?.toString();
     if (expirationIso != null && expirationIso.isNotEmpty) {
@@ -284,7 +404,7 @@ class ServiceAuthController extends GetxController {
     final ServiceSession next = ServiceSession(
       token: token,
       userId: (data['UserId'] ?? '').toString(),
-      name: (data['Name'] ?? data['UserName'] ?? userName).toString(),
+      name: (data['Name'] ?? data['UserName'] ?? fallbackName).toString(),
       kind: ServiceLoginKind.survey,
       section: data['UrbanRural']?.toString(),
       ttlHours: ttlHours,
@@ -404,13 +524,16 @@ class ServiceAuthController extends GetxController {
   }
 
   /// Clears local PO/service session. Returns `true` when remote logout succeeded.
+  ///
+  /// One common remote logout call for both login kinds — it authenticates
+  /// with whatever token is in the active [ServiceSession] (survey or PO;
+  /// see [PoElectionAuth.accessToken]), so Booth/PS Survey reuses the exact
+  /// same `po-logout` call as Presiding Officer instead of a separate API.
   Future<bool> signOut() async {
     bool remoteOk = false;
     final ServiceSession? current = session.value;
-    if (current != null &&
-        current.kind == ServiceLoginKind.presiding &&
-        current.userId.trim().isNotEmpty) {
-      // Best-effort remote logout; local clear always continues.
+    if (current != null && current.userId.trim().isNotEmpty) {
+      // Best-effort remote logout; local clear always continues either way.
       remoteOk = await PoPartyRemoteDatasource(AppServices.config).logout(
         poUserId: current.userId,
         sessionId: null,

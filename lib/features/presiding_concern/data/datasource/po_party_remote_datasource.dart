@@ -4,6 +4,7 @@ import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/network/po_election_api_client.dart';
 import 'package:evm_management_system/core/network/po_election_auth.dart';
+import 'package:evm_management_system/core/security/jwt_utils.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 
 /// Remote calls for PO party details and PO logout.
@@ -169,6 +170,15 @@ class PoPartyRemoteDatasource {
   }
 
   /// Best-effort remote logout. Returns `true` when server confirms success.
+  ///
+  /// The API's "already logged in from another device" guard on
+  /// `login-po-pass` / `login-survey-pass` is keyed by the `SessionId` claim
+  /// embedded in the access token (not just the user id) — so logout must
+  /// echo that same `sessionId` back for the server to release the correct
+  /// lock. Without it, `po-logout` still reports `Status: true` but the
+  /// concurrent-session lock stays held, and the very next login 400s.
+  /// Pass [sessionId] explicitly only to override; otherwise it's read from
+  /// the current access token's claims.
   Future<bool> logout({
     required String poUserId,
     String? sessionId,
@@ -176,12 +186,14 @@ class PoPartyRemoteDatasource {
     final String id = poUserId.trim();
     if (id.isEmpty) return false;
     final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
+    final String? resolvedSessionId =
+        sessionId ?? (token.isEmpty ? null : JwtUtils.sessionId(token));
     try {
       final Response<dynamic> res = await _dio.post<dynamic>(
         PoElectionEndpoints.poLogout,
         data: <String, dynamic>{
           'id': id,
-          'sessionId': sessionId,
+          'sessionId': resolvedSessionId,
         },
         queryParameters: token.isEmpty
             ? null

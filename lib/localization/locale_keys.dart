@@ -47,6 +47,8 @@ abstract final class LocaleKeys {
   static const String authPasswordTooShort = 'auth.password_too_short';
   static const String authDistrict = 'auth.district';
   static const String authGatewayWelcome = 'auth.gateway_welcome';
+  static const String authOtpSendFailed = 'auth.otp_send_failed';
+  static const String authOtpInvalid = 'auth.otp_invalid';
 
   // Service auth
   static const String serviceAuthSubtitleDefault =
@@ -66,6 +68,28 @@ abstract final class LocaleKeys {
   static const String serviceAuthHintStrip = 'service_auth.hint_strip';
   static const String serviceAuthSignInButton = 'service_auth.sign_in_button';
   static const String serviceAuthGenericError = 'service_auth.generic_error';
+  static const String serviceAuthLoginModePassword =
+      'service_auth.login_mode_password';
+  static const String serviceAuthLoginModeOtp = 'service_auth.login_mode_otp';
+  static const String serviceAuthMobileNo = 'service_auth.mobile_no';
+  static const String serviceAuthMobileNoHint = 'service_auth.mobile_no_hint';
+  static const String serviceAuthMobileNoRequired =
+      'service_auth.mobile_no_required';
+  static const String serviceAuthMobileNoInvalid =
+      'service_auth.mobile_no_invalid';
+  static const String serviceAuthOtp = 'service_auth.otp';
+  static const String serviceAuthOtpHint = 'service_auth.otp_hint';
+  static const String serviceAuthOtpRequired = 'service_auth.otp_required';
+  static const String serviceAuthOtpSentHint = 'service_auth.otp_sent_hint';
+  static const String serviceAuthSendOtpButton =
+      'service_auth.send_otp_button';
+  static const String serviceAuthResendOtpButton =
+      'service_auth.resend_otp_button';
+  static const String serviceAuthResendOtpIn = 'service_auth.resend_otp_in';
+  static const String serviceAuthVerifyOtpButton =
+      'service_auth.verify_otp_button';
+  static const String serviceAuthOtpSentSuccess =
+      'service_auth.otp_sent_success';
 
   // Onboarding
   static const String onboardingSecurityTag = 'onboarding.security.tag';

@@ -13,6 +13,7 @@ class WebViewArgs {
     this.injectSessionContext = true,
     this.enableJsBridge = true,
     this.bootstrapSession = true,
+    this.showLogoutButton = false,
     this.extraHeaders = const <String, String>{},
   });
 
@@ -24,6 +25,9 @@ class WebViewArgs {
   final bool injectSessionContext;
   final bool enableJsBridge;
   final bool bootstrapSession;
+
+  /// Shows a header logout action — for service-login-gated WebViews.
+  final bool showLogoutButton;
   final Map<String, String> extraHeaders;
 }
 
@@ -45,6 +49,7 @@ class WebViewScreen extends StatelessWidget {
         injectSessionContext: args.injectSessionContext,
         enableJsBridge: args.enableJsBridge,
         bootstrapSession: args.bootstrapSession,
+        showLogoutButton: args.showLogoutButton,
       ),
     );
   }

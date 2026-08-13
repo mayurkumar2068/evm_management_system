@@ -31,6 +31,8 @@
     "invalid_credentials": "अमान्य अधिकारी आईडी या पासवर्ड",
     "po_invalid_credentials": "गलत यूज़र आईडी या पासवर्ड",
     "district_invalid_credentials": "गलत ज़िला या पासवर्ड",
+    "otp_send_failed": "OTP भेजने में समस्या हुई। पुनः प्रयास करें।",
+    "otp_invalid": "गलत OTP। पुनः प्रयास करें।",
     "username_required": "अधिकारी आईडी आवश्यक है",
     "password_required": "पासवर्ड आवश्यक है",
     "password_too_short": "पासवर्ड कम से कम 6 वर्णों का होना चाहिए",
@@ -50,7 +52,22 @@
     "password_required": "पासवर्ड दर्ज करें।",
     "hint_strip": "सही विवरण दर्ज करने पर लॉगिन सक्रिय होगा।",
     "sign_in_button": "लॉगिन करें",
-    "generic_error": "कुछ गलत हुआ। पुनः प्रयास करें।"
+    "generic_error": "कुछ गलत हुआ। पुनः प्रयास करें।",
+    "login_mode_password": "पासवर्ड",
+    "login_mode_otp": "OTP",
+    "mobile_no": "मोबाइल नंबर",
+    "mobile_no_hint": "10 अंकों का मोबाइल नंबर दर्ज करें",
+    "mobile_no_required": "मोबाइल नंबर दर्ज करें।",
+    "mobile_no_invalid": "मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।",
+    "otp": "OTP",
+    "otp_hint": "OTP दर्ज करें",
+    "otp_required": "OTP दर्ज करें।",
+    "otp_sent_hint": "{} पर OTP भेजा गया। लॉगिन के लिए नीचे दर्ज करें।",
+    "send_otp_button": "OTP भेजें",
+    "resend_otp_button": "OTP पुनः भेजें",
+    "resend_otp_in": "{} सेकंड में OTP पुनः भेजें",
+    "verify_otp_button": "सत्यापित करें और लॉगिन करें",
+    "otp_sent_success": "OTP सफलतापूर्वक भेजा गया।"
   },
   "onboarding": {
     "security": {

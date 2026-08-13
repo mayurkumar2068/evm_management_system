@@ -25,6 +25,7 @@ class WebViewConfig {
     this.extraHeaders = const <String, String>{},
     this.headerPolicy = WebViewHeaderPolicy.customOnly,
     this.showHeader = true,
+    this.showLogoutButton = false,
     this.enableJsBridge = true,
     this.enablePullToRefresh = true,
     this.injectSessionContext = true,
@@ -53,6 +54,11 @@ class WebViewConfig {
   final WebViewHeaderPolicy headerPolicy;
 
   final bool showHeader;
+
+  /// Shows a logout action in the header — for service-login-gated WebViews
+  /// (Booth/PS Survey, etc.). Signs out via the same [ServiceAuthController]
+  /// used by Presiding Officer, then leaves the WebView.
+  final bool showLogoutButton;
   final bool enableJsBridge;
   final bool enablePullToRefresh;
   final bool injectSessionContext;
@@ -92,6 +98,7 @@ class WebViewConfig {
       extraHeaders: extraHeaders ?? this.extraHeaders,
       headerPolicy: headerPolicy ?? this.headerPolicy,
       showHeader: showHeader,
+      showLogoutButton: showLogoutButton,
       enableJsBridge: enableJsBridge,
       enablePullToRefresh: enablePullToRefresh,
       injectSessionContext: injectSessionContext,

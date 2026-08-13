@@ -31,6 +31,8 @@
     "invalid_credentials": "Invalid District ID or password",
     "po_invalid_credentials": "Invalid user ID or password",
     "district_invalid_credentials": "Invalid district or password",
+    "otp_send_failed": "Unable to send OTP. Please try again.",
+    "otp_invalid": "Invalid OTP. Please try again.",
     "username_required": "District ID is required",
     "password_required": "Password is required",
     "password_too_short": "Password must be at least 6 characters",
@@ -50,7 +52,22 @@
     "password_required": "Enter the password.",
     "hint_strip": "Sign in unlocks after you enter your details.",
     "sign_in_button": "Sign in",
-    "generic_error": "Something went wrong. Please try again."
+    "generic_error": "Something went wrong. Please try again.",
+    "login_mode_password": "Password",
+    "login_mode_otp": "OTP",
+    "mobile_no": "Mobile Number",
+    "mobile_no_hint": "Enter 10-digit mobile number",
+    "mobile_no_required": "Enter mobile number.",
+    "mobile_no_invalid": "Enter a valid 10-digit mobile number.",
+    "otp": "OTP",
+    "otp_hint": "Enter OTP",
+    "otp_required": "Enter OTP.",
+    "otp_sent_hint": "OTP sent to {}. Enter it below to sign in.",
+    "send_otp_button": "Send OTP",
+    "resend_otp_button": "Resend OTP",
+    "resend_otp_in": "Resend OTP in {}s",
+    "verify_otp_button": "Verify & Sign in",
+    "otp_sent_success": "OTP sent successfully."
   },
   "onboarding": {
     "security": {

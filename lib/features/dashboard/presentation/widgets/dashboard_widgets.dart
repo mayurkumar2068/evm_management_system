@@ -766,6 +766,7 @@ class DashboardServicesGrid extends StatelessWidget {
         title: s.title,
         url: url,
         openAsExternalPortal: s.openAsExternalPortal,
+        showLogoutButton: s.requiresServiceLogin,
       ),
     );
   }

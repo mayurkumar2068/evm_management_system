@@ -9,6 +9,7 @@ class AppWebViewHeader extends StatelessWidget {
     required this.onBack,
     required this.onReload,
     this.icon,
+    this.onLogout,
     super.key,
   });
 
@@ -16,6 +17,9 @@ class AppWebViewHeader extends StatelessWidget {
   final Uint8List? icon;
   final VoidCallback onBack;
   final VoidCallback onReload;
+
+  /// When set, shows a logout action — for service-login-gated WebViews.
+  final VoidCallback? onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +110,15 @@ class AppWebViewHeader extends StatelessWidget {
                     background: iconWell,
                     onPressed: onReload,
                   ),
+                  if (onLogout != null) ...<Widget>[
+                    SizedBox(width: AppSpacing.xs),
+                    _ChromeIconButton(
+                      icon: Icons.logout_rounded,
+                      color: titleColor,
+                      background: iconWell,
+                      onPressed: onLogout!,
+                    ),
+                  ],
                 ],
               ),
             ),

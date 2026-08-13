@@ -12,6 +12,16 @@ abstract final class ApiEndpoints {
   // Survey service auth + masters
   // Base URL is expected to include `/api` (e.g. http://host/api)
   static const String surveyLoginPass = '/Account/login-survey-pass';
+
+  /// OTP login (Booth/PS Survey) — `POST /api/Account/is-ps-user-exists-otp`.
+  static const String surveyIsPsUserExistsOtp =
+      '/Account/is-ps-user-exists-otp';
+
+  /// OTP login (Booth/PS Survey) — `POST /api/Account/ps-login-with-otp`.
+  static const String surveyPsLoginWithOtp = '/Account/ps-login-with-otp';
+
+  // Logout is shared with PO — see `PoElectionEndpoints.poLogout` /
+  // `PoPartyRemoteDatasource.logout`, called for both login kinds.
   static String surveyDistrictById(String id) => '/Masters/districts/$id';
 }
 
