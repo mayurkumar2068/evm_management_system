@@ -10,6 +10,7 @@ import {
   SaveSurveyAnswerResponse,
   SurveyQuestion,
   SurveyQuestionDto,
+  SurveyQuestionOption,
 } from '../models/survey.model';
 
 const QUESTIONS_KEY = 'survey_questions';
@@ -116,6 +117,9 @@ function extractQuestionRows(res: unknown): SurveyQuestionDto[] {
 }
 
 function mapQuestionDto(dto: SurveyQuestionDto): SurveyQuestion {
+  const options = Array.isArray(dto.OPTIONS)
+    ? dto.OPTIONS.map(mapQuestionOption)
+    : [];
   return {
     id: dto.Id,
     surveyId: dto.SurveyId,
@@ -126,6 +130,16 @@ function mapQuestionDto(dto: SurveyQuestionDto): SurveyQuestion {
     photoRequired: Boolean(dto.IS_PHOTO_REQUIRED),
     sortOrder: dto.SORT_ORDER,
     mandatory: Boolean(dto.IS_MANDATORY),
+    qType: String(dto.Q_TYPE ?? '').trim().toUpperCase(),
+    ansType: String(dto.ANS_TYPE ?? '').trim().toUpperCase(),
+    options,
+  };
+}
+
+function mapQuestionOption(option: { OPValue: string; OPText: string }): SurveyQuestionOption {
+  return {
+    value: option.OPValue,
+    text: option.OPText,
   };
 }
 
@@ -287,6 +301,12 @@ const MOCK_QUESTIONS: SurveyQuestion[] = [
     photoRequired: true,
     sortOrder: 1,
     mandatory: true,
+    qType: 'YN',
+    ansType: 'R',
+    options: [
+      { value: 'Y', text: 'हाँ' },
+      { value: 'N', text: 'नहीं' },
+    ],
   },
   {
     id: 'a5e64636-9bc3-4e5d-b9a1-76bd7fd63940',
@@ -298,5 +318,11 @@ const MOCK_QUESTIONS: SurveyQuestion[] = [
     photoRequired: true,
     sortOrder: 2,
     mandatory: true,
+    qType: 'YN',
+    ansType: 'R',
+    options: [
+      { value: 'Y', text: 'हाँ' },
+      { value: 'N', text: 'नहीं' },
+    ],
   },
 ];

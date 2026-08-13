@@ -1,16 +1,24 @@
 import { AreaType } from './location.model';
 
 /** Question row from `GET /api/PSSurvey/survey_questions`. */
+export interface SurveyQuestionOption {
+  readonly value: string;
+  readonly text: string;
+}
+
 export interface SurveyQuestion {
   readonly id: string;
   readonly surveyId: string | null;
   readonly titleHi: string;
-  readonly titleEn: string;
+  readonly titleEn: string | null;
   readonly descHi: string | null;
   readonly descEn: string | null;
   readonly photoRequired: boolean;
   readonly sortOrder: number;
   readonly mandatory: boolean;
+  readonly qType: string;
+  readonly ansType: string;
+  readonly options: SurveyQuestionOption[];
 }
 
 /** Raw API DTO (PascalCase fields). */
@@ -18,19 +26,22 @@ export interface SurveyQuestionDto {
   Id: string;
   SurveyId: string | null;
   Q_Hi: string;
-  Q_En: string;
+  Q_En: string | null;
   Desc_Hi: string | null;
   Desc_En: string | null;
   IS_PHOTO_REQUIRED: boolean;
   SORT_ORDER: number;
   IS_MANDATORY: boolean;
+  Q_TYPE: string;
+  ANS_TYPE: string;
+  OPTIONS: { OPValue: string; OPText: string }[] | null;
 }
 
 /** `POST /api/PSSurvey/save_survey_answer` request body. */
 export interface SaveSurveyAnswerRequest {
   id: string | null;
   questionId: string;
-  answerYN: boolean;
+  answerYN: boolean | null;
   answerText: string;
   remark: string;
   psType: 'R' | 'U';
@@ -119,7 +130,7 @@ export interface SurveySubmitResponse {
 
 /** In-memory draft for one question while navigating back/forward. */
 export interface SurveyQuestionDraft {
-  answerYN: boolean | null;
+  answerValue: string | null;
   remark: string;
   image: string | null;
   savedAnswerId: string | null;

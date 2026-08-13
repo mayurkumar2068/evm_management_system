@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -73,15 +73,12 @@ export class SurveyChecklistComponent implements OnInit {
   readonly saveError = signal<string | null>(null);
 
   /** Explicit UI state — avoids OnPush misses when form is patched async. */
-  readonly uiTitle = signal('');
-  readonly uiAnswer = signal<boolean | null>(null);
+  readonly uiAnswerValue = signal<string | null>(null);
   readonly uiImage = signal<string | null>(null);
 
   readonly questionForm: FormGroup = this.fb.group({
     surveyId: [''],
-    title: [''],
-    photoRequired: [false],
-    checked: [null as boolean | null, Validators.required],
+    answerValue: [null as string | null],
     image: [null as string | null],
     remark: [''],
     savedAnswerId: [null as string | null],
@@ -163,10 +160,6 @@ export class SurveyChecklistComponent implements OnInit {
       });
   }
 
-  questionTitle(question: SurveyQuestion): string {
-    return question.titleHi?.trim() || question.titleEn?.trim() || '';
-  }
-
   readonly progressPercent = computed(() => {
     const total = this.totalQuestions();
     if (total <= 0) {
@@ -232,27 +225,23 @@ export class SurveyChecklistComponent implements OnInit {
     }
 
     const cached = this.drafts.get(index);
-    const savedId =
-      cached?.savedAnswerId ?? this.survey.savedAnswerIds()[question.id] ?? null;
-    const title = this.questionTitle(question);
-    const answer = cached?.answerYN ?? null;
+    const savedId = cached?.savedAnswerId ?? this.survey.savedAnswerIds()[question.id] ?? null;
+    const answerValue = this.normalizeAnswerValue(cached?.answerValue);
     const image = cached?.image ?? null;
     const remark = cached?.remark ?? '';
 
     this.questionForm.reset({
       surveyId: question.id,
-      title,
-      photoRequired: question.photoRequired,
-      checked: answer,
+      answerValue,
       image,
       remark,
       savedAnswerId: savedId,
     });
-    this.syncUiFromForm(title, answer, image);
+    this.syncUiFromForm(answerValue, image);
     this.saveError.set(null);
 
-    // Local draft / in-session answer already present — skip server fetch.
-    if (cached || savedId) {
+    // Local draft already present — skip server fetch.
+    if (cached) {
       return;
     }
 
@@ -267,7 +256,7 @@ export class SurveyChecklistComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (existing) => {
-          void this.applyExistingAnswer(bindToken, index, question.id, existing);
+        void this.applyExistingAnswer(bindToken, index, question, existing);
         },
       });
   }
@@ -275,10 +264,11 @@ export class SurveyChecklistComponent implements OnInit {
   private async applyExistingAnswer(
     bindToken: number,
     index: number,
-    questionId: string,
+    question: SurveyQuestion,
     existing: {
       id: string;
       answerYN: boolean | null;
+      answerText: string | null;
       remark: string;
       photo: string | null;
     } | null,
@@ -316,37 +306,32 @@ export class SurveyChecklistComponent implements OnInit {
       }
 
       const answerId = existing.id.trim() || null;
-      const title = (this.questionForm.get('title')?.value as string) ?? '';
+      const answerValue = this.resolveExistingAnswerValue(question, existing);
       this.questionForm.patchValue({
-        checked: existing.answerYN,
+        answerValue,
         remark: existing.remark ?? '',
         image: photo,
         savedAnswerId: answerId,
       });
-      this.syncUiFromForm(title, existing.answerYN, photo);
+      this.syncUiFromForm(answerValue, photo);
       if (answerId) {
-        this.survey.rememberSavedAnswer(questionId, answerId);
+        this.survey.rememberSavedAnswer(question.id, answerId);
       }
       this.persistDraftForIndex(index);
     });
   }
 
   private syncUiFromForm(
-    title: string,
-    answer: boolean | null,
+    answerValue: string | null,
     image: string | null,
   ): void {
-    this.uiTitle.set(title);
-    this.uiAnswer.set(answer);
+    this.uiAnswerValue.set(answerValue);
     this.uiImage.set(image);
     this.formEpoch.update((n) => n + 1);
   }
 
-  onAnswerChange(answer: boolean | null): void {
-    this.uiAnswer.set(answer);
-    if (answer !== true) {
-      this.uiImage.set(null);
-    }
+  onAnswerChange(answerValue: string | null): void {
+    this.uiAnswerValue.set(this.normalizeAnswerValue(answerValue));
     this.persistDraftForIndex(this.currentIndex());
   }
 
@@ -358,7 +343,7 @@ export class SurveyChecklistComponent implements OnInit {
   private persistDraftForIndex(index: number): void {
     const raw = this.questionForm.getRawValue();
     this.drafts.set(index, {
-      answerYN: raw.checked as boolean | null,
+      answerValue: this.normalizeAnswerValue(raw.answerValue as string | null),
       remark: (raw.remark as string) ?? '',
       image: (raw.image as string | null) ?? null,
       savedAnswerId: (raw.savedAnswerId as string | null) ?? null,
@@ -389,16 +374,16 @@ export class SurveyChecklistComponent implements OnInit {
 
     this.saveError.set(null);
     const raw = this.questionForm.getRawValue();
-    const answerYN = raw.checked as boolean | null;
+    const answerValue = ((raw.answerValue as string | null) ?? '').trim();
     const remark = ((raw.remark as string) ?? '').trim();
     const image = (raw.image as string | null) ?? null;
 
-    if (answerYN === null || answerYN === undefined) {
+    if (question.mandatory && !answerValue) {
       this.saveError.set(this.i18n.t('chk.validation.answerRequired'));
       return;
     }
 
-    if (answerYN === true && !image) {
+    if (question.photoRequired && !image) {
       this.saveError.set(this.i18n.t('chk.validation.photoRequired'));
       return;
     }
@@ -410,11 +395,12 @@ export class SurveyChecklistComponent implements OnInit {
     }
 
     const coords = this.coordinates();
+    const normalizedAnswer = this.normalizeAnswerForSave(question, answerValue);
     const payload: SaveSurveyAnswerRequest = {
       id: (raw.savedAnswerId as string | null) ?? null,
       questionId: question.id,
-      answerYN,
-      answerText: answerYN ? 'Yes' : 'No',
+      answerYN: normalizedAnswer.answerYN,
+      answerText: normalizedAnswer.answerText,
       remark,
       psType: location.areaType === 'rural' ? 'R' : 'U',
       psId: boothId,
@@ -458,6 +444,76 @@ export class SurveyChecklistComponent implements OnInit {
           });
         },
       });
+  }
+
+  private resolveExistingAnswerValue(
+    question: SurveyQuestion,
+    existing: {
+      answerYN: boolean | null;
+      answerText: string | null;
+    },
+  ): string | null {
+    if (question.qType === 'YN' && existing.answerYN !== null) {
+      return existing.answerYN ? 'Y' : 'N';
+    }
+    const rawText = (existing.answerText ?? '').trim();
+    if (!rawText) {
+      return null;
+    }
+
+    if (question.options.length > 0) {
+      const matched = question.options.find((option) =>
+        this.sameText(option.value, rawText) || this.sameText(option.text, rawText),
+      );
+      return matched?.value ?? rawText;
+    }
+
+    return rawText;
+  }
+
+  private normalizeAnswerForSave(
+    question: SurveyQuestion,
+    answerValue: string,
+  ): { answerYN: boolean | null; answerText: string } {
+    const selected = question.options.find((option) => this.sameText(option.value, answerValue));
+    const fallback = question.options.find((option) => this.sameText(option.text, answerValue));
+    const option = selected ?? fallback ?? null;
+
+    if (question.qType === 'YN') {
+      const yesOption =
+        question.options.find((option) => this.sameText(option.value, 'Y')) ??
+        question.options.find((option) => this.sameText(option.text, 'yes')) ??
+        question.options.find((option) => this.sameText(option.text, 'हाँ')) ??
+        question.options.find((option) => this.sameText(option.text, 'हां')) ??
+        question.options[0] ??
+        null;
+      const yesValue = yesOption?.value ?? 'Y';
+      const isYes =
+        this.sameText(answerValue, yesValue) ||
+        this.sameText(answerValue, yesOption?.text ?? '') ||
+        this.sameText(answerValue, 'yes') ||
+        this.sameText(answerValue, 'हाँ') ||
+        this.sameText(answerValue, 'हां') ||
+        this.sameText(answerValue, 'y');
+      return {
+        answerYN: isYes,
+        answerText: option?.text ?? answerValue,
+      };
+    }
+
+    return {
+      answerYN: null,
+      answerText: option?.text ?? answerValue,
+    };
+  }
+
+  private normalizeAnswerValue(value: string | null | undefined): string | null {
+    const raw = (value ?? '').trim();
+    return raw.length > 0 ? raw : null;
+  }
+
+  private sameText(left: string, right: string): boolean {
+    return left.trim().toLowerCase() === right.trim().toLowerCase();
   }
 
   private completeSurvey(): void {

@@ -16,53 +16,55 @@
       <mat-spinner diameter="30" strokeWidth="3" />
       <span>{{ 'chk.loading' | t }}</span>
     </div>
-  } @else if (currentQuestion()) {
-    <section class="question-card" [formGroup]="questionForm">
-      <div class="question-card__head">
-        <span class="question-card__badge">{{ currentIndex() + 1 }}</span>
-        <div class="question-card__meta">
-          <span class="question-card__progress">{{ progressLabel() }}</span>
-          <div class="question-card__track" aria-hidden="true">
-            <span class="question-card__fill" [style.width.%]="progressPercent()"></span>
+  } @else {
+    @if (currentQuestion(); as question) {
+      <section class="question-card" [formGroup]="questionForm">
+        <div class="question-card__head">
+          <span class="question-card__badge">{{ currentIndex() + 1 }}</span>
+          <div class="question-card__meta">
+            <span class="question-card__progress">{{ progressLabel() }}</span>
+            <div class="question-card__track" aria-hidden="true">
+              <span class="question-card__fill" [style.width.%]="progressPercent()"></span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <app-checklist-item
-        [group]="questionForm"
-        [title]="uiTitle()"
-        [answer]="uiAnswer()"
-        [image]="uiImage()"
-        [index]="currentIndex()"
-        [compact]="true"
-        [uploadDisabled]="false"
-        (answerChange)="onAnswerChange($event)"
-        (imageChange)="onImageChange($event)"
-        (enlarge)="openPreview($event)"
-      />
+        <app-checklist-item
+          [group]="questionForm"
+          [question]="question"
+          [answerValue]="uiAnswerValue()"
+          [image]="uiImage()"
+          [index]="currentIndex()"
+          [compact]="true"
+          [uploadDisabled]="false"
+          (answerChange)="onAnswerChange($event)"
+          (imageChange)="onImageChange($event)"
+          (enlarge)="openPreview($event)"
+        />
 
-      <div class="remark-card">
-        <label class="remark-card__label" for="survey-remark">
-          <span>{{ 'chk.remark.label' | t }}</span>
-        </label>
-        <textarea
-          id="survey-remark"
-          class="remark-card__input"
-          formControlName="remark"
-          rows="3"
-          maxlength="500"
-          [placeholder]="'chk.remark.placeholder' | t"
-        ></textarea>
-      </div>
+        <div class="remark-card">
+          <label class="remark-card__label" for="survey-remark">
+            <span>{{ 'chk.remark.label' | t }}</span>
+          </label>
+          <textarea
+            id="survey-remark"
+            class="remark-card__input"
+            formControlName="remark"
+            rows="3"
+            maxlength="500"
+            [placeholder]="'chk.remark.placeholder' | t"
+          ></textarea>
+        </div>
 
-      @if (saveError(); as err) {
-        <p class="alert alert--error">
-          {{ err }}
-        </p>
-      }
-    </section>
-  } @else {
-    <p class="question-card__empty">{{ 'chk.empty' | t }}</p>
+        @if (saveError(); as err) {
+          <p class="alert alert--error">
+            {{ err }}
+          </p>
+        }
+      </section>
+    } @else {
+      <p class="question-card__empty">{{ 'chk.empty' | t }}</p>
+    }
   }
 
   <span class="ec-section-label">{{ 'chk.coords' | t }}</span>
