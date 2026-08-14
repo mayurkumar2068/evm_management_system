@@ -353,7 +353,7 @@ class ServiceAuthController extends GetxController {
   /// told, so its `SessionId` is never released and stays "active" in the
   /// DB until it naturally expires. Call this right before saving a new
   /// session so the old one is properly closed first — mirrors the same
-  /// `po-logout` call [signOut] uses.
+  /// logout call [signOut] uses.
   Future<void> _logoutStaleSessionIfSwitching(String newToken) async {
     final ServiceSession? existing = session.value;
     if (existing == null ||
@@ -367,6 +367,7 @@ class ServiceAuthController extends GetxController {
       await PoPartyRemoteDatasource(AppServices.config).logout(
         poUserId: existing.userId,
         sessionId: null,
+        isSurveyUser: existing.kind == ServiceLoginKind.survey,
       );
     } catch (e) {
       AppLogger.w('[ServiceAuth] stale session logout failed: $e');
@@ -525,10 +526,10 @@ class ServiceAuthController extends GetxController {
 
   /// Clears local PO/service session. Returns `true` when remote logout succeeded.
   ///
-  /// One common remote logout call for both login kinds — it authenticates
-  /// with whatever token is in the active [ServiceSession] (survey or PO;
-  /// see [PoElectionAuth.accessToken]), so Booth/PS Survey reuses the exact
-  /// same `po-logout` call as Presiding Officer instead of a separate API.
+  /// Authenticates with whatever token is in the active [ServiceSession]
+  /// (survey or PO; see [PoElectionAuth.accessToken]) and calls the endpoint
+  /// matching its [ServiceSession.kind] — `ps-logout` for Booth/PS Survey,
+  /// `po-logout` for Presiding Officer.
   Future<bool> signOut() async {
     bool remoteOk = false;
     final ServiceSession? current = session.value;
@@ -537,6 +538,7 @@ class ServiceAuthController extends GetxController {
       remoteOk = await PoPartyRemoteDatasource(AppServices.config).logout(
         poUserId: current.userId,
         sessionId: null,
+        isSurveyUser: current.kind == ServiceLoginKind.survey,
       );
     }
 

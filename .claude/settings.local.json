@@ -9,7 +9,14 @@
       "Bash(awk '/^  go_router:/{f=1} f&&/version:/{print; exit}' pubspec.lock)",
       "Skill(run)",
       "Bash(flutter devices *)",
-      "Bash(flutter test *)"
+      "Bash(flutter test *)",
+      "Bash(npx tsc *)",
+      "Bash(npx ng *)",
+      "Bash(git check-ignore *)",
+      "Bash(flutter --version)",
+      "Bash(grep -rniE \"\\(api[_-]?key|secret|password|token\\)\\\\s*=\\\\s*['\\\\\"][A-Za-z0-9+/_=-]{8,}\" lib --include=\"*.dart\")",
+      "Bash(gh repo *)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -20,8 +20,8 @@ abstract final class ApiEndpoints {
   /// OTP login (Booth/PS Survey) — `POST /api/Account/ps-login-with-otp`.
   static const String surveyPsLoginWithOtp = '/Account/ps-login-with-otp';
 
-  // Logout is shared with PO — see `PoElectionEndpoints.poLogout` /
-  // `PoPartyRemoteDatasource.logout`, called for both login kinds.
+  // Logout — see `PoElectionEndpoints.poLogout` / `PoElectionEndpoints.psLogout`
+  // via `PoPartyRemoteDatasource.logout`, which picks the endpoint by login kind.
   static String surveyDistrictById(String id) => '/Masters/districts/$id';
 }
 
@@ -33,6 +33,9 @@ abstract final class PoElectionEndpoints {
   static const String loginPoPass = '/api/Account/login-po-pass';
   static const String poLogout = '/api/Account/po-logout';
 
+  /// Logout for Booth/PS Survey users (password or OTP login) — the
+  /// counterpart of [poLogout] for `ServiceLoginKind.survey` sessions.
+  static const String psLogout = '/api/Account/ps-logout';
   /// POST `/api/POElection/po-status`
   static const String poStatus = '/api/POElection/po-status';
 

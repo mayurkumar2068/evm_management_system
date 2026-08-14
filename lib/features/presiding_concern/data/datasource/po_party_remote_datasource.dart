@@ -7,7 +7,7 @@ import 'package:evm_management_system/core/network/po_election_auth.dart';
 import 'package:evm_management_system/core/security/jwt_utils.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 
-/// Remote calls for PO party details and PO logout.
+/// Remote calls for PO party details, and PO/PS Survey logout.
 class PoPartyRemoteDatasource {
   PoPartyRemoteDatasource(this._config);
 
@@ -175,22 +175,30 @@ class PoPartyRemoteDatasource {
   /// `login-po-pass` / `login-survey-pass` is keyed by the `SessionId` claim
   /// embedded in the access token (not just the user id) — so logout must
   /// echo that same `sessionId` back for the server to release the correct
-  /// lock. Without it, `po-logout` still reports `Status: true` but the
-  /// concurrent-session lock stays held, and the very next login 400s.
-  /// Pass [sessionId] explicitly only to override; otherwise it's read from
-  /// the current access token's claims.
+  /// lock. Without it, `po-logout`/`ps-logout` still reports `Status: true`
+  /// but the concurrent-session lock stays held, and the very next login
+  /// 400s. Pass [sessionId] explicitly only to override; otherwise it's read
+  /// from the current access token's claims.
+  ///
+  /// [isSurveyUser] selects the endpoint: `ps-logout` for Booth/PS Survey
+  /// sessions (`ServiceLoginKind.survey`), `po-logout` for Presiding Officer
+  /// sessions (`ServiceLoginKind.presiding`, the default).
   Future<bool> logout({
     required String poUserId,
     String? sessionId,
+    bool isSurveyUser = false,
   }) async {
     final String id = poUserId.trim();
     if (id.isEmpty) return false;
     final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
     final String? resolvedSessionId =
         sessionId ?? (token.isEmpty ? null : JwtUtils.sessionId(token));
+    final String endpoint = isSurveyUser
+        ? PoElectionEndpoints.psLogout
+        : PoElectionEndpoints.poLogout;
     try {
       final Response<dynamic> res = await _dio.post<dynamic>(
-        PoElectionEndpoints.poLogout,
+        endpoint,
         data: <String, dynamic>{
           'id': id,
           'sessionId': resolvedSessionId,
@@ -213,7 +221,7 @@ class PoPartyRemoteDatasource {
       final int? code = res.statusCode;
       return code != null && code >= 200 && code < 300;
     } catch (e) {
-      AppLogger.w('[PO Party] logout failed (local clear continues): $e');
+      AppLogger.w('[PO Party] $endpoint failed (local clear continues): $e');
       return false;
     }
   }

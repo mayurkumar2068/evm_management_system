@@ -250,17 +250,18 @@ class DashboardController extends GetxController {
         routeName: AppRoute.voterSearch.path,
         requiresServiceLogin: false,
       ),
-      DashboardService(
-        title: LocaleKeys.serviceEmsTitle.tr(),
-        desc: '',
-        icon: Icons.dns_outlined,
-        color: AppColors.primaryBright,
-        url: emsUrl,
-        category: DashboardCategory.voterServices,
-        requiresServiceLogin: false,
-        passSessionContext: false,
-        openAsExternalPortal: true,
-      ),
+      if (!kHideEms)
+        DashboardService(
+          title: LocaleKeys.serviceEmsTitle.tr(),
+          desc: '',
+          icon: Icons.dns_outlined,
+          color: AppColors.primaryBright,
+          url: emsUrl,
+          category: DashboardCategory.voterServices,
+          requiresServiceLogin: false,
+          passSessionContext: false,
+          openAsExternalPortal: true,
+        ),
       // Tab 2 — About Elections
       if (!kHideOnlineNomination)
         DashboardService(

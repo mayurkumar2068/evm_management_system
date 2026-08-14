@@ -13,7 +13,7 @@ const bool kHideReports = true;
 /// Hides Online Nomination tile (dashboard + related entry points).
 /// Kept ON per explicit product decision (2026-08-14 cleanup) — Nomination is
 /// an active, in-use module. Do not flip this without checking with product.
-const bool kHideOnlineNomination = false;
+const bool kHideOnlineNomination = true;
 
 /// Hides the EMS/IMS dashboard tile.
 const bool kHideEms = true;
