@@ -8,6 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
 /// Audit Trail — chronological activity log grouped by day.
+///
+/// DORMANT (2026-08-14 cleanup): hidden behind `kHideAuditTrail` (see
+/// lib/core/constants/feature_flags.dart). `ActivityLogController` itself
+/// stays fully wired — Dashboard, Notifications, Sync Management and Device
+/// Detail (all active) still log to and read from it; only this standalone
+/// viewing screen is dormant. See CLEANUP.md.
 class AuditTrailScreen extends StatelessWidget {
   const AuditTrailScreen({super.key});
 

@@ -37,26 +37,33 @@ abstract final class AppDestinations {
       labelKey: LocaleKeys.menuDashboard,
       icon: AppIcons.dashboard,
     ),
-    AppDestination(
-      route: AppRoute.masterStockRegister,
-      labelKey: LocaleKeys.menuMasterStockRegister,
-      icon: AppIcons.stockRegister,
-    ),
-    AppDestination(
-      route: AppRoute.controlUnit,
-      labelKey: LocaleKeys.menuControlUnit,
-      icon: AppIcons.controlUnit,
-    ),
-    AppDestination(
-      route: AppRoute.ballotUnit,
-      labelKey: LocaleKeys.menuBallotUnit,
-      icon: AppIcons.ballotUnit,
-    ),
-    AppDestination(
-      route: AppRoute.scanner,
-      labelKey: LocaleKeys.menuScanner,
-      icon: AppIcons.scanner,
-    ),
+    // EVM inventory module (Master Stock Register / Control Unit / Ballot
+    // Unit / Scanner) is a single unit behind kHideEvmScanning — see
+    // lib/app/router/app_shell.dart and CLEANUP.md. Previously listed here
+    // unconditionally even though the bottom nav / login quick-tile / profile
+    // screen already hid them, which was an inconsistent nav surface.
+    if (!kHideEvmScanning) ...<AppDestination>[
+      AppDestination(
+        route: AppRoute.masterStockRegister,
+        labelKey: LocaleKeys.menuMasterStockRegister,
+        icon: AppIcons.stockRegister,
+      ),
+      AppDestination(
+        route: AppRoute.controlUnit,
+        labelKey: LocaleKeys.menuControlUnit,
+        icon: AppIcons.controlUnit,
+      ),
+      AppDestination(
+        route: AppRoute.ballotUnit,
+        labelKey: LocaleKeys.menuBallotUnit,
+        icon: AppIcons.ballotUnit,
+      ),
+      AppDestination(
+        route: AppRoute.scanner,
+        labelKey: LocaleKeys.menuScanner,
+        icon: AppIcons.scanner,
+      ),
+    ],
     if (!kHideReports)
       AppDestination(
         route: AppRoute.reports,
@@ -68,16 +75,17 @@ abstract final class AppDestinations {
       labelKey: LocaleKeys.menuNotifications,
       icon: AppIcons.notifications,
     ),
-    AppDestination(
-      route: AppRoute.auditTrail,
-      labelKey: LocaleKeys.menuAuditTrail,
-      icon: AppIcons.auditTrail,
-      requiredRoles: <UserRole>{
-        UserRole.superAdmin,
-        UserRole.auditor,
-        UserRole.stateOfficer,
-      },
-    ),
+    if (!kHideAuditTrail)
+      AppDestination(
+        route: AppRoute.auditTrail,
+        labelKey: LocaleKeys.menuAuditTrail,
+        icon: AppIcons.auditTrail,
+        requiredRoles: <UserRole>{
+          UserRole.superAdmin,
+          UserRole.auditor,
+          UserRole.stateOfficer,
+        },
+      ),
     AppDestination(
       route: AppRoute.syncManagement,
       labelKey: LocaleKeys.menuSyncManagement,

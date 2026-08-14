@@ -18,6 +18,13 @@ enum _ScanPhase {
 
 /// Highly optimized AI-powered scanner for EVM management.
 /// Features laser rays, auto-detection for QR/Barcodes, and localized scan windows.
+///
+/// DORMANT (2026-08-14 cleanup): part of the EVM inventory module, hidden
+/// behind `kHideEvmScanning` (bottom nav, login quick-tile, drawer table —
+/// see lib/core/constants/feature_flags.dart). Its own `controller/`,
+/// `data/`, `domain/`, `services/` and `widgets/` sibling folders are empty
+/// scaffolding — this file is self-contained and doesn't use them. See
+/// CLEANUP.md.
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
 

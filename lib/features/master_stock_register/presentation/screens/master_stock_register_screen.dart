@@ -8,6 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
 /// Master Stock Register — district inventory summary.
+///
+/// DORMANT (2026-08-14 cleanup): part of the EVM inventory module, hidden
+/// behind `kHideEvmScanning` (bottom nav, login quick-tile, drawer table —
+/// see lib/core/constants/feature_flags.dart). `DeviceRecordsController`
+/// itself stays fully wired since Search, Profile and Device Detail (all
+/// active) still read from it — only this viewing screen is dormant.
+/// See CLEANUP.md.
 class MasterStockRegisterScreen extends StatefulWidget {
   const MasterStockRegisterScreen({super.key});
 
