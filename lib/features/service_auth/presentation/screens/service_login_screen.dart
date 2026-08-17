@@ -39,7 +39,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   final TextEditingController _otpCtrl = TextEditingController();
   final FocusNode _mobileFocus = FocusNode();
   final FocusNode _otpFocus = FocusNode();
-  _LoginMode _loginMode = _LoginMode.password;
+  _LoginMode _loginMode = _LoginMode.otp;
   bool _otpSent = false;
   int _resendRemaining = 0;
   Timer? _resendTimer;
@@ -80,6 +80,8 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   @override
   void initState() {
     super.initState();
+    // Survey/Booth: OTP-only UI. PO keeps username/password.
+    _loginMode = _isPoLogin ? _LoginMode.password : _LoginMode.otp;
     _userFocus.addListener(() => setState(() {}));
     _passFocus.addListener(() => setState(() {}));
     _mobileFocus.addListener(() => setState(() {}));
@@ -111,15 +113,17 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     super.dispose();
   }
 
-  void _switchLoginMode(_LoginMode mode) {
-    if (_busy || mode == _loginMode) return;
+  void _changeMobileNumber() {
+    if (_busy) return;
     _resendTimer?.cancel();
     setState(() {
-      _loginMode = mode;
-      _error = null;
       _otpSent = false;
       _resendRemaining = 0;
       _otpCtrl.clear();
+      _error = null;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _mobileFocus.requestFocus();
     });
   }
 
@@ -325,14 +329,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                         LocaleKeys.serviceAuthSignInButton.tr(),
                     subtitle: LocaleKeys.serviceAuthSubtitleDefault.tr(),
                   ),
-                  if (!_isPoLogin) ...<Widget>[
-                    const SizedBox(height: 16),
-                    _LoginModeToggle(
-                      mode: _loginMode,
-                      enabled: !_busy,
-                      onChanged: _switchLoginMode,
-                    ),
-                  ],
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
@@ -374,7 +370,31 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                                 : _submit(),
                           ),
                           if (_otpSent) ...<Widget>[
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: _busy ? null : _changeMobileNumber,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  LocaleKeys.serviceAuthChangeMobile.tr(),
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             _SoftField(
                               controller: _otpCtrl,
                               focusNode: _otpFocus,
@@ -605,104 +625,6 @@ class _LoginHero extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Pill toggle between password login and OTP login (Booth/PS Survey only).
-class _LoginModeToggle extends StatelessWidget {
-  const _LoginModeToggle({
-    required this.mode,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final _LoginMode mode;
-  final bool enabled;
-  final ValueChanged<_LoginMode> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: context.appChip,
-        borderRadius: AppRadius.brPill,
-        border: Border.all(color: context.appOutline),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: _LoginModeSegment(
-              label: LocaleKeys.serviceAuthLoginModePassword.tr(),
-              selected: mode == _LoginMode.password,
-              enabled: enabled,
-              onTap: () => onChanged(_LoginMode.password),
-            ),
-          ),
-          Expanded(
-            child: _LoginModeSegment(
-              label: LocaleKeys.serviceAuthLoginModeOtp.tr(),
-              selected: mode == _LoginMode.otp,
-              enabled: enabled,
-              onTap: () => onChanged(_LoginMode.otp),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoginModeSegment extends StatelessWidget {
-  const _LoginModeSegment({
-    required this.label,
-    required this.selected,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      decoration: BoxDecoration(
-        color: selected ? context.appSurface : Colors.transparent,
-        borderRadius: AppRadius.brPill,
-        boxShadow: selected
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-            : null,
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: AppRadius.brPill,
-          onTap: enabled ? onTap : null,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Center(
-              child: Text(
-                label,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: selected ? AppColors.primary : context.appMutedStrong,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

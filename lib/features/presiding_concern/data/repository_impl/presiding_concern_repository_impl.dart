@@ -1,6 +1,11 @@
+import 'dart:convert';
+
+import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/location/location_service.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/network/connectivity_service.dart';
+import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_election_action_result.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/data/config/turnout_slot_registry.dart';
@@ -14,6 +19,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/repository/presiding_concern_repository.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/turnout_live_sync.dart';
 
 /// API-first repository for PO election-day data (local cache only when offline).
 final class PresidingConcernRepositoryImpl
@@ -41,19 +47,31 @@ final class PresidingConcernRepositoryImpl
     final PresidingElectionContext? context = await _contextStore.read();
     final Map<String, dynamic>? raw = await _local.readSession();
     if (raw == null) {
-      final PresidingSession seeded = _seedSession(context);
+      PresidingSession seeded = _seedSession(context);
+      final String? liveLoginName = await _liveLoginUserName();
+      if ((seeded.loginUserName == null || seeded.loginUserName!.isEmpty) &&
+          liveLoginName != null &&
+          liveLoginName.isNotEmpty) {
+        seeded = seeded.copyWith(loginUserName: liveLoginName);
+      }
       await _persist(seeded);
       return seeded;
     }
     final PresidingSession parsed = PresidingSessionMapper.fromJson(raw);
-    final PresidingSession session = _ensureMilestoneCatalog(
+    PresidingSession session = _ensureMilestoneCatalog(
       _mergeContext(parsed, context),
     );
-    if (context != null &&
-        (session.electionId != parsed.electionId ||
-            session.psId != parsed.psId ||
-            session.areaType != parsed.areaType ||
-            session.pollingStationCode != parsed.pollingStationCode)) {
+    final String? liveLoginName = await _liveLoginUserName();
+    if ((session.loginUserName == null || session.loginUserName!.isEmpty) &&
+        liveLoginName != null &&
+        liveLoginName.isNotEmpty) {
+      session = session.copyWith(loginUserName: liveLoginName);
+    }
+    if (session.electionId != parsed.electionId ||
+        session.psId != parsed.psId ||
+        session.areaType != parsed.areaType ||
+        session.pollingStationCode != parsed.pollingStationCode ||
+        session.loginUserName != parsed.loginUserName) {
       await _persist(session);
     }
     return session;
@@ -170,6 +188,15 @@ final class PresidingConcernRepositoryImpl
     final int resolvedOther = thirdGender ?? existing?.thirdGender ?? 0;
     final int resolvedQueue = queueCount ?? existing?.queueCount ?? 0;
 
+    final TurnoutCountValidationResult lastSlotGate =
+        TurnoutCountValidator.validateLastSlotBeforeNextCards(
+      session: session,
+      slotId: slotId,
+    );
+    if (!lastSlotGate.isOk) {
+      throw TurnoutCountValidationException(lastSlotGate);
+    }
+
     if (isQueueOnly) {
       if (resolvedQueue < 0) {
         throw const TurnoutCountValidationException(
@@ -238,12 +265,97 @@ final class PresidingConcernRepositoryImpl
       isLocked: lockSlot,
     );
 
-    final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
+    Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
       session.turnoutRecords,
     )..[slotId] = persisted;
-    final PresidingSession next = session.copyWith(turnoutRecords: turnout);
+    PresidingSession next = session.copyWith(turnoutRecords: turnout);
+
+    if (TurnoutLiveSync.mirrorsToLivePoll(slotId) && !isQueueOnly) {
+      next = await _mirrorCountsToLivePoll(
+        session: next,
+        male: resolvedMale,
+        female: resolvedFemale,
+        other: resolvedOther,
+      );
+      turnout = Map<String, TurnoutRecord>.from(next.turnoutRecords);
+    }
+
     await _persist(next);
     return next;
+  }
+
+  /// Copies latest hourly / final counts into लाइव जानकारी and syncs API.
+  Future<PresidingSession> _mirrorCountsToLivePoll({
+    required PresidingSession session,
+    required int male,
+    required int female,
+    required int other,
+  }) async {
+    final TurnoutRecord? existingLive =
+        session.turnoutRecords[TurnoutSlotIds.livePollInfo];
+    final TurnoutRecord liveDraft = TurnoutRecord(
+      slotId: TurnoutSlotIds.livePollInfo,
+      male: male,
+      female: female,
+      thirdGender: other,
+      savedAt: DateTime.now(),
+      pendingSync: true,
+      isLocked: existingLive?.isLocked ?? false,
+    );
+
+    final PoElectionActionResult apiResult = await _syncLivePollTurnout(
+      session: session,
+      record: liveDraft,
+    );
+    final DateTime savedAt = apiResult.actionDateTime ?? liveDraft.savedAt!;
+    final TurnoutRecord livePersisted = liveDraft.copyWith(
+      savedAt: savedAt,
+      pendingSync: !apiResult.accepted,
+    );
+
+    AppLogger.i(
+      '[LivePoll] auto-sync from hourly save | M=$male F=$female O=$other | '
+      'accepted=${apiResult.accepted}',
+    );
+
+    final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
+      session.turnoutRecords,
+    )..[TurnoutSlotIds.livePollInfo] = livePersisted;
+    return session.copyWith(turnoutRecords: turnout);
+  }
+
+  Future<PoElectionActionResult> _syncLivePollTurnout({
+    required PresidingSession session,
+    required TurnoutRecord record,
+  }) async {
+    final PresidingConcernRemoteDatasource? remote = await _activeRemote();
+    if (remote == null) {
+      return const PoElectionActionResult(success: false);
+    }
+
+    final PresidingElectionContext? context = await _resolveContext(session);
+    if (context == null) {
+      return const PoElectionActionResult(success: false);
+    }
+
+    final GeoCoordinates? coords = await _locationService
+        .getCurrentCoordinates();
+    final Map<String, dynamic> body = PoElectionApiMapper.livePollBody(
+      context: context,
+      record: record,
+      lat: coords?.latitude,
+      long: coords?.longitude,
+    );
+
+    try {
+      return await remote.postAction(
+        endpoint: PoElectionEndpoints.savePollLive,
+        body: body,
+      );
+    } catch (e, s) {
+      AppLogger.w('Live poll auto-sync failed', error: e, stackTrace: s);
+      return const PoElectionActionResult(success: false);
+    }
   }
 
   @override
@@ -357,6 +469,7 @@ final class PresidingConcernRepositoryImpl
       electionId: context.electionId,
       psId: context.psId,
       areaType: context.areaType,
+      loginUserName: context.loginUserName ?? current.loginUserName,
       pollingStationCode:
           context.pollingStationCode ?? current.pollingStationCode,
       pollingStationName: context.pollingStationName?.isNotEmpty ?? false
@@ -380,11 +493,27 @@ final class PresidingConcernRepositoryImpl
     }
   }
 
+  Future<String?> _liveLoginUserName() async {
+    try {
+      final String? raw = await AppServices.secureStorage.read(
+        SecureStorageKeys.serviceSession,
+      );
+      if (raw == null || raw.isEmpty) return null;
+      final dynamic decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final String name = (decoded['name'] ?? '').toString().trim();
+      return name.isEmpty ? null : name;
+    } catch (_) {
+      return null;
+    }
+  }
+
   PresidingSession _seedSession(PresidingElectionContext? context) {
     return PresidingSession(
       electionId: context?.electionId,
       psId: context?.psId,
       areaType: context?.areaType,
+      loginUserName: context?.loginUserName,
       pollingStationCode: context?.pollingStationCode ?? '',
       pollingStationName: context?.pollingStationName?.isNotEmpty ?? false
           ? context!.pollingStationName!
@@ -414,6 +543,9 @@ final class PresidingConcernRepositoryImpl
       pollingStationName: context.pollingStationName?.isNotEmpty ?? false
           ? context.pollingStationName!
           : session.pollingStationName,
+      loginUserName: context.loginUserName?.isNotEmpty ?? false
+          ? context.loginUserName
+          : session.loginUserName,
     );
   }
 

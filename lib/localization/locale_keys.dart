@@ -81,8 +81,7 @@ abstract final class LocaleKeys {
   static const String serviceAuthOtpHint = 'service_auth.otp_hint';
   static const String serviceAuthOtpRequired = 'service_auth.otp_required';
   static const String serviceAuthOtpSentHint = 'service_auth.otp_sent_hint';
-  static const String serviceAuthSendOtpButton =
-      'service_auth.send_otp_button';
+  static const String serviceAuthSendOtpButton = 'service_auth.send_otp_button';
   static const String serviceAuthResendOtpButton =
       'service_auth.resend_otp_button';
   static const String serviceAuthResendOtpIn = 'service_auth.resend_otp_in';
@@ -90,6 +89,7 @@ abstract final class LocaleKeys {
       'service_auth.verify_otp_button';
   static const String serviceAuthOtpSentSuccess =
       'service_auth.otp_sent_success';
+  static const String serviceAuthChangeMobile = 'service_auth.change_mobile';
 
   // Onboarding
   static const String onboardingSecurityTag = 'onboarding.security.tag';
@@ -145,8 +145,10 @@ abstract final class LocaleKeys {
   static const String dashboardVoterServices = 'dashboard.voter_services';
   static const String dashboardAboutElections = 'dashboard.about_elections';
   static const String dashboardViewAll = 'dashboard.view_all';
-  static const String dashboardStatSurveysTotal = 'dashboard.stat_surveys_total';
-  static const String dashboardStatSurveysToday = 'dashboard.stat_surveys_today';
+  static const String dashboardStatSurveysTotal =
+      'dashboard.stat_surveys_total';
+  static const String dashboardStatSurveysToday =
+      'dashboard.stat_surveys_today';
   static const String dashboardStatSurveysSynced =
       'dashboard.stat_surveys_synced';
   static const String dashboardStatSurveysPending =
@@ -651,7 +653,8 @@ abstract final class LocaleKeys {
   static const String nominationActionStart = 'nomination.actions.start';
   static const String nominationEntryTitle = 'nomination.entry.title';
   static const String nominationEntrySubtitle = 'nomination.entry.subtitle';
-  static const String nominationEntryLoginTitle = 'nomination.entry.login_title';
+  static const String nominationEntryLoginTitle =
+      'nomination.entry.login_title';
   static const String nominationEntryLoginSubtitle =
       'nomination.entry.login_subtitle';
   static const String nominationEntryRegisterTitle =
@@ -701,6 +704,7 @@ abstract final class LocaleKeys {
       'presiding.poll_start_before_7am';
   static const String presidingMockPollBefore7Am =
       'presiding.mock_poll_before_7am';
+  static const String presidingMockPollNextDay = 'presiding.mock_poll_next_day';
   static const String presidingAlreadyRegistered =
       'presiding.already_registered';
   static const String presidingSyncRefresh = 'presiding.sync_refresh';
@@ -716,8 +720,7 @@ abstract final class LocaleKeys {
       'presiding.polling_station_number';
   static const String presidingServerUpdateTime =
       'presiding.server_update_time';
-  static const String presidingServerConnection =
-      'presiding.server_connection';
+  static const String presidingServerConnection = 'presiding.server_connection';
   static const String presidingTotalVotes = 'presiding.total_votes';
   static const String presidingTotalPercent = 'presiding.total_percent';
   static const String presidingTurnoutIntroTitle =
@@ -745,8 +748,35 @@ abstract final class LocaleKeys {
       'presiding.count_not_less_than_previous';
   static const String presidingCountCompletionBelowLastPlusQueue =
       'presiding.count_completion_below_last_plus_queue';
+  static const String presidingCountCompletionAboveLastPlusQueue =
+      'presiding.count_completion_above_last_plus_queue';
   static const String presidingCountLastPlusQueueExceedsCompletion =
       'presiding.count_last_plus_queue_exceeds_completion';
+  static const String presidingFill5PmBeforeNext =
+      'presiding.fill_5pm_before_next';
+  static const String presidingFill3PmBeforeNext =
+      'presiding.fill_3pm_before_next';
+  static const String presidingReportTitle = 'presiding.report_title';
+  static const String presidingReportSubtitle = 'presiding.report_subtitle';
+  static const String presidingReportMilestones = 'presiding.report_milestones';
+  static const String presidingReportTurnout = 'presiding.report_turnout';
+  static const String presidingReportShare = 'presiding.report_share';
+  static const String presidingReportPrint = 'presiding.report_print';
+  static const String presidingReportFooter = 'presiding.report_footer';
+  static const String presidingReportFailed = 'presiding.report_failed';
+  static const String presidingReportStation = 'presiding.report_station';
+  static const String presidingReportArea = 'presiding.report_area';
+  static const String presidingReportElectors = 'presiding.report_electors';
+  static const String presidingReportGenerated = 'presiding.report_generated';
+  static const String presidingReportUrban = 'presiding.report_urban';
+  static const String presidingReportRural = 'presiding.report_rural';
+  static const String presidingReportStep = 'presiding.report_step';
+  static const String presidingReportStatus = 'presiding.report_status';
+  static const String presidingReportTime = 'presiding.report_time';
+  static const String presidingReportDone = 'presiding.report_done';
+  static const String presidingReportPending = 'presiding.report_pending';
+  static const String presidingReportSlot = 'presiding.report_slot';
+  static const String presidingReportColTotal = 'presiding.report_col_total';
   static const String presidingBoothPollingStation =
       'presiding.booth_polling_station';
   static const String presidingBoothLocationTitle =
@@ -785,6 +815,9 @@ abstract final class LocaleKeys {
       'presiding.party_mandatory_title';
   static const String presidingPartyMandatoryBanner =
       'presiding.party_mandatory_banner';
+  static const String presidingPartyRequiredMessage =
+      'presiding.party_required_message';
+  static const String presidingPartyFillNow = 'presiding.party_fill_now';
   static const String presidingPartyFillButton = 'presiding.party_fill_button';
   static const String presidingPartyOtpTitle = 'presiding.party_otp_title';
   static const String presidingPartyOtpSubtitle =
@@ -827,7 +860,8 @@ abstract final class LocaleKeys {
       'presiding.po_details_otp_required';
   static const String presidingPoDetailsOtpSendFailed =
       'presiding.po_details_otp_send_failed';
-  static const String presidingPoDetailsOtpSent = 'presiding.po_details_otp_sent';
+  static const String presidingPoDetailsOtpSent =
+      'presiding.po_details_otp_sent';
   static const String presidingPoDetailsOtpResent =
       'presiding.po_details_otp_resent';
   static const String presidingPoDetailsMobileChanged =

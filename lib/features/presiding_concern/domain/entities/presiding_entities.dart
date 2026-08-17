@@ -244,6 +244,7 @@ final class PresidingSession {
     required this.pollingStationName,
     required this.milestones,
     required this.turnoutRecords,
+    this.loginUserName,
   });
 
   final int? electionId;
@@ -253,6 +254,20 @@ final class PresidingSession {
   final String pollingStationName;
   final List<PresidingMilestone> milestones;
   final Map<String, TurnoutRecord> turnoutRecords;
+
+  /// PO login username (`UserName`). Used for test-account bypasses.
+  final String? loginUserName;
+
+  /// Test logins that skip mock-poll next-day / 7 AM gates.
+  static const Set<String> mockPollBypassUserNames = <String>{
+    'rpo5',
+    'rpo6',
+  };
+
+  bool get bypassesMockPollRules {
+    final String name = (loginUserName ?? '').trim().toLowerCase();
+    return mockPollBypassUserNames.contains(name);
+  }
 
   bool get hasElectionContext =>
       (electionId ?? 0) > 0 &&
@@ -269,10 +284,32 @@ final class PresidingSession {
             m.isCompleted,
       );
 
+  /// Timestamp when "मतदान केंद्र पहुंचे" was marked, if known.
+  DateTime? get reachedPollingStationAt {
+    for (final PresidingMilestone milestone in milestones) {
+      if (milestone.id == PresidingMilestoneIds.reachedPollingStation) {
+        return milestone.isCompleted ? milestone.completedAt : null;
+      }
+    }
+    return null;
+  }
+
   /// IST wall-clock check: मॉक पोल / मतदान cannot run before 7:00 AM.
   static bool isPollStartTimeAllowed([DateTime? now]) {
     final DateTime ist = now ?? AppTimeZone.now();
     return ist.hour >= pollStartEarliestHour;
+  }
+
+  /// Mock poll is allowed only from the calendar day AFTER reaching the station.
+  ///
+  /// Same IST day as "मतदान केंद्र पहुंचे" stays blocked.
+  bool isMockPollDayAllowed([DateTime? now]) {
+    if (!hasReachedPollingStation) return false;
+    final DateTime? reachedAt = reachedPollingStationAt;
+    if (reachedAt == null) return true;
+    final DateTime reachedDay = AppTimeZone.calendarDate(reachedAt);
+    final DateTime today = AppTimeZone.calendarDate(now);
+    return today.isAfter(reachedDay);
   }
 
   /// Milestones that must be completed in order (one-by-one).
@@ -322,9 +359,18 @@ final class PresidingSession {
         return 'presiding.reach_station_first';
       }
     }
+    if (milestoneId == PresidingMilestoneIds.mockPoll &&
+        !bypassesMockPollRules &&
+        !isMockPollDayAllowed()) {
+      return 'presiding.mock_poll_next_day';
+    }
     if ((milestoneId == PresidingMilestoneIds.mockPoll ||
             milestoneId == PresidingMilestoneIds.pollStart) &&
         !isPollStartTimeAllowed()) {
+      if (milestoneId == PresidingMilestoneIds.mockPoll &&
+          bypassesMockPollRules) {
+        return null;
+      }
       return milestoneId == PresidingMilestoneIds.mockPoll
           ? 'presiding.mock_poll_before_7am'
           : 'presiding.poll_start_before_7am';
@@ -333,7 +379,7 @@ final class PresidingSession {
   }
 
   /// Gates later milestones until earlier ones are completed, in order.
-  /// मॉक पोल and मतदान प्रारम्भ are also blocked before 7:00 AM IST.
+  /// मॉक पोल is blocked on the arrival day, then before 7:00 AM IST next day.
   bool isMilestoneActionEnabled(String milestoneId) =>
       milestoneActionBlockKey(milestoneId) == null;
 
@@ -354,6 +400,7 @@ final class PresidingSession {
     String? pollingStationName,
     List<PresidingMilestone>? milestones,
     Map<String, TurnoutRecord>? turnoutRecords,
+    String? loginUserName,
   }) {
     return PresidingSession(
       electionId: electionId ?? this.electionId,
@@ -363,6 +410,7 @@ final class PresidingSession {
       pollingStationName: pollingStationName ?? this.pollingStationName,
       milestones: milestones ?? this.milestones,
       turnoutRecords: turnoutRecords ?? this.turnoutRecords,
+      loginUserName: loginUserName ?? this.loginUserName,
     );
   }
 }

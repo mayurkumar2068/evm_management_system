@@ -45,6 +45,17 @@ abstract final class AppTimeZone {
   /// Current instant in India Standard Time.
   static tz.TZDateTime now() => tz.TZDateTime.now(location);
 
+  /// Converts any instant to India Standard Time.
+  static tz.TZDateTime fromDateTime(DateTime dateTime) =>
+      tz.TZDateTime.from(dateTime, location);
+
+  /// Calendar date in IST (`year-month-day`, time stripped).
+  static DateTime calendarDate([DateTime? dateTime]) {
+    final tz.TZDateTime ist =
+        dateTime == null ? now() : fromDateTime(dateTime);
+    return DateTime(ist.year, ist.month, ist.day);
+  }
+
   /// IANA id for API headers / WebView context.
   static String get headerValue => ianaId;
 }

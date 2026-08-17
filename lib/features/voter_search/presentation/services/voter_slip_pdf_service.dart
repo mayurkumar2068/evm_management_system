@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:evm_management_system/core/cache/app_startup_cache.dart';
 import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
 import 'package:evm_management_system/features/voter_search/presentation/widgets/voter_slip_view.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -40,8 +41,7 @@ abstract final class VoterSlipPdfService {
   static Future<void> shareSlip({
     required VoterElector elector,
     String? photoBase64,
-  }) =>
-      previewSlip(elector: elector, photoBase64: photoBase64);
+  }) => previewSlip(elector: elector, photoBase64: photoBase64);
 }
 
 /// Full-screen slip preview — same header/back pattern as voter search.
@@ -105,6 +105,7 @@ class _VoterSlipPreviewPageState extends State<VoterSlipPreviewPage> {
         ),
       );
     } finally {
+      await AppStartupCache.clearGeneratedExports();
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -112,8 +113,10 @@ class _VoterSlipPreviewPageState extends State<VoterSlipPreviewPage> {
   @override
   Widget build(BuildContext context) {
     final double bottomInset = MediaQuery.paddingOf(context).bottom;
-    final double maxSlipWidth =
-        (MediaQuery.sizeOf(context).width - 32).clamp(260.0, 380.0);
+    final double maxSlipWidth = (MediaQuery.sizeOf(context).width - 32).clamp(
+      260.0,
+      380.0,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
@@ -147,9 +150,7 @@ class _VoterSlipPreviewPageState extends State<VoterSlipPreviewPage> {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
               decoration: const BoxDecoration(
                 color: AppColors.surface,
-                border: Border(
-                  top: BorderSide(color: AppColors.slate200),
-                ),
+                border: Border(top: BorderSide(color: AppColors.slate200)),
               ),
               child: Row(
                 children: <Widget>[

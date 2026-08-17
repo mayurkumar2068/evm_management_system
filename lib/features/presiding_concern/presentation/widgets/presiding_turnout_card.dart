@@ -34,6 +34,7 @@ class PresidingTurnoutCard extends StatefulWidget {
     this.queueOnly = false,
     this.embedded = false,
     this.forceReadOnly = false,
+    this.interactionEnabled = true,
     super.key,
   });
 
@@ -47,6 +48,9 @@ class PresidingTurnoutCard extends StatefulWidget {
   final bool queueOnly;
   final bool embedded;
   final bool forceReadOnly;
+  /// When false, collapsed card tap still fires [onExpansionChanged] so parent
+  /// can show a prerequisite snackbar, but the card stays locked.
+  final bool interactionEnabled;
 
   final Future<void> Function({
     int? male,
@@ -212,6 +216,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
       return _CollapsedSummary(
         title: widget.title,
         record: widget.initialRecord,
+        locked: !widget.interactionEnabled,
         onTap: () => widget.onExpansionChanged?.call(true),
       );
     }
@@ -562,11 +567,13 @@ class _CollapsedSummary extends StatelessWidget {
     required this.title,
     required this.record,
     required this.onTap,
+    this.locked = false,
   });
 
   final String title;
   final TurnoutRecord? record;
   final VoidCallback onTap;
+  final bool locked;
 
   @override
   Widget build(BuildContext context) {
@@ -579,42 +586,55 @@ class _CollapsedSummary extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.all(16),
-      child: Row(
-        children: <Widget>[
-          Icon(
-            saved ? Icons.check_circle_rounded : Icons.pending_actions_rounded,
-            color: saved ? AppColors.success : AppColors.slate400,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (saved)
-                  Text(
-                    record!.queueCount != null
-                        ? LocaleKeys.presidingQueueSummary.tr(
-                            args: <String>['${record!.queueCount}'],
-                          )
-                        : LocaleKeys.presidingTotalVotesSummary.tr(
-                            args: <String>['$total'],
-                          ),
-                    style: AppTextStyles.caption,
-                  ),
-              ],
+      child: Opacity(
+        opacity: locked ? 0.55 : 1,
+        child: Row(
+          children: <Widget>[
+            Icon(
+              locked
+                  ? Icons.lock_rounded
+                  : saved
+                      ? Icons.check_circle_rounded
+                      : Icons.pending_actions_rounded,
+              color: locked
+                  ? AppColors.slate400
+                  : saved
+                      ? AppColors.success
+                      : AppColors.slate400,
             ),
-          ),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: AppColors.slate400,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (saved)
+                    Text(
+                      record!.queueCount != null
+                          ? LocaleKeys.presidingQueueSummary.tr(
+                              args: <String>['${record!.queueCount}'],
+                            )
+                          : LocaleKeys.presidingTotalVotesSummary.tr(
+                              args: <String>['$total'],
+                            ),
+                      style: AppTextStyles.caption,
+                    ),
+                ],
+              ),
+            ),
+            Icon(
+              locked
+                  ? Icons.lock_outline_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              color: AppColors.slate400,
+            ),
+          ],
+        ),
       ),
     );
   }

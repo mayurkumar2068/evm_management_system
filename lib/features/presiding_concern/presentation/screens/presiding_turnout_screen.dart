@@ -1,7 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
+import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/services/presiding_turnout_report_pdf_service.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
@@ -70,6 +74,18 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
 
   void _setOtherSlotExpanded(String slotId, bool expanded) {
     if (_isTurnoutSubmitted) return;
+    if (expanded &&
+        !TurnoutCountValidator.isLastTimeSlotSaved(widget.session)) {
+      final String? lastId =
+          TurnoutCountValidator.lastTimeSlotId(widget.session.areaType);
+      final String messageKey = lastId == TurnoutSlotIds.slot5Pm
+          ? LocaleKeys.presidingFill5PmBeforeNext
+          : LocaleKeys.presidingFill3PmBeforeNext;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(messageKey.tr())),
+      );
+      return;
+    }
     setState(() => _otherSlotExpanded[slotId] = expanded);
   }
 
@@ -94,6 +110,18 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
       if (!mounted) return;
       // Auto-complete मतदान समाप्त (API) so machine seal can unlock next.
       await dashboard.completeMilestone(PresidingMilestoneIds.pollEnd);
+      if (!mounted) return;
+
+      final PresidingSession latestSession =
+          await PresidingConcernModule.repository.loadSession();
+      final PresidingElectionContextStore store =
+          PresidingElectionContextStore(AppServices.secureStorage);
+      final electionContext = await store.read();
+      if (!mounted) return;
+      await PresidingTurnoutReportPdfService.openReport(
+        session: latestSession,
+        electionContext: electionContext,
+      );
       if (!mounted) return;
       Get.back<void>();
     } finally {
@@ -155,6 +183,8 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     );
     final TurnoutSlotDefinition? activeSlot = _selectedSlot(timeSlots);
     final bool turnoutSubmitted = _isTurnoutSubmitted;
+    final bool lastHourlySaved =
+        TurnoutCountValidator.isLastTimeSlotSaved(widget.session);
     final bool allSlotsSaved = allSlots.every(
       (TurnoutSlotDefinition slot) =>
           widget.session.turnoutRecords[slot.slotId]?.savedAt != null,
@@ -302,12 +332,14 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                   title: slot.labelKey.tr(),
                   slotId: slot.slotId,
                   queueOnly: slot.queueOnly,
-                  isExpanded: _isOtherSlotExpanded(slot.slotId),
+                  isExpanded:
+                      lastHourlySaved && _isOtherSlotExpanded(slot.slotId),
+                  interactionEnabled: lastHourlySaved && !turnoutSubmitted,
                   onExpansionChanged: (bool expanded) {
                     _setOtherSlotExpanded(slot.slotId, expanded);
                   },
                   initialRecord: widget.session.turnoutRecords[slot.slotId],
-                  forceReadOnly: turnoutSubmitted,
+                  forceReadOnly: turnoutSubmitted || !lastHourlySaved,
                   mode: PresidingTurnoutCardMode.entry,
                   onSave:
                       ({

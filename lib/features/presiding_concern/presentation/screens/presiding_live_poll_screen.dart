@@ -71,11 +71,29 @@ class _LivePollBodyState extends State<_LivePollBody> {
   void dispose() {
     _debounceTimer?.cancel();
     _connectivitySub?.cancel();
-    // Flush any pending local counts before leaving the screen.
+    // Flush pending counts without setState — the element is already defunct
+    // here, so `mounted` is still true but markNeedsBuild asserts.
     if (_localDirty && !_isReadOnly) {
-      unawaited(_flushToServer(force: true));
+      unawaited(_flushToServerOnDispose());
     }
     super.dispose();
+  }
+
+  Future<void> _flushToServerOnDispose() async {
+    try {
+      await Get.find<PresidingTurnoutController>().saveTurnout(
+        slotId: TurnoutSlotIds.livePollInfo,
+        male: _liveMale,
+        female: _liveFemale,
+        thirdGender: _liveOther,
+      );
+    } catch (e, st) {
+      AppLogger.e(
+        '[LivePoll] flush on dispose failed',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 
   Future<void> _initConnectivity() async {

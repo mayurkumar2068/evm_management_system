@@ -7,6 +7,7 @@ final class PresidingElectionContext {
     required this.psId,
     required this.areaType,
     this.userId,
+    this.loginUserName,
     this.pollingStationCode,
     this.pollingStationName,
     this.boothLat,
@@ -20,6 +21,9 @@ final class PresidingElectionContext {
   final int electionId;
   final String psId;
   final String? userId;
+
+  /// PO login username (`UserName`), used for test-account rule bypasses.
+  final String? loginUserName;
 
   /// Urban (`U`) or rural (`R`) as returned by the auth API.
   final String areaType;
@@ -82,6 +86,7 @@ final class PresidingElectionContext {
     String? psId,
     String? areaType,
     String? userId,
+    String? loginUserName,
     String? pollingStationCode,
     String? pollingStationName,
     double? boothLat,
@@ -96,6 +101,7 @@ final class PresidingElectionContext {
       psId: psId ?? this.psId,
       areaType: areaType ?? this.areaType,
       userId: userId ?? this.userId,
+      loginUserName: loginUserName ?? this.loginUserName,
       pollingStationCode: pollingStationCode ?? this.pollingStationCode,
       pollingStationName: pollingStationName ?? this.pollingStationName,
       boothLat: boothLat ?? this.boothLat,

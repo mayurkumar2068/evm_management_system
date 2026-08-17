@@ -79,7 +79,10 @@ class PoPartyRemoteDatasource {
       return details;
     } on DioException catch (e) {
       final int? code = e.response?.statusCode;
-      if (code == 404 || code == 401 || code == 403) return null;
+      // New user / empty party: 400 "Details not found" is expected.
+      if (code == 400 || code == 404 || code == 401 || code == 403) {
+        return null;
+      }
       AppLogger.w('[PO Party] fetch failed: ${e.message}');
       rethrow;
     }

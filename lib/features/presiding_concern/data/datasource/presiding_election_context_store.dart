@@ -55,6 +55,8 @@ final class PresidingElectionContextStore {
       'area_type': context.areaType,
       if (context.userId != null && context.userId!.isNotEmpty)
         'user_id': context.userId,
+      if (context.loginUserName != null && context.loginUserName!.isNotEmpty)
+        'login_user_name': context.loginUserName,
       if (context.pollingStationCode != null)
         'polling_station_code': context.pollingStationCode,
       if (context.pollingStationName != null)
@@ -79,6 +81,8 @@ final class PresidingElectionContextStore {
         (json['area_type'] ?? json['areaType'])?.toString(),
       ),
       userId: (json['user_id'] ?? json['userId'])?.toString(),
+      loginUserName:
+          (json['login_user_name'] ?? json['loginUserName'])?.toString(),
       pollingStationCode:
           (json['polling_station_code'] ??
                   json['pollingStationCode'] ??

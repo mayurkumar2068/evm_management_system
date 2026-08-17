@@ -3,7 +3,7 @@ class PoPartyDetails {
   const PoPartyDetails({
     this.id,
     required this.poUserId,
-    this.partyNo = '1',
+    this.partyNo = '',
     this.p1Name = '',
     this.p1MobileNo = '',
     this.p2Name = '',
@@ -19,7 +19,7 @@ class PoPartyDetails {
     return PoPartyDetails(
       id: isPartyGuid(rawId) ? rawId : null,
       poUserId: _str(json['POUserId'] ?? json['poUserId']),
-      partyNo: _str(json['PartyNo'] ?? json['partyNo'], fallback: '1'),
+      partyNo: _str(json['PartyNo'] ?? json['partyNo']),
       p1Name: _str(json['P1Name'] ?? json['p1Name']),
       p1MobileNo: _str(json['P1MobileNo'] ?? json['p1MobileNo']),
       p2Name: _str(json['P2Name'] ?? json['p2Name']),
@@ -63,7 +63,7 @@ class PoPartyDetails {
     // Server expects Nullable<Guid>; never send action-status ints like "1".
     'id': existsOnServer ? id : null,
     'poUserId': poUserId,
-    'partyNo': partyNo.trim().isEmpty ? '1' : partyNo.trim(),
+    'partyNo': partyNo.trim(),
     'p1Name': _nullIfEmpty(p1Name),
     'p1MobileNo': _nullIfEmpty(p1MobileNo),
     'p2Name': _nullIfEmpty(p2Name),

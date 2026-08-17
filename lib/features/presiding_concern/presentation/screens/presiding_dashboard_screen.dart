@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/services/presiding_turnout_report_pdf_service.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_milestone_section.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_details_sheet.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_mandatory_banner.dart';
@@ -42,11 +45,18 @@ class _DashboardBody extends StatefulWidget {
 class _DashboardBodyState extends State<_DashboardBody> {
   PresidingPartyController get _partyCtrl =>
       Get.find<PresidingPartyController>();
+  bool _partyPromptShown = false;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_partyCtrl.refresh());
+    unawaited(_bootstrapPartyGate());
+  }
+
+  Future<void> _bootstrapPartyGate() async {
+    await _partyCtrl.refresh();
+    if (!mounted) return;
+    await _promptPartyIfRequired(auto: true);
   }
 
   Future<void> _openPartySheet() async {
@@ -54,6 +64,22 @@ class _DashboardBodyState extends State<_DashboardBody> {
       context,
       onCompleted: () => unawaited(_partyCtrl.refresh()),
     );
+  }
+
+  Future<bool> _promptPartyIfRequired({bool auto = false}) async {
+    if (_partyCtrl.isComplete.value) return true;
+    if (auto && _partyPromptShown) return false;
+    if (auto) _partyPromptShown = true;
+
+    final bool fillNow = await AppDialog.confirm(
+      context,
+      title: LocaleKeys.presidingPartyMandatoryTitle.tr(),
+      message: LocaleKeys.presidingPartyRequiredMessage.tr(),
+      confirmLabel: LocaleKeys.presidingPartyFillNow.tr(),
+    );
+    if (!mounted || !fillNow) return false;
+    await _openPartySheet();
+    return _partyCtrl.isComplete.value;
   }
 
   Future<void> _onRefresh(BuildContext context) async {
@@ -200,7 +226,12 @@ class _DashboardBodyState extends State<_DashboardBody> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          child: PresidingPartyMandatoryBanner(onTap: _openPartySheet),
+          child: Obx(() {
+            if (_partyCtrl.isLoading.value || _partyCtrl.isComplete.value) {
+              return const SizedBox.shrink();
+            }
+            return PresidingPartyMandatoryBanner(onTap: _openPartySheet);
+          }),
         ),
         Expanded(
           child: ListView(
@@ -222,6 +253,11 @@ class _DashboardBodyState extends State<_DashboardBody> {
                           widget.session.isMilestoneActionEnabled(milestone.id),
                       onMilestoneTap: (PresidingMilestone milestone) async {
                         if (milestone.isCompleted) return;
+
+                        if (!_partyCtrl.isComplete.value) {
+                          await _promptPartyIfRequired();
+                          return;
+                        }
 
                         final String? blockKey =
                             widget.session.milestoneActionBlockKey(milestone.id);
@@ -265,6 +301,21 @@ class _DashboardBodyState extends State<_DashboardBody> {
                           ScaffoldMessenger.of(
                             context,
                           ).showSnackBar(SnackBar(content: Text(text)));
+                        }
+
+                        if (milestone.id ==
+                                PresidingMilestoneIds.materialHandedOver &&
+                            (msg == null || msg.isEmpty)) {
+                          final PresidingElectionContextStore store =
+                              PresidingElectionContextStore(
+                            AppServices.secureStorage,
+                          );
+                          final electionContext = await store.read();
+                          if (!context.mounted) return;
+                          await PresidingTurnoutReportPdfService.openReport(
+                            session: outcome.session,
+                            electionContext: electionContext,
+                          );
                         }
                       },
                     ),

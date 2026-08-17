@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
+import 'package:evm_management_system/core/cache/app_startup_cache.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
@@ -46,7 +47,8 @@ class ServiceAuthController extends GetxController {
   }
 
   Future<void> _loadSession() async {
-    final String? raw = await AppServices.secureStorage.read(
+    final String? raw =
+        await AppServices.secureStorage.read(
           SecureStorageKeys.serviceSession,
         ) ??
         // Legacy: older builds stored service login under userSession.
@@ -92,9 +94,7 @@ class ServiceAuthController extends GetxController {
     required String userId,
     required String password,
   }) async {
-    AppLogger.w(
-      '[PO API] login-po-pass starting userId=$userId',
-    );
+    AppLogger.w('[PO API] login-po-pass starting userId=$userId');
     final Response<dynamic> res;
 
     try {
@@ -184,6 +184,7 @@ class ServiceAuthController extends GetxController {
           0,
       psId: data[PoLoginResponseFields.psId]?.toString() ?? '',
       userId: data[PoLoginResponseFields.userId]?.toString(),
+      loginUserName: data[PoLoginResponseFields.userName]?.toString(),
       areaType: PresidingElectionContext.normalizeAreaType(
         data[PoLoginResponseFields.urbanRural]?.toString(),
       ),
@@ -208,7 +209,8 @@ class ServiceAuthController extends GetxController {
     await _saveSession(next);
     // Keep offline milestone/turnout data across re-login of the same booth.
     // Only wipe when election / PS identity changes.
-    final bool identityChanged = previous == null ||
+    final bool identityChanged =
+        previous == null ||
         previous.electionId != context.electionId ||
         previous.psId != context.psId;
     if (identityChanged) {
@@ -307,10 +309,7 @@ class ServiceAuthController extends GetxController {
     try {
       res = await _surveyDioClient().post<dynamic>(
         ApiEndpoints.surveyPsLoginWithOtp,
-        data: <String, dynamic>{
-          'mobileNo': mobileNo.trim(),
-          'otp': otp.trim(),
-        },
+        data: <String, dynamic>{'mobileNo': mobileNo.trim(), 'otp': otp.trim()},
         options: Options(
           contentType: Headers.jsonContentType,
           extra: <String, dynamic>{'skipAuth': true},
@@ -550,6 +549,7 @@ class ServiceAuthController extends GetxController {
     // Legacy key cleanup (older builds stored service login here).
     await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
     await PresidingConcernModule.clearLocalCache();
+    await AppStartupCache.clearDisposableCaches();
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );

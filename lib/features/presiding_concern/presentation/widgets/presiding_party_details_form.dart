@@ -31,7 +31,7 @@ class PresidingPartyDetailsForm extends StatefulWidget {
 }
 
 class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
-  final TextEditingController _partyNoCtrl = TextEditingController(text: '1');
+  final TextEditingController _partyNoCtrl = TextEditingController();
   final TextEditingController _p1Name = TextEditingController();
   final TextEditingController _p1Mobile = TextEditingController();
   final TextEditingController _p2Name = TextEditingController();
@@ -86,7 +86,7 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
       if (existing != null) {
         _existingId =
             PoPartyDetails.isPartyGuid(existing.id) ? existing.id : null;
-        _partyNoCtrl.text = existing.partyNo.isEmpty ? '1' : existing.partyNo;
+        _partyNoCtrl.text = existing.partyNo;
         _p1Name.text = existing.p1Name;
         _p1Mobile.text = existing.p1MobileNo;
         _p2Name.text = existing.p2Name;
@@ -155,7 +155,7 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
     final PoPartyDetails payload = PoPartyDetails(
       id: _existingId,
       poUserId: poUserId,
-      partyNo: _partyNoCtrl.text.trim().isEmpty ? '1' : _partyNoCtrl.text.trim(),
+      partyNo: _partyNoCtrl.text.trim(),
       p1Name: _p1Name.text.trim(),
       p1MobileNo: _p1Mobile.text.trim(),
       p2Name: _p2Name.text.trim(),

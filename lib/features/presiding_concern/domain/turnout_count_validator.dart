@@ -203,9 +203,41 @@ abstract final class TurnoutCountValidator {
     return const TurnoutCountValidationResult.ok();
   }
 
-  /// Last hourly total + queue must be ≤ मतदान समाप्ति total (== allowed).
+  /// Whether the mandatory last hourly slot is saved.
+  ///
+  /// Urban = 5PM, rural = 3PM. Queue / final cards stay locked until this is true.
+  static bool isLastTimeSlotSaved(PresidingSession session) {
+    final String? lastId = lastTimeSlotId(session.areaType);
+    if (lastId == null) return false;
+    return session.turnoutRecords[lastId]?.savedAt != null;
+  }
+
+  /// Queue and मतदान जानकारी require the last hourly slot to be saved first.
+  static TurnoutCountValidationResult validateLastSlotBeforeNextCards({
+    required PresidingSession session,
+    required String slotId,
+  }) {
+    final bool isNextCard = slotId == TurnoutSlotIds.queueCount ||
+        slotId == TurnoutSlotIds.pollCompletion;
+    if (!isNextCard) {
+      return const TurnoutCountValidationResult.ok();
+    }
+    if (isLastTimeSlotSaved(session)) {
+      return const TurnoutCountValidationResult.ok();
+    }
+    final String? lastId = lastTimeSlotId(session.areaType);
+    final bool urban = lastId == TurnoutSlotIds.slot5Pm;
+    return TurnoutCountValidationResult.fail(
+      urban
+          ? 'presiding.fill_5pm_before_next'
+          : 'presiding.fill_3pm_before_next',
+    );
+  }
+
+  /// Last hourly total + queue must **equal** मतदान समाप्ति total.
   ///
   /// Urban last slot = 5PM, rural = 3PM.
+  /// Rejects both `last + queue < final` and `last + queue > final`.
   static TurnoutCountValidationResult validateLastPlusQueueVsCompletion({
     required PresidingSession session,
     required String slotId,
@@ -247,13 +279,10 @@ abstract final class TurnoutCountValidator {
     final int lastPlusQueue = lastTotal + queueVal;
 
     if (slotId == TurnoutSlotIds.pollCompletion) {
-      if (completionTotal < lastPlusQueue) {
-        return TurnoutCountValidationResult.fail(
-          'presiding.count_completion_below_last_plus_queue',
-          limit: lastPlusQueue,
-        );
-      }
-      return const TurnoutCountValidationResult.ok();
+      return _compareLastPlusQueueToFinal(
+        lastPlusQueue: lastPlusQueue,
+        completionTotal: completionTotal,
+      );
     }
 
     // Editing last slot / queue after completion is already saved.
@@ -262,13 +291,29 @@ abstract final class TurnoutCountValidator {
       return const TurnoutCountValidationResult.ok();
     }
 
-    if (lastPlusQueue > completionTotal) {
+    return _compareLastPlusQueueToFinal(
+      lastPlusQueue: lastPlusQueue,
+      completionTotal: completionTotal,
+    );
+  }
+
+  static TurnoutCountValidationResult _compareLastPlusQueueToFinal({
+    required int lastPlusQueue,
+    required int completionTotal,
+  }) {
+    // Must be exactly equal — neither less nor greater.
+    if (completionTotal < lastPlusQueue) {
       return TurnoutCountValidationResult.fail(
-        'presiding.count_last_plus_queue_exceeds_completion',
-        limit: completionTotal,
+        'presiding.count_completion_below_last_plus_queue',
+        limit: lastPlusQueue,
       );
     }
-
+    if (completionTotal > lastPlusQueue) {
+      return TurnoutCountValidationResult.fail(
+        'presiding.count_completion_above_last_plus_queue',
+        limit: lastPlusQueue,
+      );
+    }
     return const TurnoutCountValidationResult.ok();
   }
 
