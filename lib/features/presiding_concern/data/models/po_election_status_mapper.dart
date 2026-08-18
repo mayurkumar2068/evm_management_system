@@ -180,8 +180,7 @@ abstract final class PoElectionStatusMapper {
   }
 
   /// Clears stale local "completed" when server has no slot times.
-  /// Keeps finish-state only when local already completed + server still has
-  /// turnout evidence; never invents completion from a single slot save.
+  /// Keeps finish-state when local already completed, or when poll has ended.
   static _MilestoneStatus? _twoHourlyStatus(
     Map<String, dynamic> data, {
     required PresidingMilestone current,
@@ -190,9 +189,21 @@ abstract final class PoElectionStatusMapper {
       return const _MilestoneStatus(isCompleted: false);
     }
 
+    final bool pollEnded = _bool(data[PoElectionResponseFields.isPollEnded]);
     final DateTime? latest = _latestTwoHourlyEvidenceTime(data);
+    final DateTime? pollEndedAt = _date(
+      data[PoElectionResponseFields.pollEndedTime],
+    );
+
+    if (pollEnded) {
+      return _MilestoneStatus(
+        isCompleted: true,
+        completedAt: latest ?? pollEndedAt ?? current.completedAt,
+      );
+    }
     if (latest == null) {
-      // Server empty ⇒ drop fake local timestamp/flag.
+      // Keep a local finish; don't wipe just because status omitted slot times.
+      if (current.isCompleted) return null;
       return const _MilestoneStatus(isCompleted: false);
     }
     if (!current.isCompleted) {
@@ -211,16 +222,31 @@ abstract final class PoElectionStatusMapper {
       return const _MilestoneStatus(isCompleted: false);
     }
 
+    final bool pollEnded = _bool(data[PoElectionResponseFields.isPollEnded]);
     final int male = _int(data[PoElectionResponseFields.pollLiveMale]) ?? 0;
     final int female = _int(data[PoElectionResponseFields.pollLiveFemale]) ?? 0;
     final int other = _int(data[PoElectionResponseFields.pollLiveOther]) ?? 0;
     final DateTime? updatedAt = _date(
       data[PoElectionResponseFields.pollLiveUpdateTime],
     );
+    final DateTime? pollEndedAt = _date(
+      data[PoElectionResponseFields.pollEndedTime],
+    );
 
     final bool hasLiveEvidence =
         updatedAt != null && (male > 0 || female > 0 || other > 0);
+
+    if (pollEnded) {
+      return _MilestoneStatus(
+        isCompleted: true,
+        completedAt: hasLiveEvidence
+            ? updatedAt
+            : (current.completedAt ?? pollEndedAt),
+      );
+    }
     if (!hasLiveEvidence) {
+      // 0/0/0 is valid after finish — do not reopen the live button.
+      if (current.isCompleted) return null;
       return const _MilestoneStatus(isCompleted: false);
     }
     if (!current.isCompleted) {

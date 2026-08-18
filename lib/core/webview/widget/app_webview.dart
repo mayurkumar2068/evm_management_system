@@ -237,13 +237,6 @@ class _AppWebViewState extends State<AppWebView> {
     return request;
   }
 
-  /// Maps the declarative cache strategy to the native cache mode.
-  CacheMode get _cacheMode => switch (_config.cachePolicy) {
-    WebViewCachePolicy.normal => CacheMode.LOAD_DEFAULT,
-    WebViewCachePolicy.noCache => CacheMode.LOAD_NO_CACHE,
-    WebViewCachePolicy.cacheFirst => CacheMode.LOAD_CACHE_ELSE_NETWORK,
-  };
-
   /// Builds cross-platform WebView settings for resilient page loading.
   InAppWebViewSettings _buildSettings() {
     return InAppWebViewSettings(
@@ -265,8 +258,9 @@ class _AppWebViewState extends State<AppWebView> {
       mixedContentMode: _config.allowCleartextLocalhost
           ? MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW
           : MixedContentMode.MIXED_CONTENT_NEVER_ALLOW,
-      cacheEnabled: _config.cachePolicy != WebViewCachePolicy.noCache,
-      cacheMode: _cacheMode,
+      cacheEnabled: false,
+      cacheMode: CacheMode.LOAD_NO_CACHE,
+      clearCache: true,
       useHybridComposition: true,
       domStorageEnabled: true,
       databaseEnabled: true,

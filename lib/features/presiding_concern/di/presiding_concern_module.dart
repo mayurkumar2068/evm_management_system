@@ -12,6 +12,7 @@ import 'package:evm_management_system/features/presiding_concern/data/repository
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/repository/presiding_concern_repository.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' hide Trans;
 
@@ -76,6 +77,9 @@ abstract final class PresidingConcernModule {
     try {
       if (!await AppServices.connectivity.isOnline) return;
       await repository.syncPending();
+      if (Get.isRegistered<PresidingPartyController>()) {
+        await Get.find<PresidingPartyController>().syncPending();
+      }
       await repository.refreshFromServer();
     } catch (_) {}
   }
@@ -135,6 +139,9 @@ final class PresidingDashboardController extends GetxController {
       if (!online) return false;
       await PresidingConcernModule.bootstrap.ensureContext();
       await _repository.syncPending();
+      if (Get.isRegistered<PresidingPartyController>()) {
+        await Get.find<PresidingPartyController>().syncPending();
+      }
       await _repository.refreshFromServer();
       return true;
     } catch (_) {

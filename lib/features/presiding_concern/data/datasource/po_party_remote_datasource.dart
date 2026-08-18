@@ -83,12 +83,72 @@ class PoPartyRemoteDatasource {
       if (code == 400 || code == 404 || code == 401 || code == 403) {
         return null;
       }
+      // Offline / timeout must not block the form.
+      if (_isTransientDio(e)) return null;
       AppLogger.w('[PO Party] fetch failed: ${e.message}');
-      rethrow;
+      return null;
     }
   }
 
-  /// Saves or updates party details. Returns server id when available.
+  /// Sends SMS OTP to [mobileNo] via `po-send-otp` (same store as PO details).
+  Future<void> sendOtp(String mobileNo) async {
+    final String mobile = mobileNo.trim();
+    if (mobile.isEmpty) {
+      throw const PoPartyApiException('Mobile number is required');
+    }
+    final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
+    if (token.isEmpty) {
+      throw const PoPartyApiException(
+        'PO session token missing. Please login again.',
+        statusCode: 401,
+      );
+    }
+    try {
+      final Response<dynamic> res = await _dio.post<dynamic>(
+        PoElectionEndpoints.poSendOtp,
+        data: <String, dynamic>{'mobileNo': mobile},
+        queryParameters: <String, dynamic>{'token': token},
+        options: Options(
+          contentType: Headers.jsonContentType,
+          headers: <String, dynamic>{
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final int? code = res.statusCode;
+      if (code == 401 || code == 403) {
+        throw const PoPartyApiException(
+          'Unauthorized. Please login again.',
+          statusCode: 401,
+        );
+      }
+      if (code == null || code < 200 || code >= 300) {
+        throw PoPartyApiException('OTP send failed', statusCode: code);
+      }
+      final Object? body = res.data;
+      if (body is! Map) {
+        throw PoPartyApiException('OTP send failed', statusCode: code);
+      }
+      final Map<String, dynamic> map = Map<String, dynamic>.from(body);
+      final bool ok = map['Status'] == true || map['Success'] == true;
+      if (!ok) {
+        throw PoPartyApiException(
+          (map['Message'] ?? map['message'] ?? 'OTP send failed').toString(),
+        );
+      }
+    } on PoPartyApiException {
+      rethrow;
+    } on DioException catch (e) {
+      throw PoPartyApiException(
+        _dioMessage(e, fallback: 'OTP send failed'),
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  /// Saves or updates party details via `save-po-party` (no OTP).
+  /// Returns server id when available.
   Future<String?> savePartyDetails(PoPartyDetails details) async {
     final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
     if (token.isEmpty) {
@@ -168,6 +228,7 @@ class PoPartyRemoteDatasource {
       throw PoPartyApiException(
         _dioMessage(e, fallback: 'Save failed'),
         statusCode: e.response?.statusCode,
+        offline: _isTransientDio(e),
       );
     }
   }
@@ -230,6 +291,26 @@ class PoPartyRemoteDatasource {
   }
 }
 
+bool _isTransientDio(DioException e) {
+  switch (e.type) {
+    case DioExceptionType.connectionError:
+    case DioExceptionType.connectionTimeout:
+    case DioExceptionType.sendTimeout:
+    case DioExceptionType.receiveTimeout:
+      return true;
+    default:
+      break;
+  }
+  final int? code = e.response?.statusCode;
+  if (code == 408 || code == 429 || (code != null && code >= 500)) {
+    return true;
+  }
+  final String msg = (e.message ?? '').toLowerCase();
+  return msg.contains('offline') ||
+      msg.contains('socket') ||
+      msg.contains('network');
+}
+
 String _dioMessage(DioException e, {required String fallback}) {
   final Object? body = e.response?.data;
   if (body is Map) {
@@ -250,13 +331,26 @@ String _dioMessage(DioException e, {required String fallback}) {
 }
 
 class PoPartyApiException implements Exception {
-  const PoPartyApiException(this.message, {this.statusCode});
+  const PoPartyApiException(
+    this.message, {
+    this.statusCode,
+    this.offline = false,
+  });
 
   final String message;
   final int? statusCode;
+  final bool offline;
 
   bool get isNotFound => statusCode == 404;
   bool get isUnauthorized => statusCode == 401 || statusCode == 403;
+  bool get isOffline => offline;
+
+  bool get isInvalidOtp {
+    final String n = message.toLowerCase();
+    return n.contains('otp') ||
+        n.contains('ओटीपी') ||
+        n.contains('expire');
+  }
 
   @override
   String toString() => message;

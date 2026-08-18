@@ -10,10 +10,12 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/services/presiding_turnout_report_pdf_service.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_milestone_section.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_details_sheet.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_party_mandatory_banner.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +56,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
   }
 
   Future<void> _bootstrapPartyGate() async {
-    await _partyCtrl.refresh();
+    await _partyCtrl.reload();
     if (!mounted) return;
     await _promptPartyIfRequired(auto: true);
   }
@@ -62,7 +64,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
   Future<void> _openPartySheet() async {
     await showPresidingPartyDetailsSheet(
       context,
-      onCompleted: () => unawaited(_partyCtrl.refresh()),
+      onCompleted: () => unawaited(_partyCtrl.reload()),
     );
   }
 
@@ -80,6 +82,30 @@ class _DashboardBodyState extends State<_DashboardBody> {
     if (!mounted || !fillNow) return false;
     await _openPartySheet();
     return _partyCtrl.isComplete.value;
+  }
+
+  bool get _canGenerateReport => widget.session.milestones.any(
+        (PresidingMilestone m) =>
+            m.id == PresidingMilestoneIds.materialHandedOver && m.isCompleted,
+      );
+
+  Future<void> _generateReport() async {
+    if (!_canGenerateReport) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.presidingGenerateReportLocked.tr())),
+      );
+      return;
+    }
+    final PresidingElectionContextStore store = PresidingElectionContextStore(
+      AppServices.secureStorage,
+    );
+    final electionContext = await store.read();
+    if (!mounted) return;
+    await PresidingTurnoutReportPdfService.openReport(
+      session: widget.session,
+      electionContext: electionContext,
+    );
   }
 
   Future<void> _onRefresh(BuildContext context) async {
@@ -160,6 +186,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
           ),
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
+          bottom: const PresidingElectorHeaderStrip(),
           trailing: Obx(() {
             final bool syncing = controller.isSyncing.value;
             final bool online = controller.isOnline.value;
@@ -302,24 +329,15 @@ class _DashboardBodyState extends State<_DashboardBody> {
                             context,
                           ).showSnackBar(SnackBar(content: Text(text)));
                         }
-
-                        if (milestone.id ==
-                                PresidingMilestoneIds.materialHandedOver &&
-                            (msg == null || msg.isEmpty)) {
-                          final PresidingElectionContextStore store =
-                              PresidingElectionContextStore(
-                            AppServices.secureStorage,
-                          );
-                          final electionContext = await store.read();
-                          if (!context.mounted) return;
-                          await PresidingTurnoutReportPdfService.openReport(
-                            session: outcome.session,
-                            electionContext: electionContext,
-                          );
-                        }
                       },
                     ),
                   ),
+              const SizedBox(height: 4),
+              PresidingThemeButton(
+                label: LocaleKeys.presidingGenerateReport.tr(),
+                icon: Icons.picture_as_pdf_outlined,
+                onPressed: _canGenerateReport ? _generateReport : null,
+              ),
             ],
           ),
         ),

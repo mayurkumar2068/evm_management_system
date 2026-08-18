@@ -104,7 +104,9 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e is PoOfficerDetailsException
+        _error = e is PoOfficerDetailsException && e.isUnauthorized
+            ? LocaleKeys.presidingPoDetailsSessionExpired.tr()
+            : e is PoOfficerDetailsException
             ? e.message
             : LocaleKeys.presidingPoDetailsLoadFailed.tr();
       });
@@ -195,11 +197,12 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       });
     } on PoOfficerDetailsException catch (e) {
       if (!mounted) return;
+      final String msg = _poDetailsError(e, LocaleKeys.presidingPoDetailsOtpSendFailed.tr());
       setState(() {
         _busy = false;
-        _error = e.message;
+        _error = msg;
       });
-      _showSnack(e.message, error: true);
+      _showSnack(msg, error: true);
     } catch (_) {
       if (!mounted) return;
       final String msg = LocaleKeys.presidingPoDetailsOtpSendFailed.tr();
@@ -247,7 +250,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = e.message;
+        _error = _poDetailsError(e, LocaleKeys.presidingPoDetailsSaveFailed.tr());
       });
     } catch (_) {
       if (!mounted) return;
@@ -256,6 +259,20 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
         _error = LocaleKeys.presidingPoDetailsSaveFailed.tr();
       });
     }
+  }
+
+  String _poDetailsError(PoOfficerDetailsException e, String fallback) {
+    if (e.isUnauthorized) {
+      return LocaleKeys.presidingPoDetailsSessionExpired.tr();
+    }
+    final String msg = e.message.trim();
+    if (msg.isEmpty ||
+        msg == 'OTP send failed' ||
+        msg == 'Save failed' ||
+        msg.startsWith('Save failed (HTTP')) {
+      return fallback;
+    }
+    return msg;
   }
 
   void _goToDashboard() {

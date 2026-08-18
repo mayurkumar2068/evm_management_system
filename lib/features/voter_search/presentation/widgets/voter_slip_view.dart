@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Official SEC voter-slip layout (Flutter — correct Devanagari shaping).
 ///
@@ -38,14 +37,15 @@ class VoterSlipView extends StatelessWidget {
     Color color = Colors.black,
     double height = 1.3,
   }) {
-    return GoogleFonts.notoSansDevanagari(
+    return TextStyle(
+      fontFamily: AppTextStyles.devanagariFontFamily,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
       height: height,
     ).copyWith(
       fontFamilyFallback: <String>[
-        AppTextStyles.fontFamily, // Poppins for Latin glyphs
+        AppTextStyles.fontFamily,
         'Roboto',
         'sans-serif',
       ],

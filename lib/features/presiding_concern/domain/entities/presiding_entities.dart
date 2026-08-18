@@ -258,16 +258,8 @@ final class PresidingSession {
   /// PO login username (`UserName`). Used for test-account bypasses.
   final String? loginUserName;
 
-  /// Test logins that skip mock-poll next-day / 7 AM gates.
-  static const Set<String> mockPollBypassUserNames = <String>{
-    'rpo5',
-    'rpo6',
-  };
-
-  bool get bypassesMockPollRules {
-    final String name = (loginUserName ?? '').trim().toLowerCase();
-    return mockPollBypassUserNames.contains(name);
-  }
+  /// Mock-poll next-day / 7 AM gates are skipped for every PO.
+  bool get bypassesMockPollRules => true;
 
   bool get hasElectionContext =>
       (electionId ?? 0) > 0 &&
@@ -325,11 +317,95 @@ final class PresidingSession {
     PresidingMilestoneIds.materialHandedOver,
   ];
 
+  /// After मतदान समाप्त, freeze 2–2 hourly + live and lock live counts.
+  /// Dashboard chips then render as completed instead of enabled actions.
+  PresidingSession completeDuringPollIfPollEnded() {
+    if (!_isMilestoneCompleted(PresidingMilestoneIds.pollEnd)) return this;
+
+    DateTime? latestHourly;
+    for (final MapEntry<String, TurnoutRecord> entry in turnoutRecords.entries) {
+      if (entry.key == TurnoutSlotIds.livePollInfo) continue;
+      final DateTime? savedAt = entry.value.savedAt;
+      if (savedAt == null) continue;
+      if (latestHourly == null || savedAt.isAfter(latestHourly)) {
+        latestHourly = savedAt;
+      }
+    }
+
+    DateTime? pollEndedAt;
+    for (final PresidingMilestone milestone in milestones) {
+      if (milestone.id == PresidingMilestoneIds.pollEnd) {
+        pollEndedAt = milestone.completedAt;
+        break;
+      }
+    }
+
+    final TurnoutRecord? live = turnoutRecords[TurnoutSlotIds.livePollInfo];
+    final bool hasLiveCounts = (live?.male ?? 0) > 0 ||
+        (live?.female ?? 0) > 0 ||
+        (live?.thirdGender ?? 0) > 0;
+
+    bool changed = false;
+    final List<PresidingMilestone> nextMilestones = milestones.map((
+      PresidingMilestone item,
+    ) {
+      if (item.id == PresidingMilestoneIds.twoHourlyInfo && !item.isCompleted) {
+        changed = true;
+        return item.copyWith(
+          state: PresidingMilestoneState.completed,
+          completedAt: latestHourly ?? pollEndedAt ?? DateTime.now(),
+          pendingSync: false,
+        );
+      }
+      if (item.id == PresidingMilestoneIds.livePollInfo && !item.isCompleted) {
+        changed = true;
+        final DateTime? liveAt = hasLiveCounts
+            ? (live?.savedAt ?? pollEndedAt)
+            : pollEndedAt;
+        if (liveAt == null) {
+          return item.copyWith(
+            state: PresidingMilestoneState.completed,
+            clearCompletedAt: true,
+            pendingSync: false,
+          );
+        }
+        return item.copyWith(
+          state: PresidingMilestoneState.completed,
+          completedAt: liveAt,
+          pendingSync: false,
+        );
+      }
+      return item;
+    }).toList(growable: false);
+
+    Map<String, TurnoutRecord> nextTurnout = turnoutRecords;
+    if (live != null && !live.isLocked) {
+      nextTurnout = Map<String, TurnoutRecord>.from(nextTurnout)
+        ..[TurnoutSlotIds.livePollInfo] = live.copyWith(isLocked: true);
+      changed = true;
+    } else if (live == null) {
+      nextTurnout = Map<String, TurnoutRecord>.from(nextTurnout)
+        ..[TurnoutSlotIds.livePollInfo] = const TurnoutRecord(
+          slotId: TurnoutSlotIds.livePollInfo,
+          isLocked: true,
+        );
+      changed = true;
+    }
+
+    return changed
+        ? copyWith(milestones: nextMilestones, turnoutRecords: nextTurnout)
+        : this;
+  }
+
   /// Locale key when [milestoneId] cannot be actioned, else `null`.
   String? milestoneActionBlockKey(String milestoneId) {
     if (milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
         milestoneId == PresidingMilestoneIds.livePollInfo) {
       if (!_isMilestoneCompleted(PresidingMilestoneIds.pollStart)) {
+        return 'presiding.reach_station_first';
+      }
+      // मतदान समाप्त के बाद ये बटन actionable नहीं रहने चाहिए।
+      if (_isMilestoneCompleted(PresidingMilestoneIds.pollEnd)) {
         return 'presiding.reach_station_first';
       }
       return null;

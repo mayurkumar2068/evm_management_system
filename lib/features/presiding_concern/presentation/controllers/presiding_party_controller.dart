@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:get/get.dart';
 
 /// Tracks whether PO polling-party details (P1–P4) are filled and saved.
+///
+/// Online: `save-po-party` immediately (no OTP).
+/// Offline / transient API errors: local draft + pending flag; dashboard stays
+/// unblocked; payload flushes on reconnect.
 final class PresidingPartyController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool isComplete = false.obs;
@@ -18,10 +22,10 @@ final class PresidingPartyController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    unawaited(refresh());
+    unawaited(reload());
   }
 
-  Future<void> refresh() async {
+  Future<void> reload() async {
     isLoading.value = true;
     try {
       final String? poUserId = _poUserId;
@@ -29,18 +33,129 @@ final class PresidingPartyController extends GetxController {
         isComplete.value = false;
         return;
       }
-      if (await _readLocalComplete(poUserId)) {
+
+      final bool localComplete = await _readLocalComplete(poUserId);
+      if (localComplete) {
         isComplete.value = true;
-        return;
       }
-      final PoPartyDetails? existing =
-          await _api.fetchPartyDetails(poUserId);
-      isComplete.value = _isFilledOnServer(existing);
+
+      final bool online = await AppServices.connectivity.isOnline;
+      if (online) {
+        await syncPending();
+        final PoPartyDetails? existing = await _api.fetchPartyDetails(poUserId);
+        if (_isFilledOnServer(existing)) {
+          await _writeDraft(poUserId, existing!);
+          await markComplete();
+          if (!await _hasPending(poUserId)) {
+            isComplete.value = true;
+          }
+        } else if (localComplete) {
+          isComplete.value = true;
+        } else {
+          isComplete.value = false;
+        }
+      } else {
+        final PoPartyDetails? draft = await _readDraft(poUserId);
+        isComplete.value = localComplete || _isFilledOnServer(draft);
+      }
     } catch (_) {
-      isComplete.value = false;
+      final String? poUserId = _poUserId;
+      if (poUserId != null && poUserId.isNotEmpty) {
+        isComplete.value = await _readLocalComplete(poUserId);
+      }
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Prefers pending local draft; otherwise server; otherwise last cache.
+  Future<PoPartyDetails?> loadForForm() async {
+    final String? poUserId = _poUserId;
+    if (poUserId == null || poUserId.isEmpty) return null;
+
+    final PoPartyDetails? local = await _readDraft(poUserId);
+    final bool pending = await _hasPending(poUserId);
+    if (pending && _isFilledOnServer(local)) return local;
+
+    final bool online = await AppServices.connectivity.isOnline;
+    if (online) {
+      final PoPartyDetails? remote = await _api.fetchPartyDetails(poUserId);
+      if (_isFilledOnServer(remote)) {
+        await _writeDraft(poUserId, remote!);
+        return remote;
+      }
+    }
+    return local;
+  }
+
+  /// Saves without OTP. Offline / transient failures queue locally.
+  Future<void> save(PoPartyDetails details) async {
+    final String poUserId = details.poUserId.trim();
+    if (poUserId.isEmpty) {
+      throw const PoPartyApiException(
+        'PO session token missing. Please login again.',
+        statusCode: 401,
+      );
+    }
+
+    await _writeDraft(poUserId, details);
+
+    final bool online = await AppServices.connectivity.isOnline;
+    if (!online) {
+      await _markPending(poUserId, details);
+      await markComplete();
+      return;
+    }
+
+    try {
+      final String? id = await _api.savePartyDetails(details);
+      final PoPartyDetails stored = (id != null && id != details.id)
+          ? details.copyWith(id: id)
+          : details;
+      await _writeDraft(poUserId, stored);
+      await _clearPending(poUserId);
+      await markComplete();
+    } on PoPartyApiException catch (e) {
+      if (e.isUnauthorized) rethrow;
+      await _markPending(poUserId, details);
+      final bool fatalClient = e.statusCode != null &&
+          e.statusCode! >= 400 &&
+          e.statusCode! < 500 &&
+          e.statusCode != 408 &&
+          e.statusCode != 429 &&
+          !e.isOffline &&
+          !e.isInvalidOtp;
+      if (fatalClient) rethrow;
+      await markComplete();
+    } catch (_) {
+      await _markPending(poUserId, details);
+      await markComplete();
+    }
+  }
+
+  /// Uploads a queued `save-po-party` when the device is online.
+  Future<void> syncPending() async {
+    final String? poUserId = _poUserId;
+    if (poUserId == null || poUserId.isEmpty) return;
+    if (!await _hasPending(poUserId)) return;
+    if (!await AppServices.connectivity.isOnline) return;
+
+    final PoPartyDetails? draft = await _readDraft(poUserId);
+    if (draft == null || !_isFilledOnServer(draft)) return;
+
+    try {
+      final String? id = await _api.savePartyDetails(draft);
+      final PoPartyDetails stored = (id != null && id != draft.id)
+          ? draft.copyWith(id: id)
+          : draft;
+      await _writeDraft(poUserId, stored);
+      await _clearPending(poUserId);
+      await markComplete();
+    } on PoPartyApiException catch (e) {
+      if (e.isUnauthorized || (!e.isOffline && e.statusCode == 400)) {
+        return;
+      }
+    } catch (_) {}
   }
 
   Future<void> markComplete() async {
@@ -67,5 +182,47 @@ final class PresidingPartyController extends GetxController {
       SecureStorageKeys.poPartyComplete(poUserId),
     );
     return raw == '1';
+  }
+
+  Future<PoPartyDetails?> _readDraft(String poUserId) async {
+    final String? raw = await AppServices.secureStorage.read(
+      SecureStorageKeys.poPartyDraft(poUserId),
+    );
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final Object? decoded = jsonDecode(raw);
+      if (decoded is! Map) return null;
+      return PoPartyDetails.fromJson(Map<String, dynamic>.from(decoded));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _writeDraft(String poUserId, PoPartyDetails details) async {
+    await AppServices.secureStorage.write(
+      SecureStorageKeys.poPartyDraft(poUserId),
+      jsonEncode(details.toCacheJson()),
+    );
+  }
+
+  Future<bool> _hasPending(String poUserId) async {
+    final String? raw = await AppServices.secureStorage.read(
+      SecureStorageKeys.poPartyPending(poUserId),
+    );
+    return raw == '1';
+  }
+
+  Future<void> _markPending(String poUserId, PoPartyDetails details) async {
+    await _writeDraft(poUserId, details);
+    await AppServices.secureStorage.write(
+      SecureStorageKeys.poPartyPending(poUserId),
+      '1',
+    );
+  }
+
+  Future<void> _clearPending(String poUserId) async {
+    await AppServices.secureStorage.delete(
+      SecureStorageKeys.poPartyPending(poUserId),
+    );
   }
 }

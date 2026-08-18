@@ -13,4 +13,31 @@ abstract final class TurnoutLiveSync {
 
   /// Hourly slots + मतदान जानकारी push latest counts to live poll — not queue.
   static bool mirrorsToLivePoll(String slotId) => _mirrorSlotIds.contains(slotId);
+
+  /// Live stays if it is already higher; otherwise hourly/final becomes the floor.
+  static ({int male, int female, int other}) mergePreferringHigherLive({
+    required TurnoutRecord? live,
+    required int male,
+    required int female,
+    required int other,
+  }) {
+    return (
+      male: _max(live?.male ?? 0, male),
+      female: _max(live?.female ?? 0, female),
+      other: _max(live?.thirdGender ?? 0, other),
+    );
+  }
+
+  static bool liveAlreadyCoversHourly({
+    required TurnoutRecord? live,
+    required int male,
+    required int female,
+    required int other,
+  }) {
+    return (live?.male ?? 0) >= male &&
+        (live?.female ?? 0) >= female &&
+        (live?.thirdGender ?? 0) >= other;
+  }
+
+  static int _max(int a, int b) => a >= b ? a : b;
 }

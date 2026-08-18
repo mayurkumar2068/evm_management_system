@@ -78,7 +78,15 @@ abstract final class SecureStorageKeys {
   static const String presidingElectionContext =
       'evm.presiding_election_context';
 
-  /// PO party details + OTP completed for a presiding officer session.
+  /// PO party details completed for a presiding officer session.
   static String poPartyComplete(String poUserId) =>
       'evm.po_party_complete.$poUserId';
+
+  /// Cached party form (online save or offline draft).
+  static String poPartyDraft(String poUserId) =>
+      'evm.po_party_draft.$poUserId';
+
+  /// Pending `save-po-party` payload when saved offline / sync failed.
+  static String poPartyPending(String poUserId) =>
+      'evm.po_party_pending.$poUserId';
 }

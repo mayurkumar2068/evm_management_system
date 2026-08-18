@@ -70,9 +70,9 @@ abstract final class TurnoutCountValidator {
         .toList(growable: false);
   }
 
-  /// Urban last = 5PM, rural last = 3PM (last non-queue time slot).
-  static String? lastTimeSlotId(String? areaType) {
-    final List<String> timeSlots = TurnoutSlots.forAreaType(areaType)
+  /// Hourly time slots only (9AM → 3PM rural / 5PM urban). No queue/final/live.
+  static List<String> hourlySlotOrder(String? areaType) {
+    return TurnoutSlots.forAreaType(areaType)
         .where(
           (TurnoutSlotDefinition s) =>
               !s.queueOnly &&
@@ -81,8 +81,62 @@ abstract final class TurnoutCountValidator {
         )
         .map((TurnoutSlotDefinition s) => s.slotId)
         .toList(growable: false);
+  }
+
+  /// Urban last = 5PM, rural last = 3PM (last non-queue time slot).
+  static String? lastTimeSlotId(String? areaType) {
+    final List<String> timeSlots = hourlySlotOrder(areaType);
     if (timeSlots.isEmpty) return null;
     return timeSlots.last;
+  }
+
+  /// True when a later hourly slot is already saved — earlier hours cannot be edited.
+  static bool isEarlierHourlyLockedByLaterSave({
+    required PresidingSession session,
+    required String slotId,
+  }) {
+    final List<String> order = hourlySlotOrder(session.areaType);
+    final int index = order.indexOf(slotId);
+    if (index < 0) return false;
+    for (int i = index + 1; i < order.length; i++) {
+      if (session.turnoutRecords[order[i]]?.savedAt != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Saved, locked, or closed because a later hourly slot was saved.
+  static bool isHourlySlotClosed({
+    required PresidingSession session,
+    required String slotId,
+  }) {
+    final TurnoutRecord? record = session.turnoutRecords[slotId];
+    if (record?.isReadOnly ?? false) return true;
+    return isEarlierHourlyLockedByLaterSave(session: session, slotId: slotId);
+  }
+
+  /// Skipped earlier hours (locked by a later save) count as done for finish.
+  static bool isHourlySlotSatisfied({
+    required PresidingSession session,
+    required String slotId,
+  }) {
+    if (session.turnoutRecords[slotId]?.savedAt != null) return true;
+    if (slotId == lastTimeSlotId(session.areaType)) return false;
+    return isEarlierHourlyLockedByLaterSave(session: session, slotId: slotId);
+  }
+
+  /// Rejects saving an earlier hourly slot after a later hour is already saved.
+  static TurnoutCountValidationResult validateEarlierSlotNotClosed({
+    required PresidingSession session,
+    required String slotId,
+  }) {
+    if (!isEarlierHourlyLockedByLaterSave(session: session, slotId: slotId)) {
+      return const TurnoutCountValidationResult.ok();
+    }
+    return const TurnoutCountValidationResult.fail(
+      'presiding.earlier_slot_locked',
+    );
   }
 
   static int recordTotal(TurnoutRecord? record) {

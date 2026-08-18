@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/services/presiding_turnout_report_pdf_service.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
@@ -58,6 +56,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
 
   void _handleTimeTabTap(String slotId) {
     if (_isTurnoutSubmitted) return;
+    if (!_canSelectHourly(slotId)) return;
     setState(() {
       if (_selectedSlotId == slotId) {
         _isTimeSlotExpanded = !_isTimeSlotExpanded;
@@ -66,6 +65,49 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
         _isTimeSlotExpanded = true;
       }
     });
+  }
+
+  bool _isHourlyClosed(String slotId) {
+    if (_isTurnoutSubmitted) return true;
+    return TurnoutCountValidator.isHourlySlotClosed(
+      session: widget.session,
+      slotId: slotId,
+    );
+  }
+
+  bool _canSelectHourly(String slotId) {
+    if (_isTurnoutSubmitted) return false;
+    final bool lockedByLater =
+        TurnoutCountValidator.isEarlierHourlyLockedByLaterSave(
+      session: widget.session,
+      slotId: slotId,
+    );
+    final bool saved =
+        widget.session.turnoutRecords[slotId]?.savedAt != null;
+    // Skipped earlier hour (never saved) cannot be opened after a later save.
+    if (lockedByLater && !saved) return false;
+    return true;
+  }
+
+  void _nudgeSelectionIfNeeded() {
+    final List<TurnoutSlotDefinition> timeSlots = _timeSlotsFor(
+      widget.session.areaType,
+    );
+    if (timeSlots.isEmpty) return;
+    if (_canSelectHourly(_selectedSlotId) &&
+        timeSlots.any(
+          (TurnoutSlotDefinition s) => s.slotId == _selectedSlotId,
+        )) {
+      return;
+    }
+    for (int i = timeSlots.length - 1; i >= 0; i--) {
+      final String id = timeSlots[i].slotId;
+      if (widget.session.turnoutRecords[id]?.savedAt != null) {
+        _selectedSlotId = id;
+        return;
+      }
+    }
+    _selectedSlotId = timeSlots.first.slotId;
   }
 
   bool _isOtherSlotExpanded(String slotId) {
@@ -99,10 +141,16 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
         PresidingMilestoneIds.twoHourlyInfo,
       );
       if (!mounted) return;
-      if (outcome.message != null && outcome.message!.isNotEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(outcome.message!.tr())));
+      final bool twoHourlyDone = outcome.session.milestones.any(
+        (PresidingMilestone m) =>
+            m.id == PresidingMilestoneIds.twoHourlyInfo && m.isCompleted,
+      );
+      if (!twoHourlyDone) {
+        if (outcome.message != null && outcome.message!.isNotEmpty) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(outcome.message!.tr())));
+        }
         return;
       }
       // Lock live जानकारी too — same submit boundary as 2–2 hourly.
@@ -110,18 +158,6 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
       if (!mounted) return;
       // Auto-complete मतदान समाप्त (API) so machine seal can unlock next.
       await dashboard.completeMilestone(PresidingMilestoneIds.pollEnd);
-      if (!mounted) return;
-
-      final PresidingSession latestSession =
-          await PresidingConcernModule.repository.loadSession();
-      final PresidingElectionContextStore store =
-          PresidingElectionContextStore(AppServices.secureStorage);
-      final electionContext = await store.read();
-      if (!mounted) return;
-      await PresidingTurnoutReportPdfService.openReport(
-        session: latestSession,
-        electionContext: electionContext,
-      );
       if (!mounted) return;
       Get.back<void>();
     } finally {
@@ -141,6 +177,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     if (!stillValid && timeSlots.isNotEmpty) {
       _selectedSlotId = timeSlots.first.slotId;
     }
+    _nudgeSelectionIfNeeded();
   }
 
   static List<TurnoutSlotDefinition> _timeSlotsFor(String? areaType) {
@@ -185,10 +222,15 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     final bool turnoutSubmitted = _isTurnoutSubmitted;
     final bool lastHourlySaved =
         TurnoutCountValidator.isLastTimeSlotSaved(widget.session);
-    final bool allSlotsSaved = allSlots.every(
-      (TurnoutSlotDefinition slot) =>
-          widget.session.turnoutRecords[slot.slotId]?.savedAt != null,
-    );
+    final bool allSlotsSaved = allSlots.every((TurnoutSlotDefinition slot) {
+      if (slot.queueOnly || slot.slotId == TurnoutSlotIds.pollCompletion) {
+        return widget.session.turnoutRecords[slot.slotId]?.savedAt != null;
+      }
+      return TurnoutCountValidator.isHourlySlotSatisfied(
+        session: widget.session,
+        slotId: slot.slotId,
+      );
+    });
     final String stationLabel =
         widget.session.pollingStationName.startsWith('presiding.')
         ? widget.session.pollingStationName.tr()
@@ -208,6 +250,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
             ],
           ),
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+          bottom: const PresidingElectorHeaderStrip(),
         ),
         // Last label kept outside the gradient header.
         Padding(
@@ -266,7 +309,8 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                         selectedSlotId: _selectedSlotId,
                         isExpanded: _isTimeSlotExpanded,
                         records: widget.session.turnoutRecords,
-                        enabled: !turnoutSubmitted,
+                        canSelect: _canSelectHourly,
+                        isLocked: _isHourlyClosed,
                         onSelected: _handleTimeTabTap,
                       ),
                       AnimatedCrossFade(
@@ -291,7 +335,8 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                               initialRecord: widget
                                   .session
                                   .turnoutRecords[activeSlot.slotId],
-                              forceReadOnly: turnoutSubmitted,
+                              forceReadOnly: turnoutSubmitted ||
+                                  _isHourlyClosed(activeSlot.slotId),
                               mode: PresidingTurnoutCardMode.entry,
                               onSave:
                                   ({
@@ -317,6 +362,10 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                               widget.session.turnoutRecords[activeSlot.slotId],
                           onExpand: () {
                             if (turnoutSubmitted) return;
+                            if (!_canSelectHourly(activeSlot.slotId) &&
+                                !_isHourlyClosed(activeSlot.slotId)) {
+                              return;
+                            }
                             setState(() => _isTimeSlotExpanded = true);
                           },
                         ),
@@ -398,7 +447,8 @@ class _TurnoutTimeTabBar extends StatelessWidget {
     required this.selectedSlotId,
     required this.isExpanded,
     required this.records,
-    required this.enabled,
+    required this.canSelect,
+    required this.isLocked,
     required this.onSelected,
   });
 
@@ -406,7 +456,8 @@ class _TurnoutTimeTabBar extends StatelessWidget {
   final String selectedSlotId;
   final bool isExpanded;
   final Map<String, TurnoutRecord> records;
-  final bool enabled;
+  final bool Function(String slotId) canSelect;
+  final bool Function(String slotId) isLocked;
   final ValueChanged<String> onSelected;
 
   @override
@@ -419,72 +470,86 @@ class _TurnoutTimeTabBar extends StatelessWidget {
               final bool selected = slot.slotId == selectedSlotId;
               final TurnoutRecord? record = records[slot.slotId];
               final bool saved = record?.savedAt != null;
-              final bool readOnly = record?.isReadOnly ?? false;
+              final bool locked = isLocked(slot.slotId);
+              final bool selectable = canSelect(slot.slotId);
 
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: InkWell(
-                  onTap: enabled ? () => onSelected(slot.slotId) : null,
-                  borderRadius: BorderRadius.circular(14),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: selected ? AppGradients.primaryButton : null,
-                      color: selected ? null : AppColors.slate100,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: selected
-                            ? AppColors.primary.withValues(alpha: 0.35)
-                            : AppColors.slate200,
+                child: Opacity(
+                  opacity: selectable || selected ? 1 : 0.45,
+                  child: InkWell(
+                    onTap: selectable ? () => onSelected(slot.slotId) : null,
+                    borderRadius: BorderRadius.circular(14),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
                       ),
-                      boxShadow: selected
-                          ? <BoxShadow>[
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.22),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        if (readOnly)
-                          Icon(
-                            Icons.lock_rounded,
-                            size: 14,
-                            color: selected ? Colors.white : AppColors.slate500,
-                          )
-                        else if (saved)
-                          Icon(
-                            Icons.check_circle_rounded,
-                            size: 14,
-                            color: selected ? Colors.white : AppColors.primary,
-                          ),
-                        if (readOnly || saved) const SizedBox(width: 4),
-                        Text(
-                          slot.labelKey.tr(),
-                          style: AppTextStyles.caption.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: selected ? Colors.white : AppColors.slate700,
-                          ),
+                      decoration: BoxDecoration(
+                        gradient: selected ? AppGradients.primaryButton : null,
+                        color: selected ? null : AppColors.slate100,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.primary.withValues(alpha: 0.35)
+                              : AppColors.slate200,
                         ),
-                        if (selected) ...<Widget>[
-                          const SizedBox(width: 4),
-                          Icon(
-                            isExpanded
-                                ? Icons.keyboard_arrow_up_rounded
-                                : Icons.keyboard_arrow_down_rounded,
-                            size: 16,
-                            color: Colors.white,
+                        boxShadow: selected
+                            ? <BoxShadow>[
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.22,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (locked)
+                            Icon(
+                              Icons.lock_rounded,
+                              size: 14,
+                              color: selected
+                                  ? Colors.white
+                                  : AppColors.slate500,
+                            )
+                          else if (saved)
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 14,
+                              color: selected
+                                  ? Colors.white
+                                  : AppColors.primary,
+                            ),
+                          if (locked || saved) const SizedBox(width: 4),
+                          Text(
+                            slot.labelKey.tr(),
+                            style: AppTextStyles.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: selected
+                                  ? Colors.white
+                                  : selectable
+                                  ? AppColors.slate700
+                                  : AppColors.slate400,
+                            ),
                           ),
+                          if (selected) ...<Widget>[
+                            const SizedBox(width: 4),
+                            Icon(
+                              isExpanded
+                                  ? Icons.keyboard_arrow_up_rounded
+                                  : Icons.keyboard_arrow_down_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),

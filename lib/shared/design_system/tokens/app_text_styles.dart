@@ -1,18 +1,15 @@
 import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Typography scale built on Poppins (the design system typeface). UI
-/// references these tokens rather than building `TextStyle`s inline, keeping
-/// fonts and weights consistent everywhere.
+/// Typography scale using bundled Noto Sans Devanagari (no Google Fonts
+/// network download / disk cache on Android production).
 abstract final class AppTextStyles {
-  static const String fontFamily = 'Poppins';
+  static const String fontFamily = 'NotoSansDevanagari';
 
-  /// Family name registered by [GoogleFonts.notoSansDevanagari] after bootstrap preload.
-  static const String devanagariFontFamily = 'Noto Sans Devanagari';
+  /// Bundled family from `pubspec.yaml` `fonts:`.
+  static const String devanagariFontFamily = 'NotoSansDevanagari';
 
-  /// Renders Hindi (Devanagari) when Poppins lacks those glyphs — avoids the
-  /// yellow missing-glyph underline in debug builds.
+  /// Renders Hindi (Devanagari) when a Latin-only face lacks those glyphs.
   static const List<String> devanagariFontFallback = <String>[
     devanagariFontFamily,
   ];
@@ -39,7 +36,7 @@ abstract final class AppTextStyles {
     ),
   );
 
-  /// Base Poppins style applied via [GoogleFonts]; all tokens derive from it.
+  /// Base style from bundled Noto Sans Devanagari.
   static TextStyle _poppins({
     required double fontSize,
     required FontWeight fontWeight,
@@ -47,7 +44,8 @@ abstract final class AppTextStyles {
     double? letterSpacing,
     Color color = AppColors.textPrimary,
   }) => withDevanagariFallback(
-    GoogleFonts.poppins(
+    TextStyle(
+      fontFamily: fontFamily,
       fontSize: fontSize,
       fontWeight: fontWeight,
       height: height,

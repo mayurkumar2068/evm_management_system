@@ -1,11 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
+import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Temporary OTP gate (bypass code `123456` until real OTP API is provided).
+/// Verifies SMS OTP for polling-party P1 mobile, then saves party details.
 class PresidingPartyOtpScreen extends StatefulWidget {
   const PresidingPartyOtpScreen({super.key});
 
@@ -15,13 +20,23 @@ class PresidingPartyOtpScreen extends StatefulWidget {
 }
 
 class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
-  static const String _bypassOtp = '123456';
-
   final TextEditingController _otpCtrl = TextEditingController();
+  late final PoPartyRemoteDatasource _api;
+
   bool _busy = false;
+  bool _sending = false;
   String? _error;
+  String? _info;
+
+  PoPartyDetails? get _payload {
+    final Object? args = Get.arguments;
+    if (args is PoPartyDetails) return args;
+    return null;
+  }
 
   String get _mobile {
+    final PoPartyDetails? payload = _payload;
+    if (payload != null) return payload.p1MobileNo;
     final Object? args = Get.arguments;
     if (args is Map && args['mobile'] != null) {
       return args['mobile'].toString();
@@ -31,45 +46,123 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _api = PoPartyRemoteDatasource(AppServices.config);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _sendOtp(isResend: false);
+    });
+  }
+
+  @override
   void dispose() {
     _otpCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _verify() async {
-    FocusScope.of(context).unfocus();
-    final String otp = _otpCtrl.text.trim();
-    if (otp.isEmpty) {
-      setState(() => _error = LocaleKeys.presidingPartyOtpRequired.tr());
-      return;
-    }
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
+  String _maskedMobile(String mobile) {
+    if (mobile.length < 4) return mobile;
+    return '${'*' * (mobile.length - 4)}${mobile.substring(mobile.length - 4)}';
+  }
 
-    // Real send/verify OTP API will replace this bypass.
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
-
-    if (otp != _bypassOtp) {
+  Future<void> _sendOtp({required bool isResend}) async {
+    final String mobile = _mobile.trim();
+    if (mobile.isEmpty) {
       setState(() {
-        _busy = false;
-        _error = LocaleKeys.presidingPartyOtpInvalid.tr();
+        _error = LocaleKeys.presidingPartyP1MobileRequired.tr();
+        _info = null;
       });
       return;
     }
+    setState(() {
+      _sending = true;
+      _error = null;
+      _info = null;
+    });
+    try {
+      await _api.sendOtp(mobile);
+      if (!mounted) return;
+      final String msg = isResend
+          ? LocaleKeys.presidingPartyOtpResent.tr(
+              args: <String>[_maskedMobile(mobile)],
+            )
+          : LocaleKeys.presidingPartyOtpSent.tr(
+              args: <String>[_maskedMobile(mobile)],
+            );
+      setState(() {
+        _sending = false;
+        _info = msg;
+      });
+    } on PoPartyApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _error = e.isUnauthorized
+            ? LocaleKeys.presidingPartySessionMissing.tr()
+            : (e.message.trim().isEmpty
+                  ? LocaleKeys.presidingPartyOtpSendFailed.tr()
+                  : e.message);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _error = LocaleKeys.presidingPartyOtpSendFailed.tr();
+      });
+    }
+  }
 
-    setState(() => _busy = false);
-    Get.back<bool>(result: true);
+  Future<void> _verify() async {
+    FocusScope.of(context).unfocus();
+    final String otp = _otpCtrl.text.trim();
+    if (otp.length != 6) {
+      setState(() => _error = LocaleKeys.presidingPartyOtpRequired.tr());
+      return;
+    }
+    final PoPartyDetails? payload = _payload;
+    if (payload == null || payload.poUserId.trim().isEmpty) {
+      setState(() => _error = LocaleKeys.presidingPartySessionMissing.tr());
+      return;
+    }
+
+    setState(() {
+      _busy = true;
+      _error = null;
+      _info = null;
+    });
+    try {
+      await _api.savePartyDetails(payload);
+      if (!mounted) return;
+      await Get.find<PresidingPartyController>().markComplete();
+      if (!mounted) return;
+      setState(() => _busy = false);
+      Get.back<dynamic>(result: true);
+    } on PoPartyApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = e.isUnauthorized
+            ? LocaleKeys.presidingPartySessionMissing.tr()
+            : e.isInvalidOtp
+            ? LocaleKeys.presidingPartyOtpInvalid.tr()
+            : (e.message.trim().isEmpty
+                  ? LocaleKeys.presidingPartyOtpInvalid.tr()
+                  : e.message);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = LocaleKeys.presidingPartySaveFailed.tr();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final String mobile = _mobile;
-    final String masked = mobile.length >= 4
-        ? '${'*' * (mobile.length - 4)}${mobile.substring(mobile.length - 4)}'
-        : mobile;
+    final String masked = _maskedMobile(mobile);
+    final bool blocked = _busy || _sending;
 
     return Scaffold(
       backgroundColor: context.appBackground,
@@ -83,7 +176,7 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
             ),
             leading: AppCircleBackButton(
               onTap: () {
-                if (!_busy) Get.back<bool>(result: false);
+                if (!blocked) Get.back<dynamic>(result: false);
               },
             ),
           ),
@@ -114,6 +207,7 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
                           controller: _otpCtrl,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
+                          enabled: !blocked,
                           style: AppTextStyles.titleLarge.copyWith(
                             letterSpacing: 8,
                             fontWeight: FontWeight.w800,
@@ -150,7 +244,19 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
                               ),
                             ),
                           ),
+                          onSubmitted: blocked ? null : (_) => _verify(),
                         ),
+                        if (_info != null) ...<Widget>[
+                          const SizedBox(height: 12),
+                          Text(
+                            _info!,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.greenDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                         if (_error != null) ...<Widget>[
                           const SizedBox(height: 12),
                           Text(
@@ -166,11 +272,21 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  AppGradientButton(
+                  PresidingThemeButton(
                     label: LocaleKeys.presidingPartyOtpVerify.tr(),
-                    onPressed: _busy ? null : _verify,
+                    onPressed: blocked ? null : _verify,
                     isLoading: _busy,
                     icon: Icons.verified_user_outlined,
+                  ),
+                  const SizedBox(height: 10),
+                  PresidingThemeButton(
+                    label: LocaleKeys.presidingPartyOtpResend.tr(),
+                    onPressed: blocked
+                        ? null
+                        : () => _sendOtp(isResend: true),
+                    isLoading: _sending,
+                    outlined: true,
+                    icon: Icons.sms_outlined,
                   ),
                 ],
               ),

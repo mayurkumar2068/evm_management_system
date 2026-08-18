@@ -756,6 +756,8 @@ abstract final class LocaleKeys {
       'presiding.fill_5pm_before_next';
   static const String presidingFill3PmBeforeNext =
       'presiding.fill_3pm_before_next';
+  static const String presidingEarlierSlotLocked =
+      'presiding.earlier_slot_locked';
   static const String presidingReportTitle = 'presiding.report_title';
   static const String presidingReportSubtitle = 'presiding.report_subtitle';
   static const String presidingReportMilestones = 'presiding.report_milestones';
@@ -777,6 +779,9 @@ abstract final class LocaleKeys {
   static const String presidingReportPending = 'presiding.report_pending';
   static const String presidingReportSlot = 'presiding.report_slot';
   static const String presidingReportColTotal = 'presiding.report_col_total';
+  static const String presidingGenerateReport = 'presiding.generate_report';
+  static const String presidingGenerateReportLocked =
+      'presiding.generate_report_locked';
   static const String presidingBoothPollingStation =
       'presiding.booth_polling_station';
   static const String presidingBoothLocationTitle =
@@ -827,6 +832,11 @@ abstract final class LocaleKeys {
       'presiding.party_otp_required';
   static const String presidingPartyOtpInvalid = 'presiding.party_otp_invalid';
   static const String presidingPartyOtpVerify = 'presiding.party_otp_verify';
+  static const String presidingPartyOtpResend = 'presiding.party_otp_resend';
+  static const String presidingPartyOtpSendFailed =
+      'presiding.party_otp_send_failed';
+  static const String presidingPartyOtpSent = 'presiding.party_otp_sent';
+  static const String presidingPartyOtpResent = 'presiding.party_otp_resent';
 
   static const String presidingPoDetailsTitle = 'presiding.po_details_title';
   static const String presidingPoDetailsSubtitle =
@@ -868,6 +878,8 @@ abstract final class LocaleKeys {
       'presiding.po_details_mobile_changed';
   static const String presidingPoDetailsSessionMissing =
       'presiding.po_details_session_missing';
+  static const String presidingPoDetailsSessionExpired =
+      'presiding.po_details_session_expired';
   static const String presidingPoDetailsLoadFailed =
       'presiding.po_details_load_failed';
   static const String presidingPoDetailsSaveFailed =

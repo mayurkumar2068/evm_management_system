@@ -60,7 +60,7 @@ final class PresidingConcernRepositoryImpl
     final PresidingSession parsed = PresidingSessionMapper.fromJson(raw);
     PresidingSession session = _ensureMilestoneCatalog(
       _mergeContext(parsed, context),
-    );
+    ).completeDuringPollIfPollEnded();
     final String? liveLoginName = await _liveLoginUserName();
     if ((session.loginUserName == null || session.loginUserName!.isEmpty) &&
         liveLoginName != null &&
@@ -71,7 +71,10 @@ final class PresidingConcernRepositoryImpl
         session.psId != parsed.psId ||
         session.areaType != parsed.areaType ||
         session.pollingStationCode != parsed.pollingStationCode ||
-        session.loginUserName != parsed.loginUserName) {
+        session.loginUserName != parsed.loginUserName ||
+        !_sameMilestoneCatalog(parsed.milestones, session.milestones) ||
+        parsed.turnoutRecords[TurnoutSlotIds.livePollInfo]?.isLocked !=
+            session.turnoutRecords[TurnoutSlotIds.livePollInfo]?.isLocked) {
       await _persist(session);
     }
     return session;
@@ -155,10 +158,15 @@ final class PresidingConcernRepositoryImpl
       }
     }
 
-    final PresidingSession next = session.copyWith(
+    PresidingSession next = session.copyWith(
       milestones: updated,
       turnoutRecords: turnout,
     );
+    if (milestoneId == PresidingMilestoneIds.pollEnd ||
+        milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
+        milestoneId == PresidingMilestoneIds.livePollInfo) {
+      next = next.completeDuringPollIfPollEnded();
+    }
     await _persist(next);
     return PresidingActionOutcome(
       session: next,
@@ -195,6 +203,15 @@ final class PresidingConcernRepositoryImpl
     );
     if (!lastSlotGate.isOk) {
       throw TurnoutCountValidationException(lastSlotGate);
+    }
+
+    final TurnoutCountValidationResult earlierClosed =
+        TurnoutCountValidator.validateEarlierSlotNotClosed(
+      session: session,
+      slotId: slotId,
+    );
+    if (!earlierClosed.isOk) {
+      throw TurnoutCountValidationException(earlierClosed);
     }
 
     if (isQueueOnly) {
@@ -285,6 +302,9 @@ final class PresidingConcernRepositoryImpl
   }
 
   /// Copies latest hourly / final counts into लाइव जानकारी and syncs API.
+  ///
+  /// If live is already higher (e.g. live 25/25, 9 AM 20/20), live is kept.
+  /// If live is lower, hourly counts become the new live floor (as before).
   Future<PresidingSession> _mirrorCountsToLivePoll({
     required PresidingSession session,
     required int male,
@@ -293,11 +313,36 @@ final class PresidingConcernRepositoryImpl
   }) async {
     final TurnoutRecord? existingLive =
         session.turnoutRecords[TurnoutSlotIds.livePollInfo];
-    final TurnoutRecord liveDraft = TurnoutRecord(
-      slotId: TurnoutSlotIds.livePollInfo,
+    if (existingLive?.isLocked ?? false) {
+      return session;
+    }
+    if (TurnoutLiveSync.liveAlreadyCoversHourly(
+      live: existingLive,
       male: male,
       female: female,
-      thirdGender: other,
+      other: other,
+    )) {
+      AppLogger.i(
+        '[LivePoll] keep live (higher/equal) | '
+        'live M=${existingLive?.male ?? 0} F=${existingLive?.female ?? 0} '
+        'O=${existingLive?.thirdGender ?? 0} | '
+        'hourly M=$male F=$female O=$other',
+      );
+      return session;
+    }
+
+    final ({int male, int female, int other}) merged =
+        TurnoutLiveSync.mergePreferringHigherLive(
+      live: existingLive,
+      male: male,
+      female: female,
+      other: other,
+    );
+    final TurnoutRecord liveDraft = TurnoutRecord(
+      slotId: TurnoutSlotIds.livePollInfo,
+      male: merged.male,
+      female: merged.female,
+      thirdGender: merged.other,
       savedAt: DateTime.now(),
       pendingSync: true,
       isLocked: existingLive?.isLocked ?? false,
@@ -314,7 +359,9 @@ final class PresidingConcernRepositoryImpl
     );
 
     AppLogger.i(
-      '[LivePoll] auto-sync from hourly save | M=$male F=$female O=$other | '
+      '[LivePoll] auto-sync from hourly save | '
+      'live M=${merged.male} F=${merged.female} O=${merged.other} | '
+      'hourly M=$male F=$female O=$other | '
       'accepted=${apiResult.accepted}',
     );
 
@@ -449,10 +496,25 @@ final class PresidingConcernRepositoryImpl
         current: session.milestones,
         data: status,
       );
-      final PresidingSession next = session.copyWith(
+      PresidingSession next = session.copyWith(
         milestones: mergedMilestones,
         turnoutRecords: mergedTurnout,
+      ).completeDuringPollIfPollEnded();
+      final TurnoutRecord? live =
+          next.turnoutRecords[TurnoutSlotIds.livePollInfo];
+      final bool lockLive = next.milestones.any(
+        (PresidingMilestone m) =>
+            (m.id == PresidingMilestoneIds.twoHourlyInfo ||
+                m.id == PresidingMilestoneIds.livePollInfo ||
+                m.id == PresidingMilestoneIds.pollEnd) &&
+            m.isCompleted,
       );
+      if (live != null && lockLive && !live.isLocked) {
+        next = next.copyWith(
+          turnoutRecords: Map<String, TurnoutRecord>.from(next.turnoutRecords)
+            ..[TurnoutSlotIds.livePollInfo] = live.copyWith(isLocked: true),
+        );
+      }
       await _persist(next);
       return next;
     } catch (e, s) {
@@ -670,61 +732,47 @@ final class PresidingConcernRepositoryImpl
   }
 
   PresidingSession _ensureMilestoneCatalog(PresidingSession session) {
-    final List<PresidingMilestone> source = session.milestones;
+    final List<PresidingMilestone> catalog =
+        PresidingSessionMapper.defaultMilestones();
     final Map<String, PresidingMilestone> byId = <String, PresidingMilestone>{
-      for (final PresidingMilestone m in source) m.id: m,
+      for (final PresidingMilestone m in session.milestones) m.id: m,
     };
 
-    final PresidingMilestone existing =
-        byId[PresidingMilestoneIds.materialReceived] ??
-        const PresidingMilestone(
-          id: PresidingMilestoneIds.materialReceived,
-          sectionId: PresidingSectionIds.arrival,
-          labelKey: PresidingMilestoneLabelKeys.materialReceived,
-          state: PresidingMilestoneState.pending,
-        );
-    final PresidingMilestone material = PresidingMilestone(
-      id: existing.id,
-      sectionId: PresidingSectionIds.arrival,
-      labelKey: PresidingMilestoneLabelKeys.materialReceived,
-      state: existing.state,
-      completedAt: existing.completedAt,
-      opensTurnout: existing.opensTurnout,
-      pendingSync: existing.pendingSync,
-    );
+    final List<PresidingMilestone> ordered = <PresidingMilestone>[
+      for (final PresidingMilestone def in catalog)
+        PresidingMilestone(
+          id: def.id,
+          sectionId: def.sectionId,
+          labelKey: def.labelKey,
+          state: byId[def.id]?.state ?? def.state,
+          completedAt: byId[def.id]?.completedAt,
+          opensTurnout: def.opensTurnout,
+          pendingSync: byId[def.id]?.pendingSync ?? false,
+        ),
+    ];
 
-    final List<PresidingMilestone> ordered = <PresidingMilestone>[];
-    bool insertedMaterial = false;
-    for (final PresidingMilestone milestone in source) {
-      if (milestone.id == PresidingMilestoneIds.materialReceived) {
-        continue;
-      }
-      if (milestone.id == PresidingMilestoneIds.reachedPollingStation &&
-          !insertedMaterial) {
-        ordered.add(material);
-        insertedMaterial = true;
-      }
-      ordered.add(milestone);
+    if (_sameMilestoneCatalog(session.milestones, ordered)) {
+      return session;
     }
-    if (!insertedMaterial) {
-      final int leftIndex = ordered.indexWhere(
-        (PresidingMilestone m) =>
-            m.id == PresidingMilestoneIds.leftMaterialCenter,
-      );
-      if (leftIndex >= 0) {
-        ordered.insert(leftIndex + 1, material);
-      } else {
-        ordered.insert(0, material);
+    return session.copyWith(milestones: ordered);
+  }
+
+  bool _sameMilestoneCatalog(
+    List<PresidingMilestone> a,
+    List<PresidingMilestone> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id ||
+          a[i].sectionId != b[i].sectionId ||
+          a[i].state != b[i].state ||
+          a[i].completedAt != b[i].completedAt ||
+          a[i].pendingSync != b[i].pendingSync ||
+          a[i].opensTurnout != b[i].opensTurnout) {
+        return false;
       }
     }
-
-    final bool sameOrder = ordered.length == source.length &&
-        List<int>.generate(ordered.length, (int i) => i).every(
-          (int i) =>
-              ordered[i].id == source[i].id &&
-              ordered[i].sectionId == source[i].sectionId,
-        );
-    return sameOrder ? session : session.copyWith(milestones: ordered);
+    return true;
   }
 
   Future<PresidingConcernRemoteDatasource?> _activeRemote() async {

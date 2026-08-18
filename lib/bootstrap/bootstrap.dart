@@ -28,15 +28,14 @@ Future<void> bootstrap(Flavor flavor) async {
       WidgetsFlutterBinding.ensureInitialized();
       await AppTimeZone.ensureInitialized();
       await EasyLocalization.ensureInitialized();
-      await GoogleFonts.pendingFonts(<TextStyle>[
-        GoogleFonts.poppins(),
-        GoogleFonts.notoSansDevanagari(),
-      ]);
       WidgetsFlutterBinding.ensureInitialized();
 
       await LocalNotificationService.instance.initialize();
       await dotenv.load(fileName: flavor.envFile);
       final EnvironmentConfig config = EnvironmentConfig.load(flavor);
+
+      // Bundled fonts only — never download/cache from fonts.google.com.
+      GoogleFonts.config.allowRuntimeFetching = false;
 
       AppLogger.configure(
         enabled: config.enableLogging,
@@ -45,14 +44,15 @@ Future<void> bootstrap(Flavor flavor) async {
 
       // Fresh runtime caches every cold start (images + WebView). Auth/session kept.
       await AppStartupCache.clearOnLaunch();
-      // Always print endpoints so flavor/URL mixups are visible in debug consoles.
-      // ignore: avoid_print
-      print(
-        '[ENV] ${flavor.label} | '
-        'po=${config.poElectionApiBaseUrl} | '
-        'surveyApi=${config.surveyApiBaseUrl} | '
-        'surveyWeb=${config.surveyWebBaseUrl}',
-      );
+      if (!config.isProduction) {
+        // ignore: avoid_print
+        print(
+          '[ENV] ${flavor.label} | '
+          'po=${config.poElectionApiBaseUrl} | '
+          'surveyApi=${config.surveyApiBaseUrl} | '
+          'surveyWeb=${config.surveyWebBaseUrl}',
+        );
+      }
       AppLogger.i(
         'Bootstrapping ${flavor.label} '
         'api=${config.apiBaseUrl} '

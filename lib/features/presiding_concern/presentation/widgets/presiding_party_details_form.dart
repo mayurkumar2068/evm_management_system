@@ -1,6 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
@@ -41,7 +39,6 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
   final TextEditingController _p4Name = TextEditingController();
   final TextEditingController _p4Mobile = TextEditingController();
 
-  late final PoPartyRemoteDatasource _api;
   String? _existingId;
   bool _loading = true;
   bool _saving = false;
@@ -52,7 +49,6 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
   @override
   void initState() {
     super.initState();
-    _api = PoPartyRemoteDatasource(AppServices.config);
     _load();
   }
 
@@ -81,7 +77,8 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
       return;
     }
     try {
-      final PoPartyDetails? existing = await _api.fetchPartyDetails(poUserId);
+      final PoPartyDetails? existing =
+          await Get.find<PresidingPartyController>().loadForForm();
       if (!mounted) return;
       if (existing != null) {
         _existingId =
@@ -104,7 +101,6 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = LocaleKeys.presidingPartyLoadFailed.tr();
       });
     }
   }
@@ -167,28 +163,19 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
     );
 
     try {
-      final String? savedId = await _api.savePartyDetails(payload);
+      await Get.find<PresidingPartyController>().save(payload);
       if (!mounted) return;
-      _existingId =
-          PoPartyDetails.isPartyGuid(savedId) ? savedId : _existingId;
-      if (!PoPartyDetails.isPartyGuid(_existingId)) {
-        _existingId = null;
-      }
       setState(() => _saving = false);
-      await _finishAfterSave(payload);
+      widget.onCompleted?.call();
     } on PoPartyApiException catch (e) {
       if (!mounted) return;
-      if (kBypassPoPartySaveOn404 && (e.isNotFound || e.isUnauthorized)) {
-        setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LocaleKeys.presidingPartyApiNotDeployed.tr())),
-        );
-        await _finishAfterSave(payload);
-        return;
-      }
       setState(() {
         _saving = false;
-        _error = e.message;
+        _error = e.isUnauthorized
+            ? LocaleKeys.presidingPartySessionMissing.tr()
+            : (e.message.trim().isEmpty
+                  ? LocaleKeys.presidingPartySaveFailed.tr()
+                  : e.message);
       });
     } catch (_) {
       if (!mounted) return;
@@ -197,17 +184,6 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
         _error = LocaleKeys.presidingPartySaveFailed.tr();
       });
     }
-  }
-
-  /// Marks party complete on successful save (fields already validated), then OTP.
-  Future<void> _finishAfterSave(PoPartyDetails payload) async {
-    await Get.find<PresidingPartyController>().markComplete();
-    final String mobile = payload.otpMobile;
-    widget.onCompleted?.call();
-    await Get.toNamed<bool>(
-      AppRoute.presidingPartyOtp.path,
-      arguments: <String, String>{'mobile': mobile},
-    );
   }
 
   @override

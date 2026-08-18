@@ -22,9 +22,9 @@ class WebViewWarmer {
         initialUrlRequest: URLRequest(url: WebUri('about:blank')),
         initialSettings: InAppWebViewSettings(
           transparentBackground: true,
-          // Warm the same caches/storage the real views will reuse.
-          cacheEnabled: true,
-          clearCache: false,
+          cacheEnabled: false,
+          cacheMode: CacheMode.LOAD_NO_CACHE,
+          clearCache: true,
         ),
         onWebViewCreated: (InAppWebViewController _) {},
         onLoadStop: (InAppWebViewController _, WebUri? __) {

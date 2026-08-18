@@ -48,6 +48,9 @@ class PoOfficerDetailsDatasource {
         ),
       );
 
+      _throwIfUnauthorized(res.statusCode);
+      if (_isEmptyProfileStatus(res.statusCode)) return null;
+
       final Object? body = res.data;
       if (body is! Map) return null;
       final Map<String, dynamic> map = Map<String, dynamic>.from(body);
@@ -67,7 +70,8 @@ class PoOfficerDetailsDatasource {
       rethrow;
     } on DioException catch (e) {
       final int? code = e.response?.statusCode;
-      if (code == 400 || code == 404 || code == 401 || code == 403) {
+      _throwIfUnauthorized(code);
+      if (code == 400 || code == 404) {
         return null;
       }
       AppLogger.w('[PO Details] fetch failed: ${e.message}');
@@ -94,9 +98,20 @@ class PoOfficerDetailsDatasource {
           headers: auth['headers'] as Map<String, dynamic>,
         ),
       );
+      _throwIfUnauthorized(res.statusCode);
+      final int? code = res.statusCode;
+      if (code == null || code < 200 || code >= 300) {
+        throw PoOfficerDetailsException(
+          'OTP send failed',
+          statusCode: code,
+        );
+      }
       final Object? body = res.data;
       if (body is! Map) {
-        throw const PoOfficerDetailsException('Invalid OTP response');
+        throw PoOfficerDetailsException(
+          'OTP send failed',
+          statusCode: code,
+        );
       }
       final Map<String, dynamic> map = Map<String, dynamic>.from(body);
       final bool ok = map['Status'] == true || map['Success'] == true;
@@ -108,6 +123,7 @@ class PoOfficerDetailsDatasource {
     } on PoOfficerDetailsException {
       rethrow;
     } on DioException catch (e) {
+      _throwIfUnauthorized(e.response?.statusCode);
       throw PoOfficerDetailsException(
         _dioMessage(e, fallback: 'OTP send failed'),
         statusCode: e.response?.statusCode,
@@ -130,6 +146,7 @@ class PoOfficerDetailsDatasource {
           headers: auth['headers'] as Map<String, dynamic>,
         ),
       );
+      _throwIfUnauthorized(res.statusCode);
       final int? code = res.statusCode;
       if (code == null || code < 200 || code >= 300) {
         throw PoOfficerDetailsException(
@@ -139,7 +156,10 @@ class PoOfficerDetailsDatasource {
       }
       final Object? body = res.data;
       if (body is! Map) {
-        throw const PoOfficerDetailsException('Invalid save response');
+        throw PoOfficerDetailsException(
+          'Save failed',
+          statusCode: code,
+        );
       }
       final Map<String, dynamic> map = Map<String, dynamic>.from(body);
       final bool ok = map['Status'] == true || map['Success'] == true;
@@ -151,6 +171,7 @@ class PoOfficerDetailsDatasource {
     } on PoOfficerDetailsException {
       rethrow;
     } on DioException catch (e) {
+      _throwIfUnauthorized(e.response?.statusCode);
       throw PoOfficerDetailsException(
         _dioMessage(e, fallback: 'Save failed'),
         statusCode: e.response?.statusCode,
@@ -180,4 +201,17 @@ String _dioMessage(DioException e, {required String fallback}) {
     }
   }
   return fallback;
+}
+
+void _throwIfUnauthorized(int? code) {
+  if (code == 401 || code == 403) {
+    throw PoOfficerDetailsException(
+      'Session expired. Please login again.',
+      statusCode: code,
+    );
+  }
+}
+
+bool _isEmptyProfileStatus(int? code) {
+  return code == 400 || code == 404;
 }

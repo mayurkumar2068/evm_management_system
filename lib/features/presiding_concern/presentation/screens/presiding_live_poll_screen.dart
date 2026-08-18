@@ -12,6 +12,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
@@ -349,6 +350,14 @@ class _LivePollBodyState extends State<_LivePollBody> {
           centerTitle: true,
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingLivePollTitle.tr(),
+          subtitle: LocaleKeys.presidingPollingStation.tr(
+            args: <String>[
+              widget.session.pollingStationCode,
+              stationLabel,
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+          bottom: const PresidingElectorHeaderStrip(),
         ),
         Expanded(
           child: ListView(

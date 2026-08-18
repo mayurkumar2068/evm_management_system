@@ -33,9 +33,7 @@ abstract final class DashboardWebViewLauncher {
       boothLong: session?.long,
     );
 
-    if (!openAsExternalPortal) {
-      url = appendWebViewCacheBust(url);
-    }
+    url = appendWebViewCacheBust(url);
     return url;
   }
 
@@ -53,9 +51,7 @@ abstract final class DashboardWebViewLauncher {
           ? WebViewHeaderPolicy.customOnly
           : WebViewHeaderPolicy.sessionAndCustom,
       extraHeaders: openAsExternalPortal ? _externalPortalHeaders : const {},
-      cachePolicy: openAsExternalPortal
-          ? WebViewCachePolicy.normal
-          : WebViewCachePolicy.noCache,
+      cachePolicy: WebViewCachePolicy.noCache,
       syncCookies: !openAsExternalPortal,
       injectSessionContext: !openAsExternalPortal,
       enableJsBridge: !openAsExternalPortal,

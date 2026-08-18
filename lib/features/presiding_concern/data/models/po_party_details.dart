@@ -45,20 +45,22 @@ class PoPartyDetails {
 
   bool get existsOnServer => isPartyGuid(id);
 
-  /// Prefer P1 mobile for OTP; fall back to first non-empty party mobile.
-  String get otpMobile {
-    for (final String m in <String>[
-      p1MobileNo,
-      p2MobileNo,
-      p3MobileNo,
-      p4MobileNo,
-    ]) {
-      final String t = m.trim();
-      if (t.isNotEmpty) return t;
-    }
-    return '';
-  }
+  /// Local cache / pending-sync payload (no OTP — party save does not use it).
+  Map<String, dynamic> toCacheJson() => <String, dynamic>{
+    'id': id,
+    'poUserId': poUserId,
+    'partyNo': partyNo,
+    'p1Name': p1Name,
+    'p1MobileNo': p1MobileNo,
+    'p2Name': p2Name,
+    'p2MobileNo': p2MobileNo,
+    'p3Name': p3Name,
+    'p3MobileNo': p3MobileNo,
+    'p4Name': p4Name,
+    'p4MobileNo': p4MobileNo,
+  };
 
+  /// `save-po-party` body. OTP is not used for दल की जानकारी.
   Map<String, dynamic> toSaveJson() => <String, dynamic>{
     // Server expects Nullable<Guid>; never send action-status ints like "1".
     'id': existsOnServer ? id : null,

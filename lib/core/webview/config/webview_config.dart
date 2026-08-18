@@ -31,7 +31,7 @@ class WebViewConfig {
     this.injectSessionContext = true,
     this.syncCookies = true,
     this.bootstrapSession = true,
-    this.cachePolicy = WebViewCachePolicy.normal,
+    this.cachePolicy = WebViewCachePolicy.noCache,
     this.allowCleartextLocalhost = true,
     this.serverTrustPolicy = WebViewServerTrustPolicy.compatibility,
     this.pinnedCertificateSha256 = const <String>{},
