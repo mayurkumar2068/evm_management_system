@@ -23,6 +23,20 @@ class PoOfficerDetails {
   final String poName;
   final String poMobileNo;
 
+  static PoOfficerDetails? tryParse(
+    Map<String, dynamic> json, {
+    String? fallbackUserId,
+  }) {
+    final details = PoOfficerDetails.fromJson(json);
+    if (details.poName.trim().isEmpty && details.poMobileNo.trim().isEmpty) {
+      return null;
+    }
+    if (details.poUserId.isEmpty && fallbackUserId != null) {
+      return details.copyWith(poUserId: fallbackUserId);
+    }
+    return details;
+  }
+
   bool get hasProfile =>
       poName.trim().isNotEmpty && poMobileNo.trim().length == 10;
 

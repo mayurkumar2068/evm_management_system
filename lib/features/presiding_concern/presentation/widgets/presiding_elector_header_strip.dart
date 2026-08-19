@@ -18,8 +18,10 @@ class PresidingElectorHeaderStrip extends StatelessWidget {
   static PresidingElectionContext? _fromSession(ServiceSession session) {
     return PresidingElectionContext(
       electionId: 0,
-      psId: session.userId,
+      psId: '',
       areaType: PresidingElectionContext.normalizeAreaType(session.section),
+      userId: session.userId,
+      loginUserName: session.name,
       maleElectors: session.maleElectors,
       femaleElectors: session.femaleElectors,
       otherElectors: session.otherElectors,
@@ -42,12 +44,18 @@ class PresidingElectorHeaderStrip extends StatelessWidget {
         ? _fromSession(session)
         : null;
 
-    return PresidingElectionContextStore.preferWithElectors(
-      PresidingElectionContextStore.preferWithElectors(
-        passed,
-        PresidingElectionContextStore.memoryCache,
-      ),
-      fromSession,
+    final PresidingElectionContext? merged =
+        PresidingElectionContextStore.preferWithElectors(
+          PresidingElectionContextStore.preferWithElectors(
+            passed,
+            PresidingElectionContextStore.memoryCache,
+          ),
+          fromSession,
+        );
+    if (merged == null) return null;
+    return PresidingElectionContextStore.mergePreservingIdentity(
+      merged,
+      passed ?? PresidingElectionContextStore.memoryCache,
     );
   }
 

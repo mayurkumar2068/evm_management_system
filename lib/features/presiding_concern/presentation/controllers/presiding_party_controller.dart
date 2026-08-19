@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 import 'package:get/get.dart';
@@ -92,7 +93,7 @@ final class PresidingPartyController extends GetxController {
   Future<void> save(PoPartyDetails details) async {
     final String poUserId = details.poUserId.trim();
     if (poUserId.isEmpty) {
-      throw const PoPartyApiException(
+      throw const PoApiException(
         'PO session token missing. Please login again.',
         statusCode: 401,
       );
@@ -115,7 +116,7 @@ final class PresidingPartyController extends GetxController {
       await _writeDraft(poUserId, stored);
       await _clearPending(poUserId);
       await markComplete();
-    } on PoPartyApiException catch (e) {
+    } on PoApiException catch (e) {
       if (e.isUnauthorized) rethrow;
       await _markPending(poUserId, details);
       final bool fatalClient = e.statusCode != null &&
@@ -151,7 +152,7 @@ final class PresidingPartyController extends GetxController {
       await _writeDraft(poUserId, stored);
       await _clearPending(poUserId);
       await markComplete();
-    } on PoPartyApiException catch (e) {
+    } on PoApiException catch (e) {
       if (e.isUnauthorized || (!e.isOffline && e.statusCode == 400)) {
         return;
       }

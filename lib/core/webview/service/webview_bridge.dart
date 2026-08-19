@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
 import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
-import 'package:flutter/foundation.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:image_picker/image_picker.dart';
@@ -98,7 +98,7 @@ class WebViewBridge {
         );
         return <String, dynamic>{'ok': true};
       case 'log':
-        debugPrint('[webview] ${payload['message']}');
+        AppLogger.d('[webview] ${payload['message']}');
         return <String, dynamic>{'ok': true};
       case 'message':
         onMessage?.call(
@@ -209,7 +209,7 @@ class WebViewBridge {
 
       return <String, dynamic>{'ok': true, 'dataUrl': picked.dataUrl};
     } catch (e) {
-      debugPrint('[webview] pickImage failed: $e');
+      AppLogger.d('[webview] pickImage failed: $e');
       return <String, dynamic>{'ok': false, 'error': e.toString()};
     }
   }

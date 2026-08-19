@@ -6,7 +6,12 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_collapsed_summary.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_count_box.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_stat_column.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_save_status_badge.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_step_button.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
@@ -212,7 +217,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
   @override
   Widget build(BuildContext context) {
     if (!widget.isExpanded) {
-      return _CollapsedSummary(
+      return PresidingCollapsedSummary(
         title: widget.title,
         record: widget.initialRecord,
         locked: !widget.interactionEnabled,
@@ -255,7 +260,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          _SaveStatusBadge(
+                          PresidingSaveStatusBadge(
                             isSaved: isSaved,
                             isReadOnly: _isReadOnly,
                             savedTime: savedTime,
@@ -266,7 +271,7 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                   ],
                 )
               else
-                _SaveStatusBadge(
+                PresidingSaveStatusBadge(
                   isSaved: isSaved,
                   isReadOnly: _isReadOnly,
                   savedTime: savedTime,
@@ -352,52 +357,6 @@ class _TimeBadge extends StatelessWidget {
         color: AppColors.primary,
         size: 22,
       ),
-    );
-  }
-}
-
-class _SaveStatusBadge extends StatelessWidget {
-  const _SaveStatusBadge({
-    required this.isSaved,
-    required this.savedTime,
-    this.isReadOnly = false,
-  });
-
-  final bool isSaved;
-  final bool isReadOnly;
-  final String savedTime;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isSaved && !isReadOnly) {
-      return const SizedBox.shrink();
-    }
-
-    return Row(
-      children: <Widget>[
-        Icon(
-          isReadOnly
-              ? Icons.lock_rounded
-              : Icons.check_circle_rounded,
-          size: 16,
-          color: isReadOnly ? AppColors.slate500 : AppColors.success,
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            isReadOnly
-                ? LocaleKeys.presidingAlreadyRegistered.tr()
-                : LocaleKeys.presidingSavedAt.tr(args: <String>[savedTime]),
-            maxLines: 2,
-            softWrap: true,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.caption.copyWith(
-              color: isSaved ? AppColors.success : AppColors.slate500,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -497,7 +456,7 @@ class _QueueCountSection extends StatelessWidget {
                 color: PresidingUiTokens.queueAccent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.groups_rounded,
                 color: PresidingUiTokens.queueAccent,
                 size: 24,
@@ -534,7 +493,7 @@ class _QueueCountSection extends StatelessWidget {
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly,
-            const _ReplaceInitialZeroFormatter(),
+            const ReplaceInitialZeroFormatter(),
             LengthLimitingTextInputFormatter(
               TurnoutCountValidator.maxInputDigits,
             ),
@@ -563,84 +522,6 @@ class _QueueCountSection extends StatelessWidget {
   }
 }
 
-class _CollapsedSummary extends StatelessWidget {
-  const _CollapsedSummary({
-    required this.title,
-    required this.record,
-    required this.onTap,
-    this.locked = false,
-  });
-
-  final String title;
-  final TurnoutRecord? record;
-  final VoidCallback? onTap;
-  final bool locked;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool saved = record?.savedAt != null;
-    final int total =
-        (record?.male ?? 0) +
-        (record?.female ?? 0) +
-        (record?.thirdGender ?? 0);
-
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Opacity(
-        opacity: locked ? 0.55 : 1,
-        child: Row(
-          children: <Widget>[
-            Icon(
-              locked
-                  ? Icons.lock_rounded
-                  : saved
-                      ? Icons.check_circle_rounded
-                      : Icons.pending_actions_rounded,
-              color: locked
-                  ? AppColors.slate400
-                  : saved
-                      ? AppColors.success
-                      : AppColors.slate400,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (saved)
-                    Text(
-                      record!.queueCount != null
-                          ? LocaleKeys.presidingQueueSummary.tr(
-                              args: <String>['${record!.queueCount}'],
-                            )
-                          : LocaleKeys.presidingTotalVotesSummary.tr(
-                              args: <String>['$total'],
-                            ),
-                      style: AppTextStyles.caption,
-                    ),
-                ],
-              ),
-            ),
-            Icon(
-              locked
-                  ? Icons.lock_outline_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              color: AppColors.slate400,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _GenderField extends StatelessWidget {
   const _GenderField({
     required this.genderType,
@@ -663,162 +544,44 @@ class _GenderField extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        PresidingGenderAvatar(type: genderType, size: 36),
-        const SizedBox(height: 4),
-        Text(
-          PresidingGenderAssets.labelKeyFor(genderType).tr(),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.caption.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 10,
-          ),
+        PresidingGenderStatColumn(
+          genderType: genderType,
+          avatarSize: 36,
+          labelFontSize: 10,
         ),
         const SizedBox(height: 6),
         if (showSteps)
           Row(
             children: <Widget>[
-              _StepButton(
+              PresidingStepButton(
                 icon: Icons.remove_rounded,
-                onTap: disabled ? null : () => onDelta(-1),
+                onPressed: () => onDelta(-1),
+                enabled: !disabled,
               ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: _CountBox(
+                  child: PresidingCountBox(
                     controller: controller,
                     disabled: disabled,
                     accentColor: color,
                   ),
                 ),
               ),
-              _StepButton(
+              PresidingStepButton(
                 icon: Icons.add_rounded,
-                onTap: disabled ? null : () => onDelta(1),
+                onPressed: () => onDelta(1),
+                enabled: !disabled,
               ),
             ],
           )
         else
-          _CountBox(
+          PresidingCountBox(
             controller: controller,
             disabled: disabled,
             accentColor: color,
           ),
       ],
-    );
-  }
-}
-
-class _CountBox extends StatelessWidget {
-  const _CountBox({
-    required this.controller,
-    required this.disabled,
-    required this.accentColor,
-  });
-
-  final TextEditingController controller;
-  final bool disabled;
-  final Color accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 42,
-      width: double.infinity,
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        enabled: !disabled,
-        readOnly: disabled,
-        inputFormatters: <TextInputFormatter>[
-          FilteringTextInputFormatter.digitsOnly,
-          const _ReplaceInitialZeroFormatter(),
-          LengthLimitingTextInputFormatter(
-            TurnoutCountValidator.maxInputDigits,
-          ),
-        ],
-        style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w800),
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 10,
-          ),
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: accentColor, width: 2),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// When field shows only `0`, first typed digit replaces it (e.g. type `5` → `5`, not `05`).
-/// Does not affect later edits once value is non-zero.
-class _ReplaceInitialZeroFormatter extends TextInputFormatter {
-  const _ReplaceInitialZeroFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (oldValue.text == '0' &&
-        newValue.text.length > 1 &&
-        newValue.text.startsWith('0')) {
-      final String replaced = newValue.text.substring(1);
-      return TextEditingValue(
-        text: replaced,
-        selection: TextSelection.collapsed(offset: replaced.length),
-      );
-    }
-    return newValue;
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  const _StepButton({required this.icon, this.onTap});
-
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 28,
-      height: 28,
-      child: Material(
-        color: onTap == null ? AppColors.slate100 : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: onTap == null ? AppColors.slate300 : AppColors.slate700,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

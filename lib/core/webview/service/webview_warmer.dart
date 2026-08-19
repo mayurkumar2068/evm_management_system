@@ -1,3 +1,4 @@
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -35,7 +36,7 @@ class WebViewWarmer {
       _warmed = true;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[WebViewWarmer] warm failed: $e');
+        AppLogger.d('[WebViewWarmer] warm failed: $e');
       }
     } finally {
       _warming = false;

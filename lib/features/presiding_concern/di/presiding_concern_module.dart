@@ -28,13 +28,13 @@ abstract final class PresidingConcernModule {
     PoElectionApiClient.reset();
     _remote = null;
     _repository = null;
-    _warmSyncDone = false;
+    _resetWarmSyncState();
   }
 
   /// Wipes PO local DB cache (logout / re-login). Does not delete GetX
   /// controllers — those are permanent and deleting them causes a white screen.
   static Future<void> clearLocalCache() async {
-    _warmSyncDone = false;
+    _resetWarmSyncState();
     try {
       final PresidingConcernLocalDatasource local =
           _local ??= PresidingConcernLocalDatasource(AppServices.database);
@@ -61,19 +61,29 @@ abstract final class PresidingConcernModule {
         ),
       );
 
+  // True only once a warm sync has genuinely completed (pending actions
+  // pushed + latest PO status pulled). Never set optimistically — a failed
+  // or skipped (offline) attempt must be retried, not treated as done.
   static bool _warmSyncDone = false;
+  static bool _warmSyncInFlight = false;
+  // Lives for the app process, like the static clients above — never cancelled.
+  // ignore: cancel_subscriptions
+  static StreamSubscription<bool>? _connectivitySub;
 
   /// Local session stream. Warm-syncs pending actions + latest PO status.
   static Stream<PresidingSession> watchSession() async* {
     await bootstrap.ensureContext();
-    if (!_warmSyncDone) {
-      _warmSyncDone = true;
-      unawaited(_warmSyncInBackground());
-    }
+    _ensureConnectivityWatcher();
+    unawaited(_attemptWarmSync());
     yield* repository.watchSession();
   }
 
-  static Future<void> _warmSyncInBackground() async {
+  /// Runs the warm sync when it hasn't succeeded yet and isn't already
+  /// running. Safe to call repeatedly (screen revisits, reconnects) — it's a
+  /// no-op once a sync has actually gone through.
+  static Future<void> _attemptWarmSync() async {
+    if (_warmSyncDone || _warmSyncInFlight) return;
+    _warmSyncInFlight = true;
     try {
       if (!await AppServices.connectivity.isOnline) return;
       await repository.syncPending();
@@ -81,7 +91,33 @@ abstract final class PresidingConcernModule {
         await Get.find<PresidingPartyController>().syncPending();
       }
       await repository.refreshFromServer();
-    } catch (_) {}
+      // Only reached when every step above succeeded.
+      _warmSyncDone = true;
+    } catch (_) {
+      // Leave _warmSyncDone false — the next watchSession() call or the
+      // connectivity watcher below will retry automatically.
+    } finally {
+      _warmSyncInFlight = false;
+    }
+  }
+
+  /// Auto-retries the warm sync the moment connectivity returns, so a PO who
+  /// re-logs in without a network yet still gets API data as soon as they're
+  /// back online — without needing to leave/reopen the dashboard.
+  static void _ensureConnectivityWatcher() {
+    if (_connectivitySub != null) return;
+    _connectivitySub = AppServices.connectivity.onStatusChange.listen((
+      bool online,
+    ) {
+      if (online && !_warmSyncDone) {
+        unawaited(_attemptWarmSync());
+      }
+    });
+  }
+
+  static void _resetWarmSyncState() {
+    _warmSyncDone = false;
+    _warmSyncInFlight = false;
   }
 }
 

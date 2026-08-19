@@ -458,7 +458,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                         ],
                         if (_error != null) ...<Widget>[
                           const SizedBox(height: 14),
-                          _ErrorBanner(message: _error!),
+                          AppStatusBanner(message: _error!, tone: StatusTone.error, icon: Icons.error_outline_rounded),
                         ],
                         const SizedBox(height: 16),
                         _HintStrip(
@@ -706,41 +706,6 @@ class _HintStrip extends StatelessWidget {
   }
 }
 
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: AppRadius.brMd,
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        children: <Widget>[
-          const Icon(
-            Icons.error_outline_rounded,
-            size: 18,
-            color: AppColors.error,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SubmitButton extends StatelessWidget {
   const _SubmitButton({

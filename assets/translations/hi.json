@@ -13,6 +13,7 @@
     "saved": "सेव किया गया",
     "search": "खोजें",
     "no_data": "कोई डेटा उपलब्ध नहीं है",
+    "no_internet": "इंटरनेट कनेक्शन नहीं है",
     "something_went_wrong": "कुछ गलत हो गया",
     "back": "पीछे",
     "skip": "छोड़ें",
@@ -784,11 +785,17 @@
     "po_details_otp_sent": "OTP सफलतापूर्वक भेजा गया: {}",
     "po_details_otp_resent": "OTP सफलतापूर्वक फिर भेजा गया: {}",
     "po_details_mobile_changed": "मोबाइल नंबर बदला गया है। OTP सत्यापन आवश्यक है।",
+    "po_details_name_changed": "नाम बदला गया है। सेव करने के लिए OTP सत्यापन आवश्यक है।",
     "po_details_session_missing": "पीओ सत्र नहीं मिला। कृपया फिर से लॉगिन करें।",
     "po_details_session_expired": "सत्र समाप्त हो गया है। कृपया फिर से लॉगिन करें।",
     "po_details_load_failed": "पीओ विवरण लोड नहीं हो सका। कृपया पुनः प्रयास करें।",
     "po_details_save_failed": "पीओ विवरण सेव नहीं हो सका। कृपया पुनः प्रयास करें।",
-    "po_details_already_saved": "विवरण पहले से सेव है। आप आगे बढ़ सकते हैं।"
+    "po_details_already_saved": "विवरण पहले से सेव है। आप आगे बढ़ सकते हैं।",
+    "save_failed_generic": "सेव विफल",
+    "session_expired": "सत्र समाप्त",
+    "mobile_required": "मोबाइल नंबर आवश्यक है",
+    "collapse": "संकुचित करें",
+    "expand": "विस्तार करें"
   },
   "webview": {
     "load_failed_subtitle": "पेज लोड नहीं हो सका। अपना कनेक्शन जाँचें और पुनः प्रयास करें।",

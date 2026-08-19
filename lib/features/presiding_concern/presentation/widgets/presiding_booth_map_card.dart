@@ -263,11 +263,11 @@ class _PresidingBoothMapCardState extends State<PresidingBoothMapCard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(Icons.map_outlined, size: 40, color: AppColors.slate300),
-          SizedBox(height: 8),
+          const Icon(Icons.map_outlined, size: 40, color: AppColors.slate300),
+          const SizedBox(height: 8),
           Text(
             LocaleKeys.presidingBoothOpenMap.tr(),
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.slate500,
               fontWeight: FontWeight.w600,
             ),

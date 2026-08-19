@@ -25,9 +25,9 @@ Future<void> showNominationStartSheet(BuildContext context) {
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 24, 10, 8),
-              child: const _NominationStartSheet(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(10, 24, 10, 8),
+              child: _NominationStartSheet(),
             ),
             Positioned(
               top: 0,

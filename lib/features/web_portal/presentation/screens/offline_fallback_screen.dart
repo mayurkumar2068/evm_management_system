@@ -234,8 +234,9 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
   Widget _buildDistrictAutocomplete() {
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty)
+        if (textEditingValue.text.isEmpty) {
           return const Iterable<String>.empty();
+        }
         return _districts.where(
           (String option) =>
               option.contains(textEditingValue.text.toUpperCase()),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 
 /// English → Hindi transliteration via Google Input Tools (same as SEC portal).
 ///
@@ -70,7 +70,7 @@ class HindiTransliterationService {
       _cache[key] = hindi;
       return hindi;
     } catch (e) {
-      debugPrint('[Transliterate] fail wordLen=${word.length} err=$e');
+      AppLogger.d('[Transliterate] fail wordLen=${word.length} err=$e');
       return word;
     }
   }

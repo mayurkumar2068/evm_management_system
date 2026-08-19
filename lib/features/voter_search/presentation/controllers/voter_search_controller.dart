@@ -5,6 +5,7 @@ import 'package:evm_management_system/features/voter_search/data/hindi_translite
 import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
 import 'package:evm_management_system/features/voter_search/data/repositories/voter_search_repository.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
@@ -525,7 +526,7 @@ class VoterSearchController extends GetxController {
     try {
       final String distNo = resolveDistNo(elector);
       if (distNo.isEmpty || elector.id.trim().isEmpty) {
-        debugPrint(
+        AppLogger.d(
           '[VoterSearch] photo skipped — missing distNo/id '
           'distNo="$distNo" id="${elector.id}"',
         );
@@ -547,7 +548,7 @@ class VoterSearchController extends GetxController {
       return null;
     } catch (e) {
       // Transient errors: do not cache so next open / slip can retry.
-      debugPrint('[VoterSearch] photo fetch error (not cached): $e');
+      AppLogger.d('[VoterSearch] photo fetch error (not cached): $e');
       return null;
     } finally {
       _photoFetchBusy = false;

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
 import 'package:evm_management_system/features/voter_search/data/voter_search_crypto.dart';
 import 'package:evm_management_system/features/voter_search/data/voter_search_endpoints.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 
 /// Remote datasource for SECSearchAPI voter search.
@@ -19,6 +20,9 @@ class VoterSearchRemoteDatasource {
   }) : _dio = dio,
        _passKey = passKey,
        _crypto = crypto;
+
+  static const int _kConnectTimeoutSeconds = 30;
+  static const int _kReceiveTimeoutSeconds = 90;
 
   final Dio _dio;
   final String _passKey;
@@ -50,7 +54,7 @@ class VoterSearchRemoteDatasource {
 
   Future<List<VoterElector>> searchElectors(ElectorSearchQuery query) async {
     final String reqData = jsonEncode(query.toJson());
-    debugPrint(
+    AppLogger.d(
       '[VoterSearchAPI] search-elector '
       'elecType=${query.elecType} distNo=${query.distNo} '
       'blockNo=${query.blockNo} ubNo=${query.ubNo} '
@@ -73,7 +77,7 @@ class VoterSearchRemoteDatasource {
     ElectorEpicSearchQuery query,
   ) async {
     final String reqData = jsonEncode(query.toJson());
-    debugPrint(
+    AppLogger.d(
       '[VoterSearchAPI] search-elector-epic '
       'distNo=${query.distNo} epic=${query.epicNo}',
     );
@@ -105,7 +109,7 @@ class VoterSearchRemoteDatasource {
     });
     try {
       final String encryptedPassKey = await _crypto.encrypt(_passKey);
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] → POST ${VoterSearchEndpoints.photo} '
         'distNo=$distNo id=$electorId reqLen=${reqData.length}',
       );
@@ -120,8 +124,8 @@ class VoterSearchRemoteDatasource {
         options: Options(
           contentType: Headers.jsonContentType,
           responseType: ResponseType.plain,
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 90),
+          sendTimeout: const Duration(seconds: _kConnectTimeoutSeconds),
+          receiveTimeout: const Duration(seconds: _kReceiveTimeoutSeconds),
           // Photo must be JSON 2xx — Dio's default validateStatus (<500)
           // treats 403 HTML gateway pages as success and breaks jsonDecode.
           validateStatus: (int? code) => code != null && code >= 200 && code < 300,
@@ -132,7 +136,7 @@ class VoterSearchRemoteDatasource {
       if (rawBody is String) {
         final String trimmed = rawBody.trimLeft();
         if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
-          debugPrint(
+          AppLogger.d(
             '[VoterSearchAPI] ✕ photo html_body http=${response.statusCode} '
             'ms=${sw.elapsedMilliseconds}',
           );
@@ -142,7 +146,7 @@ class VoterSearchRemoteDatasource {
 
       final Map<String, dynamic> body = _asJsonMap(rawBody);
       final VoterSearchEnvelope raw = VoterSearchEnvelope.fromJson(body);
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ← ${VoterSearchEndpoints.photo} '
         'http=${response.statusCode} status=${raw.status} '
         'dataLen=${raw.data.length} ms=${sw.elapsedMilliseconds}',
@@ -154,27 +158,27 @@ class VoterSearchRemoteDatasource {
         );
       }
       if (raw.data.trim().isEmpty) {
-        debugPrint('[VoterSearchAPI] photo empty Data');
+        AppLogger.d('[VoterSearchAPI] photo empty Data');
         return null;
       }
 
       final String? photo = await _resolvePhotoBase64(raw.data);
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] photo extractedLen=${photo?.length ?? 0} '
         'ms=${sw.elapsedMilliseconds}',
       );
       return photo;
     } on VoterSearchApiException catch (e) {
-      debugPrint('[VoterSearchAPI] Photo fetch failed: $e');
+      AppLogger.d('[VoterSearchAPI] Photo fetch failed: $e');
       return null;
     } on DioException catch (e) {
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ✕ photo dio=${e.type} '
         'http=${e.response?.statusCode} ms=${sw.elapsedMilliseconds}',
       );
       rethrow;
     } catch (e) {
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ✕ photo error=$e ms=${sw.elapsedMilliseconds}',
       );
       rethrow;
@@ -191,21 +195,21 @@ class VoterSearchRemoteDatasource {
       final String plain = await _crypto.decryptDataField(trimmed);
       final String? fromPlain = _extractPhotoBase64FromPlain(plain);
       if (fromPlain != null && fromPlain.isNotEmpty) {
-        debugPrint(
+        AppLogger.d(
           '[VoterSearchAPI] photo via decryptDataField '
           'plainLen=${plain.length} prefix=${plain.substring(0, plain.length.clamp(0, 24))}',
         );
         return fromPlain;
       }
     } catch (e) {
-      debugPrint('[VoterSearchAPI] photo decryptDataField failed: $e');
+      AppLogger.d('[VoterSearchAPI] photo decryptDataField failed: $e');
     }
 
     // 2) AES → bytes (JSON UTF-8 or raw image).
     try {
       final Uint8List bytes = await _crypto.decryptToBytes(trimmed);
       if (_looksLikeImageBytes(bytes)) {
-        debugPrint(
+        AppLogger.d(
           '[VoterSearchAPI] photo via decryptToBytes image bytes=${bytes.length}',
         );
         return base64Encode(bytes);
@@ -213,13 +217,13 @@ class VoterSearchRemoteDatasource {
       final String asText = utf8.decode(bytes);
       final String? fromText = _extractPhotoBase64FromPlain(asText);
       if (fromText != null && fromText.isNotEmpty) {
-        debugPrint(
+        AppLogger.d(
           '[VoterSearchAPI] photo via decryptToBytes json len=${fromText.length}',
         );
         return fromText;
       }
     } catch (e) {
-      debugPrint('[VoterSearchAPI] photo decryptToBytes failed: $e');
+      AppLogger.d('[VoterSearchAPI] photo decryptToBytes failed: $e');
     }
 
     // 3) Data itself may be raw base64 JPEG.
@@ -377,7 +381,7 @@ class VoterSearchRemoteDatasource {
     final Stopwatch sw = Stopwatch()..start();
     try {
       final String encryptedPassKey = await _crypto.encrypt(_passKey);
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] → POST $path '
         'reqLen=${reqData.length} encryptedPassKey=yes',
       );
@@ -416,7 +420,7 @@ class VoterSearchRemoteDatasource {
       );
 
       final int? count = _countHint(plainData);
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ← $path '
         'http=${response.statusCode} status=${envelope.status} '
         'msg="${envelope.message}" dataLen=${plainData.length} '
@@ -433,7 +437,7 @@ class VoterSearchRemoteDatasource {
     } on VoterSearchApiException {
       rethrow;
     } on DioException catch (e) {
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ✕ $path dio=${e.type} '
         'http=${e.response?.statusCode} ms=${sw.elapsedMilliseconds}',
       );
@@ -443,7 +447,7 @@ class VoterSearchRemoteDatasource {
             : 'Network error. Please try again.',
       );
     } catch (e) {
-      debugPrint(
+      AppLogger.d(
         '[VoterSearchAPI] ✕ $path error=$e ms=${sw.elapsedMilliseconds}',
       );
       throw VoterSearchApiException(

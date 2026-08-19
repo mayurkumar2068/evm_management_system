@@ -9,6 +9,14 @@
 -dontwarn com.google.mlkit.vision.text.japanese.**
 -dontwarn com.google.mlkit.vision.text.korean.**
 
+# ── mobile_scanner (ML Kit barcode scanning) ────────────────────────────────
+# Same class of issue as the text recognizer above: mobile_scanner drives
+# ML Kit's barcode API reflectively. Currently dormant behind
+# kHideEvmScanning, but kept so re-enabling the Scanner feature doesn't
+# silently break scanning in Release only.
+-keep class com.google.mlkit.vision.barcode.** { *; }
+-dontwarn com.google.mlkit.vision.barcode.**
+
 # ── General ML Kit / Play Services ──────────────────────────────────────────
 -keep class com.google.android.gms.** { *; }
 -dontwarn com.google.android.gms.**

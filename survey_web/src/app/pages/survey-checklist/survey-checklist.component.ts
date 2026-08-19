@@ -377,13 +377,14 @@ export class SurveyChecklistComponent implements OnInit {
     const answerValue = ((raw.answerValue as string | null) ?? '').trim();
     const remark = ((raw.remark as string) ?? '').trim();
     const image = (raw.image as string | null) ?? null;
+    const normalizedAnswer = this.normalizeAnswerForSave(question, answerValue);
 
     if (question.mandatory && !answerValue) {
       this.saveError.set(this.i18n.t('chk.validation.answerRequired'));
       return;
     }
 
-    if (question.photoRequired && !image) {
+    if (this.isPhotoRequired(question, normalizedAnswer.answerYN) && !image) {
       this.saveError.set(this.i18n.t('chk.validation.photoRequired'));
       return;
     }
@@ -395,7 +396,6 @@ export class SurveyChecklistComponent implements OnInit {
     }
 
     const coords = this.coordinates();
-    const normalizedAnswer = this.normalizeAnswerForSave(question, answerValue);
     const payload: SaveSurveyAnswerRequest = {
       id: (raw.savedAnswerId as string | null) ?? null,
       questionId: question.id,
@@ -505,6 +505,13 @@ export class SurveyChecklistComponent implements OnInit {
       answerYN: null,
       answerText: option?.text ?? answerValue,
     };
+  }
+
+  private isPhotoRequired(question: SurveyQuestion, answerYN: boolean | null): boolean {
+    if (!question.photoRequired) return false;
+    // For Yes/No questions, selecting "No" should not force photo upload.
+    if (question.qType === 'YN' && answerYN === false) return false;
+    return true;
   }
 
   private normalizeAnswerValue(value: string | null | undefined): string | null {

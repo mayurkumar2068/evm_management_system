@@ -25,6 +25,7 @@ export 'widgets/app_selection_sheet.dart';
 export 'widgets/app_search_field.dart';
 export 'widgets/app_section_header.dart';
 export 'widgets/app_square_icon_button.dart';
+export 'widgets/app_status_banner.dart';
 export 'widgets/app_status_pill.dart';
 export 'widgets/app_snackbar.dart';
 export 'widgets/app_text_field.dart';

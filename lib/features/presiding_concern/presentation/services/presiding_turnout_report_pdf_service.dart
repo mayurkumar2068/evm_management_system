@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/cache/app_startup_cache.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_officer_details_datasource.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_officer_details_store.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
@@ -28,6 +29,7 @@ import 'package:share_plus/share_plus.dart';
 abstract final class PresidingTurnoutReportPdfService {
   static const double reportWidth = 595;
   static const double _capturePixelRatio = 3;
+  static const int _kRenderSettleMs = 80;
 
   static Future<void> openReport({
     required PresidingSession session,
@@ -50,7 +52,7 @@ abstract final class PresidingTurnoutReportPdfService {
   static Future<Uint8List?> captureReportPng({
     required GlobalKey repaintKey,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 80));
+    await Future<void>.delayed(const Duration(milliseconds: _kRenderSettleMs));
     await WidgetsBinding.instance.endOfFrame;
     final RenderObject? obj = repaintKey.currentContext?.findRenderObject();
     if (obj is! RenderRepaintBoundary) return null;
@@ -147,14 +149,14 @@ class _PresidingReportPreviewPageState
     extends State<_PresidingReportPreviewPage> {
   final GlobalKey _reportKey = GlobalKey();
   bool _busy = false;
-  late String _poName;
+  bool _poDetailsReady = false;
+  String _poName = '';
   String _poMobile = '';
 
   @override
   void initState() {
     super.initState();
-    _poName = _fallbackPoName();
-    _loadPoName();
+    _loadPoDetails();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       precacheImage(const AssetImage(BrandLogo.asset), context);
@@ -170,23 +172,55 @@ class _PresidingReportPreviewPageState
     return AppServices.serviceAuth.session.value?.name.trim() ?? '';
   }
 
-  Future<void> _loadPoName() async {
-    final String userId = widget.electionContext?.userId?.trim() ?? '';
-    if (userId.isEmpty) return;
+  String _resolvePoUserId() {
+    final String fromContext = widget.electionContext?.userId?.trim() ?? '';
+    if (fromContext.isNotEmpty) return fromContext;
+    return AppServices.serviceAuth.session.value?.userId.trim() ?? '';
+  }
+
+  Future<void> _loadPoDetails() async {
+    final String userId = _resolvePoUserId();
+    final PoOfficerDetailsStore profileStore = PoOfficerDetailsStore(
+      AppServices.secureStorage,
+    );
     try {
-      final PoOfficerDetails? details =
-          await PoOfficerDetailsDatasource(AppServices.config).fetchDetails(
-        userId,
-      );
-      final String name = details?.poName.trim() ?? '';
-      final String mobile = details?.poMobileNo.trim() ?? '';
-      if (!mounted) return;
-      if (name.isEmpty && mobile.isEmpty) return;
-      setState(() {
-        if (name.isNotEmpty) _poName = name;
-        if (mobile.isNotEmpty) _poMobile = mobile;
-      });
+      if (userId.isNotEmpty) {
+        final PoOfficerDetails? cached = await profileStore.read(userId);
+        if (cached != null && mounted) {
+          setState(() {
+            if (cached.poName.trim().isNotEmpty) {
+              _poName = cached.poName.trim();
+            }
+            if (cached.poMobileNo.trim().isNotEmpty) {
+              _poMobile = cached.poMobileNo.trim();
+            }
+          });
+        }
+
+        final PoOfficerDetails? details =
+            await PoOfficerDetailsDatasource(AppServices.config).fetchDetails(
+          userId,
+        );
+        final String name = details?.poName.trim() ?? '';
+        final String mobile = details?.poMobileNo.trim() ?? '';
+        if (details != null && (name.isNotEmpty || mobile.isNotEmpty)) {
+          await profileStore.save(details);
+        }
+        if (!mounted) return;
+        setState(() {
+          if (name.isNotEmpty) _poName = name;
+          if (mobile.isNotEmpty) _poMobile = mobile;
+          if (_poName.isEmpty) _poName = _fallbackPoName();
+          _poDetailsReady = true;
+        });
+        return;
+      }
     } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      if (_poName.isEmpty) _poName = _fallbackPoName();
+      _poDetailsReady = true;
+    });
   }
 
   Future<pw.Document?> _capturePdf() async {
@@ -199,7 +233,7 @@ class _PresidingReportPreviewPageState
   }
 
   Future<void> _sharePdf() async {
-    if (_busy) return;
+    if (_busy || !_poDetailsReady) return;
     setState(() => _busy = true);
     try {
       final pw.Document? doc = await _capturePdf();
@@ -231,7 +265,7 @@ class _PresidingReportPreviewPageState
   }
 
   Future<void> _printPdf() async {
-    if (_busy) return;
+    if (_busy || !_poDetailsReady) return;
     setState(() => _busy = true);
     try {
       final pw.Document? doc = await _capturePdf();
@@ -268,21 +302,23 @@ class _PresidingReportPreviewPageState
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-              child: Center(
-                child: RepaintBoundary(
-                  key: _reportKey,
-                  child: PresidingTurnoutReportView(
-                    session: widget.session,
-                    electionContext: widget.electionContext,
-                    poName: _poName,
-                    poMobile: _poMobile,
-                    width: previewWidth,
-                  ),
-                ),
-              ),
-            ),
+            child: _poDetailsReady
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                    child: Center(
+                      child: RepaintBoundary(
+                        key: _reportKey,
+                        child: PresidingTurnoutReportView(
+                          session: widget.session,
+                          electionContext: widget.electionContext,
+                          poName: _poName,
+                          poMobile: _poMobile,
+                          width: previewWidth,
+                        ),
+                      ),
+                    ),
+                  )
+                : const Center(child: CircularProgressIndicator()),
           ),
           Material(
             color: AppColors.surface,
@@ -301,7 +337,7 @@ class _PresidingReportPreviewPageState
                       icon: Icons.share_outlined,
                       label: LocaleKeys.presidingReportShare.tr(),
                       isLoading: _busy,
-                      onPressed: _busy ? null : _sharePdf,
+                      onPressed: _busy || !_poDetailsReady ? null : _sharePdf,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -310,7 +346,7 @@ class _PresidingReportPreviewPageState
                       icon: Icons.print_outlined,
                       label: LocaleKeys.presidingReportPrint.tr(),
                       isLoading: _busy,
-                      onPressed: _busy ? null : _printPdf,
+                      onPressed: _busy || !_poDetailsReady ? null : _printPdf,
                     ),
                   ),
                 ],

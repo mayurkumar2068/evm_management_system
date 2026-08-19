@@ -13,6 +13,7 @@
     "saved": "Saved",
     "search": "Search",
     "no_data": "No data available",
+    "no_internet": "No internet connection",
     "something_went_wrong": "Something went wrong",
     "back": "Back",
     "skip": "Skip",
@@ -784,11 +785,17 @@
     "po_details_otp_sent": "OTP sent successfully to {}",
     "po_details_otp_resent": "OTP resent successfully to {}",
     "po_details_mobile_changed": "Mobile number changed. OTP verification is required.",
+    "po_details_name_changed": "Name updated. OTP verification is required to save.",
     "po_details_session_missing": "PO session not found. Please login again.",
     "po_details_session_expired": "Session expired. Please login again.",
     "po_details_load_failed": "Could not load PO details. Please try again.",
     "po_details_save_failed": "Could not save PO details. Please try again.",
-    "po_details_already_saved": "Details already saved. You can continue."
+    "po_details_already_saved": "Details already saved. You can continue.",
+    "save_failed_generic": "Save failed",
+    "session_expired": "Session expired",
+    "mobile_required": "Mobile number is required",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "webview": {
     "load_failed_subtitle": "Couldn't load this page. Check your connection and try again.",

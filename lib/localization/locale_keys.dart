@@ -24,6 +24,7 @@ abstract final class LocaleKeys {
   static const String commonTakePhoto = 'common.take_photo';
   static const String commonChooseFromGallery = 'common.choose_from_gallery';
   static const String commonPickImageSource = 'common.pick_image_source';
+  static const String commonNoInternet = 'common.no_internet';
 
   // Error
   static const String errorNetwork = 'error.network';
@@ -880,6 +881,8 @@ abstract final class LocaleKeys {
       'presiding.po_details_otp_resent';
   static const String presidingPoDetailsMobileChanged =
       'presiding.po_details_mobile_changed';
+  static const String presidingPoDetailsNameChanged =
+      'presiding.po_details_name_changed';
   static const String presidingPoDetailsSessionMissing =
       'presiding.po_details_session_missing';
   static const String presidingPoDetailsSessionExpired =
@@ -890,6 +893,12 @@ abstract final class LocaleKeys {
       'presiding.po_details_save_failed';
   static const String presidingPoDetailsAlreadySaved =
       'presiding.po_details_already_saved';
+  static const String presidingSaveFailedGeneric =
+      'presiding.save_failed_generic';
+  static const String presidingSessionExpired = 'presiding.session_expired';
+  static const String presidingMobileRequired = 'presiding.mobile_required';
+  static const String presidingCollapse = 'presiding.collapse';
+  static const String presidingExpand = 'presiding.expand';
 
   // WebView
   static const String webviewLoadFailedSubtitle =

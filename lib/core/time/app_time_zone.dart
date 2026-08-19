@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -27,7 +27,7 @@ abstract final class AppTimeZone {
     _ready = true;
 
     final tz.TZDateTime now = tz.TZDateTime.now(india);
-    debugPrint(
+    AppLogger.d(
       '[AppTimeZone] $ianaId | now=$now | offset=${now.timeZoneOffset}',
     );
   }

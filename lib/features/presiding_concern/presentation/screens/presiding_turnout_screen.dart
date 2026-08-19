@@ -283,8 +283,8 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                           IconButton(
                             visualDensity: VisualDensity.compact,
                             tooltip: _isTimeSlotExpanded
-                                ? 'Collapse'
-                                : 'Expand',
+                                ? LocaleKeys.presidingCollapse.tr()
+                                : LocaleKeys.presidingExpand.tr(),
                             onPressed: () {
                               if (turnoutSubmitted) return;
                               setState(

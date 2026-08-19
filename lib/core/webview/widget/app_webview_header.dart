@@ -76,7 +76,7 @@ class AppWebViewHeader extends StatelessWidget {
                     background: iconWell,
                     onPressed: onBack,
                   ),
-                  SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: AppSpacing.sm),
                   if (icon != null) ...<Widget>[
                     Container(
                       width: 30,
@@ -111,7 +111,7 @@ class AppWebViewHeader extends StatelessWidget {
                     onPressed: onReload,
                   ),
                   if (onLogout != null) ...<Widget>[
-                    SizedBox(width: AppSpacing.xs),
+                    const SizedBox(width: AppSpacing.xs),
                     _ChromeIconButton(
                       icon: Icons.logout_rounded,
                       color: titleColor,

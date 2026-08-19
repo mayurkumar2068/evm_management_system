@@ -145,7 +145,7 @@ abstract final class AppServices {
     Get.put<OfflineSyncService>(offlineSync, permanent: true);
 
     Get.put<WebViewWarmer>(WebViewWarmer(), permanent: true);
-    Get.put<WebViewLogger>(WebViewLogger(), permanent: true);
+    Get.put<WebViewLogger>(const WebViewLogger(), permanent: true);
     Get.put<WebViewCookieService>(WebViewCookieService(), permanent: true);
     Get.put<DeviceIdService>(DeviceIdService(secureStorage), permanent: true);
     Get.put<WebSessionService>(WebSessionService(), permanent: true);

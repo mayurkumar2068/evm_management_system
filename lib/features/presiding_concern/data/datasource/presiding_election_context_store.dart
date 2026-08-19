@@ -43,6 +43,33 @@ final class PresidingElectionContextStore {
     return a.isComplete ? a : b;
   }
 
+  /// Fills login identity / booth fields from [fallback] when [primary] lacks them.
+  static PresidingElectionContext mergePreservingIdentity(
+    PresidingElectionContext primary,
+    PresidingElectionContext? fallback,
+  ) {
+    if (fallback == null) return primary;
+    final String primaryArea = PresidingElectionContext.normalizeAreaType(
+      primary.areaType,
+    );
+    final String fallbackArea = PresidingElectionContext.normalizeAreaType(
+      fallback.areaType,
+    );
+    return primary.copyWith(
+      userId: _nonEmpty(primary.userId) ?? fallback.userId,
+      loginUserName: _nonEmpty(primary.loginUserName) ?? fallback.loginUserName,
+      electionId: primary.electionId > 0 ? primary.electionId : fallback.electionId,
+      psId: _nonEmpty(primary.psId) ?? fallback.psId,
+      areaType: primaryArea.isNotEmpty ? primaryArea : fallbackArea,
+      pollingStationCode:
+          _nonEmpty(primary.pollingStationCode) ?? fallback.pollingStationCode,
+      pollingStationName:
+          _nonEmpty(primary.pollingStationName) ?? fallback.pollingStationName,
+      boothLat: primary.boothLat ?? fallback.boothLat,
+      boothLong: primary.boothLong ?? fallback.boothLong,
+    );
+  }
+
   /// Android fallback: PO service session also stores login elector totals.
   static void warmFromServiceSession(ServiceSession session) {
     if (session.kind != ServiceLoginKind.presiding || !session.hasElectorCounts) {
@@ -50,14 +77,20 @@ final class PresidingElectionContextStore {
     }
     final PresidingElectionContext fromSession = PresidingElectionContext(
       electionId: 0,
-      psId: session.userId,
+      psId: '',
       areaType: PresidingElectionContext.normalizeAreaType(session.section),
+      userId: session.userId,
+      loginUserName: session.name,
       maleElectors: session.maleElectors,
       femaleElectors: session.femaleElectors,
       otherElectors: session.otherElectors,
       totalElectors: session.totalElectors,
     );
-    memoryCache = preferWithElectors(memoryCache, fromSession);
+    final PresidingElectionContext merged = mergePreservingIdentity(
+      preferWithElectors(memoryCache, fromSession) ?? fromSession,
+      memoryCache,
+    );
+    memoryCache = merged;
   }
 
   /// Saves [context] to secure storage.
@@ -83,27 +116,29 @@ final class PresidingElectionContextStore {
 
   /// Reads the stored context, or `null` when absent or invalid.
   Future<PresidingElectionContext?> read() async {
-    if (memoryCache != null &&
-        (memoryCache!.hasElectorCounts || memoryCache!.isComplete)) {
-      return memoryCache;
-    }
+    PresidingElectionContext? fromDisk;
     try {
-      final PresidingElectionContext? fromDisk = await _readFromDisk();
-      if (fromDisk == null) return memoryCache;
-      final PresidingElectionContext merged = mergePreservingElectors(
-        fromDisk,
-        memoryCache,
-      );
-      memoryCache = merged;
-      return merged;
+      fromDisk = await _readFromDisk();
     } catch (e, s) {
       AppLogger.w(
         'Failed to parse presiding election context',
         error: e,
         stackTrace: s,
       );
-      return memoryCache;
     }
+
+    if (memoryCache != null) {
+      final PresidingElectionContext merged = mergePreservingIdentity(
+        mergePreservingElectors(memoryCache!, fromDisk),
+        fromDisk,
+      );
+      memoryCache = merged;
+      return merged;
+    }
+    if (fromDisk != null) {
+      memoryCache = fromDisk;
+    }
+    return fromDisk;
   }
 
   Future<PresidingElectionContext?> _readFromDisk() async {
@@ -234,5 +269,10 @@ final class PresidingElectionContextStore {
   static String _mask(String psId) {
     if (psId.length <= 8) return '***';
     return '${psId.substring(0, 4)}…${psId.substring(psId.length - 4)}';
+  }
+
+  static String? _nonEmpty(String? value) {
+    final String trimmed = value?.trim() ?? '';
+    return trimmed.isEmpty ? null : trimmed;
   }
 }

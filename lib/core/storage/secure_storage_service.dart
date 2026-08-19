@@ -92,4 +92,8 @@ abstract final class SecureStorageKeys {
   /// Pending `save-po-party` payload when saved offline / sync failed.
   static String poPartyPending(String poUserId) =>
       'evm.po_party_pending.$poUserId';
+
+  /// Saved PO officer profile (name/mobile) for report + offline display.
+  static String poOfficerProfile(String poUserId) =>
+      'evm.po_officer_profile.$poUserId';
 }

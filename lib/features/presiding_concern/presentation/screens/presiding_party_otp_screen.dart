@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:evm_management_system/core/utils/string_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
@@ -60,10 +62,6 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
     super.dispose();
   }
 
-  String _maskedMobile(String mobile) {
-    if (mobile.length < 4) return mobile;
-    return '${'*' * (mobile.length - 4)}${mobile.substring(mobile.length - 4)}';
-  }
 
   Future<void> _sendOtp({required bool isResend}) async {
     final String mobile = _mobile.trim();
@@ -84,16 +82,16 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
       if (!mounted) return;
       final String msg = isResend
           ? LocaleKeys.presidingPartyOtpResent.tr(
-              args: <String>[_maskedMobile(mobile)],
+              args: <String>[mobile.masked],
             )
           : LocaleKeys.presidingPartyOtpSent.tr(
-              args: <String>[_maskedMobile(mobile)],
+              args: <String>[mobile.masked],
             );
       setState(() {
         _sending = false;
         _info = msg;
       });
-    } on PoPartyApiException catch (e) {
+    } on PoApiException catch (e) {
       if (!mounted) return;
       setState(() {
         _sending = false;
@@ -137,7 +135,7 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
       if (!mounted) return;
       setState(() => _busy = false);
       Get.back<dynamic>(result: true);
-    } on PoPartyApiException catch (e) {
+    } on PoApiException catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
@@ -161,7 +159,7 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
   @override
   Widget build(BuildContext context) {
     final String mobile = _mobile;
-    final String masked = _maskedMobile(mobile);
+    final String masked = mobile.masked;
     final bool blocked = _busy || _sending;
 
     return Scaffold(

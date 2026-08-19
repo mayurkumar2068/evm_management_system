@@ -1,6 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/utils/string_extensions.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_officer_details_store.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_officer_details_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
@@ -10,6 +13,8 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
+
+const int kMobileNumberLength = 10;
 
 /// Post-PO-login gate: load/save officer name + mobile (OTP when new / mobile changed).
 class PresidingPoDetailsScreen extends StatefulWidget {
@@ -26,6 +31,7 @@ const String _otpEmptyMark = '\u200b';
 
 class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   late final PoOfficerDetailsDatasource _api;
+  late final PoOfficerDetailsStore _profileStore;
 
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _mobileCtrl = TextEditingController();
@@ -40,6 +46,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   bool _busy = false;
   bool _existingProfile = false;
   String _savedMobile = '';
+  String _savedName = '';
   String? _existingId;
   String? _error;
   String? _info;
@@ -51,8 +58,12 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   bool get _mobileChanged =>
       _existingProfile && _mobileCtrl.text.trim() != _savedMobile;
 
-  /// Skip OTP only when profile exists and mobile is unchanged.
-  bool get _canSkipOtp => _existingProfile && !_mobileChanged;
+  bool get _nameChanged =>
+      _existingProfile && _nameCtrl.text.trim() != _savedName;
+
+  /// Skip OTP only when saved profile exists and nothing was edited.
+  bool get _canSkipOtp =>
+      _existingProfile && !_mobileChanged && !_nameChanged;
 
   String get _otpValue => _otpCtrls
       .map(
@@ -65,6 +76,10 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   void initState() {
     super.initState();
     _api = PoOfficerDetailsDatasource(AppServices.config);
+    _profileStore = PoOfficerDetailsStore(AppServices.secureStorage);
+    _nameCtrl.addListener(() {
+      if (mounted && _step == _PoDetailsStep.form) setState(() {});
+    });
     _mobileCtrl.addListener(() {
       if (mounted && _step == _PoDetailsStep.form) setState(() {});
     });
@@ -106,9 +121,11 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       if (existing != null && existing.hasProfile) {
         _nameCtrl.text = existing.poName;
         _mobileCtrl.text = existing.poMobileNo;
+        _savedName = existing.poName.trim();
         _savedMobile = existing.poMobileNo.trim();
         _existingId = existing.hasServerId ? existing.id : null;
         _existingProfile = true;
+        await _profileStore.save(existing);
       }
       setState(() {
         _loading = false;
@@ -118,9 +135,9 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e is PoOfficerDetailsException && e.isUnauthorized
+        _error = e is PoApiException && e.isUnauthorized
             ? LocaleKeys.presidingPoDetailsSessionExpired.tr()
-            : e is PoOfficerDetailsException
+            : e is PoApiException
             ? e.message
             : LocaleKeys.presidingPoDetailsLoadFailed.tr();
       });
@@ -135,7 +152,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
     if (mobile.isEmpty) {
       return LocaleKeys.presidingPoDetailsMobileRequired.tr();
     }
-    if (mobile.length != 10 || int.tryParse(mobile) == null) {
+    if (mobile.length != kMobileNumberLength || int.tryParse(mobile) == null) {
       return LocaleKeys.presidingPoDetailsMobileInvalid.tr();
     }
     return null;
@@ -190,9 +207,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       await _api.sendOtp(_mobileCtrl.text.trim());
       if (!mounted) return;
       final String mobile = _mobileCtrl.text.trim();
-      final String masked = mobile.length >= 4
-          ? '${'*' * (mobile.length - 4)}${mobile.substring(mobile.length - 4)}'
-          : mobile;
+      final String masked = mobile.masked;
       final String msg = isResend
           ? LocaleKeys.presidingPoDetailsOtpResent.tr(
               args: <String>[masked],
@@ -210,7 +225,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _otpFocus.first.requestFocus();
       });
-    } on PoOfficerDetailsException catch (e) {
+    } on PoApiException catch (e) {
       if (!mounted) return;
       final String msg = _poDetailsError(e, LocaleKeys.presidingPoDetailsOtpSendFailed.tr());
       setState(() {
@@ -258,10 +273,18 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
         ),
         otp: otp,
       );
+      await _profileStore.save(
+        PoOfficerDetails(
+          id: _existingId,
+          poUserId: poUserId,
+          poName: _nameCtrl.text.trim(),
+          poMobileNo: _mobileCtrl.text.trim(),
+        ),
+      );
       if (!mounted) return;
       setState(() => _busy = false);
       _goToDashboard();
-    } on PoOfficerDetailsException catch (e) {
+    } on PoApiException catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
@@ -276,7 +299,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
     }
   }
 
-  String _poDetailsError(PoOfficerDetailsException e, String fallback) {
+  String _poDetailsError(PoApiException e, String fallback) {
     if (e.isUnauthorized) {
       return LocaleKeys.presidingPoDetailsSessionExpired.tr();
     }
@@ -347,9 +370,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   Widget build(BuildContext context) {
     final bool otpStep = _step == _PoDetailsStep.otp;
     final String mobile = _mobileCtrl.text.trim();
-    final String masked = mobile.length >= 4
-        ? '${'*' * (mobile.length - 4)}${mobile.substring(mobile.length - 4)}'
-        : mobile;
+    final String masked = mobile.masked;
 
     final String primaryLabel = _canSkipOtp
         ? LocaleKeys.presidingPoDetailsContinue.tr()
@@ -421,16 +442,16 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
                         ),
                         if (_info != null) ...<Widget>[
                           const SizedBox(height: 12),
-                          _StatusBanner(
+                          AppStatusBanner(
                             message: _info!,
-                            tone: _StatusTone.success,
+                            tone: StatusTone.success,
                           ),
                         ],
                         if (_error != null) ...<Widget>[
                           const SizedBox(height: 12),
-                          _StatusBanner(
+                          AppStatusBanner(
                             message: _error!,
-                            tone: _StatusTone.error,
+                            tone: StatusTone.error,
                           ),
                         ],
                         const SizedBox(height: 18),
@@ -463,20 +484,28 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        if (_existingProfile && !_mobileChanged)
+        if (_existingProfile && !_mobileChanged && !_nameChanged)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _StatusBanner(
+            child: AppStatusBanner(
               message: LocaleKeys.presidingPoDetailsAlreadySaved.tr(),
-              tone: _StatusTone.success,
+              tone: StatusTone.success,
+            ),
+          ),
+        if (_nameChanged && !_mobileChanged)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: AppStatusBanner(
+              message: LocaleKeys.presidingPoDetailsNameChanged.tr(),
+              tone: StatusTone.info,
             ),
           ),
         if (_mobileChanged)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _StatusBanner(
+            child: AppStatusBanner(
               message: LocaleKeys.presidingPoDetailsMobileChanged.tr(),
-              tone: _StatusTone.info,
+              tone: StatusTone.info,
             ),
           ),
         Text(
@@ -506,7 +535,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
         TextField(
           controller: _mobileCtrl,
           keyboardType: TextInputType.phone,
-          maxLength: 10,
+          maxLength: kMobileNumberLength,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly,
           ],
@@ -589,8 +618,6 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
     );
   }
 }
-
-enum _StatusTone { success, error, info }
 
 class _OtpDigitBox extends StatefulWidget {
   const _OtpDigitBox({
@@ -707,51 +734,6 @@ class _OtpDigitBoxState extends State<_OtpDigitBox> {
           filled: false,
         ),
         onChanged: widget.onChanged,
-      ),
-    );
-  }
-}
-
-class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({required this.message, required this.tone});
-
-  final String message;
-  final _StatusTone tone;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg;
-    final Color border;
-    final Color text;
-    switch (tone) {
-      case _StatusTone.success:
-        bg = AppColors.green.withValues(alpha: 0.10);
-        border = AppColors.green.withValues(alpha: 0.25);
-        text = AppColors.greenDark;
-      case _StatusTone.error:
-        bg = AppColors.error.withValues(alpha: 0.08);
-        border = AppColors.error.withValues(alpha: 0.25);
-        text = AppColors.error;
-      case _StatusTone.info:
-        bg = AppColors.primary.withValues(alpha: 0.08);
-        border = AppColors.primary.withValues(alpha: 0.22);
-        text = AppColors.primaryDark;
-    }
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border),
-      ),
-      child: Text(
-        message,
-        style: AppTextStyles.caption.copyWith(
-          color: text,
-          fontWeight: FontWeight.w600,
-          height: 1.35,
-        ),
       ),
     );
   }

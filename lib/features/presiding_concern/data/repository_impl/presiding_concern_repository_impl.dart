@@ -101,14 +101,11 @@ final class PresidingConcernRepositoryImpl
       milestoneId: milestoneId,
     );
     final bool synced = apiResult.accepted;
-    // Prefer server ActionDateTime. If already-registered with no timestamp,
-    // do NOT invent simulator clock — UI shows completed without a fake time.
     DateTime? completedAt = apiResult.actionDateTime ??
         (apiResult.alreadyRegistered
             ? null
             : (synced ? DateTime.now() : DateTime.now()));
 
-    // 2–2 hourly / live: use their own evidence times (never share one clock).
     if (milestoneId == PresidingMilestoneIds.twoHourlyInfo) {
       completedAt = _latestLocalTurnoutTime(session) ?? completedAt;
     } else if (milestoneId == PresidingMilestoneIds.livePollInfo) {
@@ -141,11 +138,9 @@ final class PresidingConcernRepositoryImpl
         .toList(growable: false);
 
     Map<String, TurnoutRecord> turnout = session.turnoutRecords;
-    // Submitting 2–2 hourly (or locking live) freezes live जानकारी edits.
     if (milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
         milestoneId == PresidingMilestoneIds.livePollInfo) {
-      final TurnoutRecord? live =
-          turnout[TurnoutSlotIds.livePollInfo];
+      final TurnoutRecord? live = turnout[TurnoutSlotIds.livePollInfo];
       if (live != null && !live.isLocked) {
         turnout = Map<String, TurnoutRecord>.from(turnout)
           ..[TurnoutSlotIds.livePollInfo] = live.copyWith(isLocked: true);
@@ -293,116 +288,13 @@ final class PresidingConcernRepositoryImpl
         male: resolvedMale,
         female: resolvedFemale,
         other: resolvedOther,
+        sourceSlotId: slotId,
       );
       turnout = Map<String, TurnoutRecord>.from(next.turnoutRecords);
     }
 
     await _persist(next);
     return next;
-  }
-
-  /// Copies latest hourly / final counts into लाइव जानकारी and syncs API.
-  ///
-  /// If live is already higher (e.g. live 25/25, 9 AM 20/20), live is kept.
-  /// If live is lower, hourly counts become the new live floor (as before).
-  Future<PresidingSession> _mirrorCountsToLivePoll({
-    required PresidingSession session,
-    required int male,
-    required int female,
-    required int other,
-  }) async {
-    final TurnoutRecord? existingLive =
-        session.turnoutRecords[TurnoutSlotIds.livePollInfo];
-    if (existingLive?.isLocked ?? false) {
-      return session;
-    }
-    if (TurnoutLiveSync.liveAlreadyCoversHourly(
-      live: existingLive,
-      male: male,
-      female: female,
-      other: other,
-    )) {
-      AppLogger.i(
-        '[LivePoll] keep live (higher/equal) | '
-        'live M=${existingLive?.male ?? 0} F=${existingLive?.female ?? 0} '
-        'O=${existingLive?.thirdGender ?? 0} | '
-        'hourly M=$male F=$female O=$other',
-      );
-      return session;
-    }
-
-    final ({int male, int female, int other}) merged =
-        TurnoutLiveSync.mergePreferringHigherLive(
-      live: existingLive,
-      male: male,
-      female: female,
-      other: other,
-    );
-    final TurnoutRecord liveDraft = TurnoutRecord(
-      slotId: TurnoutSlotIds.livePollInfo,
-      male: merged.male,
-      female: merged.female,
-      thirdGender: merged.other,
-      savedAt: DateTime.now(),
-      pendingSync: true,
-      isLocked: existingLive?.isLocked ?? false,
-    );
-
-    final PoElectionActionResult apiResult = await _syncLivePollTurnout(
-      session: session,
-      record: liveDraft,
-    );
-    final DateTime savedAt = apiResult.actionDateTime ?? liveDraft.savedAt!;
-    final TurnoutRecord livePersisted = liveDraft.copyWith(
-      savedAt: savedAt,
-      pendingSync: !apiResult.accepted,
-    );
-
-    AppLogger.i(
-      '[LivePoll] auto-sync from hourly save | '
-      'live M=${merged.male} F=${merged.female} O=${merged.other} | '
-      'hourly M=$male F=$female O=$other | '
-      'accepted=${apiResult.accepted}',
-    );
-
-    final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
-      session.turnoutRecords,
-    )..[TurnoutSlotIds.livePollInfo] = livePersisted;
-    return session.copyWith(turnoutRecords: turnout);
-  }
-
-  Future<PoElectionActionResult> _syncLivePollTurnout({
-    required PresidingSession session,
-    required TurnoutRecord record,
-  }) async {
-    final PresidingConcernRemoteDatasource? remote = await _activeRemote();
-    if (remote == null) {
-      return const PoElectionActionResult(success: false);
-    }
-
-    final PresidingElectionContext? context = await _resolveContext(session);
-    if (context == null) {
-      return const PoElectionActionResult(success: false);
-    }
-
-    final GeoCoordinates? coords = await _locationService
-        .getCurrentCoordinates();
-    final Map<String, dynamic> body = PoElectionApiMapper.livePollBody(
-      context: context,
-      record: record,
-      lat: coords?.latitude,
-      long: coords?.longitude,
-    );
-
-    try {
-      return await remote.postAction(
-        endpoint: PoElectionEndpoints.savePollLive,
-        body: body,
-      );
-    } catch (e, s) {
-      AppLogger.w('Live poll auto-sync failed', error: e, stackTrace: s);
-      return const PoElectionActionResult(success: false);
-    }
   }
 
   @override
@@ -474,7 +366,6 @@ final class PresidingConcernRepositoryImpl
 
       final Map<String, TurnoutRecord> serverTurnout =
           PoElectionStatusMapper.turnoutRecordsFromStatus(status);
-      // API-first: drop local slot copies the server no longer has.
       final Map<String, TurnoutRecord> mergedTurnout =
           Map<String, TurnoutRecord>.from(session.turnoutRecords);
       for (final TurnoutSlotConfig config
@@ -555,60 +446,115 @@ final class PresidingConcernRepositoryImpl
     }
   }
 
-  Future<String?> _liveLoginUserName() async {
-    try {
-      final String? raw = await AppServices.secureStorage.read(
-        SecureStorageKeys.serviceSession,
-      );
-      if (raw == null || raw.isEmpty) return null;
-      final dynamic decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic>) return null;
-      final String name = (decoded['name'] ?? '').toString().trim();
-      return name.isEmpty ? null : name;
-    } catch (_) {
-      return null;
+  Future<PresidingSession> _mirrorCountsToLivePoll({
+    required PresidingSession session,
+    required int male,
+    required int female,
+    required int other,
+    required String sourceSlotId,
+  }) async {
+    final TurnoutRecord? existingLive =
+        session.turnoutRecords[TurnoutSlotIds.livePollInfo];
+    if (existingLive?.isLocked ?? false) {
+      return session;
     }
+
+    final bool forceExact =
+        TurnoutLiveSync.forcesExactLiveCounts(sourceSlotId);
+
+    if (!forceExact &&
+        TurnoutLiveSync.liveAlreadyCoversHourly(
+          live: existingLive,
+          male: male,
+          female: female,
+          other: other,
+        )) {
+      AppLogger.i(
+        '[LivePoll] keep live (higher/equal) | '
+        'live M=${existingLive?.male ?? 0} F=${existingLive?.female ?? 0} '
+        'O=${existingLive?.thirdGender ?? 0} | '
+        'hourly M=$male F=$female O=$other',
+      );
+      return session;
+    }
+
+    final ({int male, int female, int other}) merged = forceExact
+        ? (male: male, female: female, other: other)
+        : TurnoutLiveSync.mergePreferringHigherLive(
+            live: existingLive,
+            male: male,
+            female: female,
+            other: other,
+          );
+    final TurnoutRecord liveDraft = TurnoutRecord(
+      slotId: TurnoutSlotIds.livePollInfo,
+      male: merged.male,
+      female: merged.female,
+      thirdGender: merged.other,
+      savedAt: DateTime.now(),
+      pendingSync: true,
+      isLocked: existingLive?.isLocked ?? false,
+    );
+
+    final PoElectionActionResult apiResult = await _syncLivePollTurnout(
+      session: session,
+      record: liveDraft,
+    );
+    final DateTime savedAt = apiResult.actionDateTime ?? liveDraft.savedAt!;
+    final TurnoutRecord livePersisted = liveDraft.copyWith(
+      savedAt: savedAt,
+      pendingSync: !apiResult.accepted,
+    );
+
+    AppLogger.i(
+      forceExact
+          ? '[LivePoll] auto-sync from final save | '
+              'live M=${merged.male} F=${merged.female} O=${merged.other} | '
+              'accepted=${apiResult.accepted}'
+          : '[LivePoll] auto-sync from hourly save | '
+              'live M=${merged.male} F=${merged.female} O=${merged.other} | '
+              'hourly M=$male F=$female O=$other | '
+              'accepted=${apiResult.accepted}',
+    );
+
+    final Map<String, TurnoutRecord> turnout = Map<String, TurnoutRecord>.from(
+      session.turnoutRecords,
+    )..[TurnoutSlotIds.livePollInfo] = livePersisted;
+    return session.copyWith(turnoutRecords: turnout);
   }
 
-  PresidingSession _seedSession(PresidingElectionContext? context) {
-    return PresidingSession(
-      electionId: context?.electionId,
-      psId: context?.psId,
-      areaType: context?.areaType,
-      loginUserName: context?.loginUserName,
-      pollingStationCode: context?.pollingStationCode ?? '',
-      pollingStationName: context?.pollingStationName?.isNotEmpty ?? false
-          ? context!.pollingStationName!
-          : PresidingDefaults.stationNameKey,
-      milestones: PresidingSessionMapper.defaultMilestones(),
-      turnoutRecords: <String, TurnoutRecord>{},
-    );
-  }
+  Future<PoElectionActionResult> _syncLivePollTurnout({
+    required PresidingSession session,
+    required TurnoutRecord record,
+  }) async {
+    final PresidingConcernRemoteDatasource? remote = await _activeRemote();
+    if (remote == null) {
+      return const PoElectionActionResult(success: false);
+    }
 
-  PresidingSession _mergeContext(
-    PresidingSession session,
-    PresidingElectionContext? context,
-  ) {
-    if (context == null) return session;
-    // Login context is source of truth for election identity / urban-rural.
-    final String? contextArea =
-        context.areaType.isNotEmpty ? context.areaType : null;
-    return session.copyWith(
-      electionId: context.electionId > 0
-          ? context.electionId
-          : session.electionId,
-      psId: context.psId.isNotEmpty ? context.psId : session.psId,
-      areaType: contextArea ?? session.areaType,
-      pollingStationCode: context.pollingStationCode?.isNotEmpty ?? false
-          ? context.pollingStationCode!
-          : session.pollingStationCode,
-      pollingStationName: context.pollingStationName?.isNotEmpty ?? false
-          ? context.pollingStationName!
-          : session.pollingStationName,
-      loginUserName: context.loginUserName?.isNotEmpty ?? false
-          ? context.loginUserName
-          : session.loginUserName,
+    final PresidingElectionContext? context = await _resolveContext(session);
+    if (context == null) {
+      return const PoElectionActionResult(success: false);
+    }
+
+    final GeoCoordinates? coords = await _locationService
+        .getCurrentCoordinates();
+    final Map<String, dynamic> body = PoElectionApiMapper.livePollBody(
+      context: context,
+      record: record,
+      lat: coords?.latitude,
+      long: coords?.longitude,
     );
+
+    try {
+      return await remote.postAction(
+        endpoint: PoElectionEndpoints.savePollLive,
+        body: body,
+      );
+    } catch (e, s) {
+      AppLogger.w('Live poll auto-sync failed', error: e, stackTrace: s);
+      return const PoElectionActionResult(success: false);
+    }
   }
 
   Future<PoElectionActionResult> _syncMilestone({
@@ -706,6 +652,61 @@ final class PresidingConcernRepositoryImpl
       );
       return const PoElectionActionResult(success: false);
     }
+  }
+
+  Future<String?> _liveLoginUserName() async {
+    try {
+      final String? raw = await AppServices.secureStorage.read(
+        SecureStorageKeys.serviceSession,
+      );
+      if (raw == null || raw.isEmpty) return null;
+      final dynamic decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final String name = (decoded['name'] ?? '').toString().trim();
+      return name.isEmpty ? null : name;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  PresidingSession _seedSession(PresidingElectionContext? context) {
+    return PresidingSession(
+      electionId: context?.electionId,
+      psId: context?.psId,
+      areaType: context?.areaType,
+      loginUserName: context?.loginUserName,
+      pollingStationCode: context?.pollingStationCode ?? '',
+      pollingStationName: context?.pollingStationName?.isNotEmpty ?? false
+          ? context!.pollingStationName!
+          : PresidingDefaults.stationNameKey,
+      milestones: PresidingSessionMapper.defaultMilestones(),
+      turnoutRecords: <String, TurnoutRecord>{},
+    );
+  }
+
+  PresidingSession _mergeContext(
+    PresidingSession session,
+    PresidingElectionContext? context,
+  ) {
+    if (context == null) return session;
+    final String? contextArea =
+        context.areaType.isNotEmpty ? context.areaType : null;
+    return session.copyWith(
+      electionId: context.electionId > 0
+          ? context.electionId
+          : session.electionId,
+      psId: context.psId.isNotEmpty ? context.psId : session.psId,
+      areaType: contextArea ?? session.areaType,
+      pollingStationCode: context.pollingStationCode?.isNotEmpty ?? false
+          ? context.pollingStationCode!
+          : session.pollingStationCode,
+      pollingStationName: context.pollingStationName?.isNotEmpty ?? false
+          ? context.pollingStationName!
+          : session.pollingStationName,
+      loginUserName: context.loginUserName?.isNotEmpty ?? false
+          ? context.loginUserName
+          : session.loginUserName,
+    );
   }
 
   Future<PresidingElectionContext?> _resolveContext(

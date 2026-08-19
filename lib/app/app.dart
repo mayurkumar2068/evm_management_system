@@ -12,6 +12,7 @@ import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:permission_handler/permission_handler.dart';
@@ -88,7 +89,7 @@ class _EvmAppState extends State<EvmApp> {
       if (current.isGranted || current.isLimited) return;
       await Permission.locationWhenInUse.request();
     } on Exception catch (e) {
-      debugPrint('Location permission request failed: $e');
+      AppLogger.d('Location permission request failed: $e');
     }
   }
 
@@ -98,7 +99,7 @@ class _EvmAppState extends State<EvmApp> {
       if (current.isGranted) return;
       await Permission.camera.request();
     } on Exception catch (e) {
-      debugPrint('Camera permission request failed: $e');
+      AppLogger.d('Camera permission request failed: $e');
     }
   }
 

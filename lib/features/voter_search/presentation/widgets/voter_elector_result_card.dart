@@ -6,6 +6,7 @@ import 'package:evm_management_system/features/voter_search/presentation/control
 import 'package:evm_management_system/features/voter_search/presentation/services/voter_slip_pdf_service.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
@@ -37,7 +38,7 @@ class _VoterElectorResultCardState extends State<VoterElectorResultCard> {
         photoBase64: photo,
       );
     } catch (e) {
-      debugPrint('[VoterSlip] Generation failed: $e');
+      AppLogger.d('[VoterSlip] Generation failed: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(LocaleKeys.voterSearchSlipFailed.tr())),

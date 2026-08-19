@@ -67,7 +67,7 @@ class _ActivityTile extends StatelessWidget {
         border: Border.all(color: AppColors.slate100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -79,7 +79,7 @@ class _ActivityTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: cfg.color.withOpacity(0.1),
+              color: cfg.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(cfg.icon, color: cfg.color, size: 22),
@@ -149,7 +149,7 @@ class _EmptyHistoryView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history_rounded, size: 64, color: AppColors.slate200),
+          const Icon(Icons.history_rounded, size: 64, color: AppColors.slate200),
           const SizedBox(height: 16),
           Text(
             LocaleKeys.dashboardActEmptyHint.tr(),

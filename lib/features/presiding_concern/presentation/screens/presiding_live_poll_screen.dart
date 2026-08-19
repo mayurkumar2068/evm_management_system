@@ -14,7 +14,10 @@ import 'package:evm_management_system/features/presiding_concern/presentation/th
 import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_po_screen_header.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_stat_column.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_info_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_step_button.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -481,13 +484,7 @@ class _StationInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: PresidingUiTokens.cardGreenSurface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PresidingUiTokens.cardGreenBorder),
-      ),
+    return PresidingInfoCard(
       child: Row(
         children: <Widget>[
           Container(
@@ -497,7 +494,7 @@ class _StationInfoCard extends StatelessWidget {
               color: PresidingUiTokens.actionGreen.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.location_on_rounded,
               color: PresidingUiTokens.actionGreen,
               size: 26,
@@ -554,7 +551,6 @@ class _LivePollStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color accentColor = PresidingGenderAssets.colorFor(genderType);
-    final String label = PresidingGenderAssets.labelKeyFor(genderType).tr();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
@@ -572,12 +568,9 @@ class _LivePollStatCard extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          PresidingGenderAvatar(type: genderType, size: 56),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
+          PresidingGenderStatColumn(
+            genderType: genderType,
+            avatarSize: 56,
           ),
           const SizedBox(height: 8),
           Text(
@@ -600,45 +593,24 @@ class _LivePollStatCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              _LiveStepButton(
+              PresidingStepButton(
                 icon: Icons.remove_rounded,
                 color: accentColor,
-                onTap: busy ? null : onSubtract,
+                size: 30,
+                enabled: !busy && onSubtract != null,
+                onPressed: onSubtract ?? () {},
               ),
               const SizedBox(width: 8),
-              _LiveStepButton(
+              PresidingStepButton(
                 icon: Icons.add_rounded,
                 color: accentColor,
-                onTap: busy ? null : onAdd,
+                size: 30,
+                enabled: !busy && onAdd != null,
+                onPressed: onAdd ?? () {},
               ),
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _LiveStepButton extends StatelessWidget {
-  const _LiveStepButton({required this.icon, required this.color, this.onTap});
-
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: onTap == null ? color.withValues(alpha: 0.35) : color,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          width: 30,
-          height: 30,
-          child: Icon(icon, color: Colors.white, size: 22),
-        ),
       ),
     );
   }
@@ -689,13 +661,7 @@ class _SummaryMetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: PresidingUiTokens.cardGreenSurface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PresidingUiTokens.cardGreenBorder),
-      ),
+    return PresidingInfoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[

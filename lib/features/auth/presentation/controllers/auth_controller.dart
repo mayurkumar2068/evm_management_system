@@ -18,7 +18,7 @@ import 'package:get/get.dart' hide Trans;
 /// GetX controller that owns authentication state and exposes the only
 /// methods the UI may call. Business logic lives in use cases.
 class AuthController extends GetxController {
-  final Rx<AuthState> authState = AuthState.unknown().obs;
+  final Rx<AuthState> authState = const AuthState.unknown().obs;
   final Rxn<bool> biometricEnabled = Rxn<bool>();
 
   @override

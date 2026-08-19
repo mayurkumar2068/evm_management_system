@@ -13,3 +13,10 @@ extension StringExtensions on String {
         .toUpperCase();
   }
 }
+
+/// Masks all but the last 4 digits of a mobile number string.
+extension MobileMasking on String {
+  String get masked => length >= 4
+      ? '${'*' * (length - 4)}${substring(length - 4)}'
+      : this;
+}

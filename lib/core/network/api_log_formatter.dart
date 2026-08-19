@@ -24,7 +24,7 @@ abstract final class ApiLogFormatter {
   /// Builds a multi-line request log block.
   static String formatRequest(RequestOptions options) {
     final StringBuffer buffer = StringBuffer()
-      ..writeln('${options.method} ${options.uri}')
+      ..writeln('${options.method} ${_redactedUri(options.uri)}')
       ..writeln('headers: ${_encode(_redactHeaders(options.headers))}');
 
     final dynamic data = options.data;
@@ -44,7 +44,7 @@ abstract final class ApiLogFormatter {
   static String formatResponse(Response<dynamic> response) {
     final RequestOptions request = response.requestOptions;
     final StringBuffer buffer = StringBuffer()
-      ..writeln('${request.method} ${request.uri}')
+      ..writeln('${request.method} ${_redactedUri(request.uri)}')
       ..writeln('status: ${response.statusCode}')
       ..writeln('body: ${_encodeBody(response.data)}');
     return buffer.toString().trimRight();
@@ -54,7 +54,7 @@ abstract final class ApiLogFormatter {
   static String formatError(DioException error) {
     final RequestOptions request = error.requestOptions;
     final StringBuffer buffer = StringBuffer()
-      ..writeln('${request.method} ${request.uri}')
+      ..writeln('${request.method} ${_redactedUri(request.uri)}')
       ..writeln('status: ${error.response?.statusCode ?? '—'}')
       ..writeln('type: ${error.type.name}')
       ..writeln('message: ${error.message ?? 'unknown'}');
@@ -65,6 +65,20 @@ abstract final class ApiLogFormatter {
     }
 
     return buffer.toString().trimRight();
+  }
+
+  /// [uri] with sensitive query values (e.g. `token`) masked — the request
+  /// line is logged separately from the already-redacted `query:`/`body:`
+  /// blocks below, so the raw URL must not carry secrets in the clear.
+  static String _redactedUri(Uri uri) {
+    if (uri.queryParameters.isEmpty) return uri.toString();
+    final Map<String, String> redacted = <String, String>{
+      for (final MapEntry<String, String> entry in uri.queryParameters.entries)
+        entry.key: _redactedBodyKeys.contains(entry.key.toLowerCase())
+            ? 'REDACTED'
+            : entry.value,
+    };
+    return uri.replace(queryParameters: redacted).toString();
   }
 
   static Map<String, dynamic> _redactHeaders(Map<String, dynamic> headers) {

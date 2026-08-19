@@ -14,6 +14,10 @@ abstract final class TurnoutLiveSync {
   /// Hourly slots + मतदान जानकारी push latest counts to live poll — not queue.
   static bool mirrorsToLivePoll(String slotId) => _mirrorSlotIds.contains(slotId);
 
+  /// अंतिम मतदान की जानकारी is authoritative — live must match exactly.
+  static bool forcesExactLiveCounts(String slotId) =>
+      slotId == TurnoutSlotIds.pollCompletion;
+
   /// Live stays if it is already higher; otherwise hourly/final becomes the floor.
   static ({int male, int female, int other}) mergePreferringHigherLive({
     required TurnoutRecord? live,

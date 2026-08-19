@@ -35,7 +35,7 @@ final class PoApiLoggingInterceptor extends Interceptor {
         ? ''
         : '\n  query: ${_encode(options.queryParameters)}';
     AppLogger.w(
-      '[PO API #$id] → ${options.method} ${options.uri}$query$body',
+      '[PO API #$id] → ${options.method} ${_redactedUri(options.uri)}$query$body',
     );
     handler.next(options);
   }
@@ -48,7 +48,7 @@ final class PoApiLoggingInterceptor extends Interceptor {
     final Object? id = response.requestOptions.extra[_idKey];
     final RequestOptions req = response.requestOptions;
     AppLogger.w(
-      '[PO API #$id] ← ${response.statusCode} ${req.method} ${req.uri}\n'
+      '[PO API #$id] ← ${response.statusCode} ${req.method} ${_redactedUri(req.uri)}\n'
       '  body: ${_encode(response.data)}',
     );
     handler.next(response);
@@ -61,12 +61,26 @@ final class PoApiLoggingInterceptor extends Interceptor {
     final Object? body = err.response?.data;
     AppLogger.w(
       '[PO API #$id] ✕ ${err.response?.statusCode ?? '—'} '
-      '${req.method} ${req.uri}\n'
+      '${req.method} ${_redactedUri(req.uri)}\n'
       '  type: ${err.type.name}\n'
       '  message: ${err.message ?? ''}'
       '${body == null ? '' : '\n  body: ${_encode(body)}'}',
     );
     handler.next(err);
+  }
+
+  /// [uri] with any sensitive query values (token, etc.) masked — the request
+  /// line is logged separately from the already-redacted `query:`/`body:`
+  /// maps below, so the raw URL must not carry the token in the clear.
+  String _redactedUri(Uri uri) {
+    if (uri.queryParameters.isEmpty) return uri.toString();
+    final Map<String, String> redacted = <String, String>{
+      for (final MapEntry<String, String> entry in uri.queryParameters.entries)
+        entry.key: _redactKeys.contains(entry.key.toLowerCase())
+            ? 'REDACTED'
+            : entry.value,
+    };
+    return uri.replace(queryParameters: redacted).toString();
   }
 
   String _encode(Object? data) {

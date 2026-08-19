@@ -1,19 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/core/network/po_election_api_client.dart';
+import 'package:evm_management_system/core/network/api_envelope.dart';
 import 'package:evm_management_system/core/network/po_election_auth.dart';
 import 'package:evm_management_system/core/security/jwt_utils.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_election_base_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 
 /// Remote calls for PO party details, and PO/PS Survey logout.
-class PoPartyRemoteDatasource {
-  PoPartyRemoteDatasource(this._config);
-
-  final EnvironmentConfig _config;
-
-  Dio get _dio => PoElectionApiClient.instance(_config);
+class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
+  PoPartyRemoteDatasource(super.config);
 
   /// Fetches existing party details. Returns `null` when not filled yet.
   Future<PoPartyDetails?> fetchPartyDetails(String poUserId) async {
@@ -27,7 +24,7 @@ class PoPartyRemoteDatasource {
     }
 
     try {
-      final Response<dynamic> res = await _dio.post<dynamic>(
+      final Response<dynamic> res = await dio.post<dynamic>(
         PoElectionEndpoints.poPartyDetails,
         data: <String, dynamic>{'poUserId': id},
         queryParameters: <String, dynamic>{'token': token},
@@ -46,14 +43,10 @@ class PoPartyRemoteDatasource {
         return null;
       }
       if (code == 404) return null;
-      // API returns 400 + "Details not found" when party is not filled yet.
       if (code == 400) {
-        final Object? body = res.data;
-        if (body is Map) {
-          final String msg =
-              (body['Message'] ?? body['message'] ?? '').toString().toLowerCase();
-          if (msg.contains('not found')) return null;
-        }
+        final String msg =
+            (ApiEnvelope.message(res.data) ?? '').toLowerCase();
+        if (msg.contains('not found')) return null;
         return null;
       }
       if (code == null || code < 200 || code >= 300) {
@@ -61,16 +54,9 @@ class PoPartyRemoteDatasource {
         return null;
       }
 
-      final Object? body = res.data;
-      if (body is! Map) return null;
-      final Map<String, dynamic> map = Map<String, dynamic>.from(body);
-      final bool ok = map['Status'] == true || map['Success'] == true;
-      if (!ok) return null;
-      final Object? data = map['Data'] ?? map['data'];
-      if (data is! Map) return null;
-      final PoPartyDetails details = PoPartyDetails.fromJson(
-        Map<String, dynamic>.from(data),
-      );
+      final Map<String, dynamic>? data = ApiEnvelope.unwrap(res.data);
+      if (data == null) return null;
+      final PoPartyDetails details = PoPartyDetails.fromJson(data);
       if (!details.existsOnServer &&
           details.p1Name.isEmpty &&
           details.p1MobileNo.isEmpty) {
@@ -79,12 +65,10 @@ class PoPartyRemoteDatasource {
       return details;
     } on DioException catch (e) {
       final int? code = e.response?.statusCode;
-      // New user / empty party: 400 "Details not found" is expected.
       if (code == 400 || code == 404 || code == 401 || code == 403) {
         return null;
       }
-      // Offline / timeout must not block the form.
-      if (_isTransientDio(e)) return null;
+      if (isTransientDio(e)) return null;
       AppLogger.w('[PO Party] fetch failed: ${e.message}');
       return null;
     }
@@ -94,54 +78,33 @@ class PoPartyRemoteDatasource {
   Future<void> sendOtp(String mobileNo) async {
     final String mobile = mobileNo.trim();
     if (mobile.isEmpty) {
-      throw const PoPartyApiException('Mobile number is required');
-    }
-    final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
-    if (token.isEmpty) {
-      throw const PoPartyApiException(
-        'PO session token missing. Please login again.',
-        statusCode: 401,
-      );
+      throw const PoApiException('Mobile number is required');
     }
     try {
-      final Response<dynamic> res = await _dio.post<dynamic>(
+      final Response<dynamic> res = await authedPost(
         PoElectionEndpoints.poSendOtp,
-        data: <String, dynamic>{'mobileNo': mobile},
-        queryParameters: <String, dynamic>{'token': token},
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: <String, dynamic>{
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        ),
+        <String, dynamic>{'mobileNo': mobile},
       );
       final int? code = res.statusCode;
       if (code == 401 || code == 403) {
-        throw const PoPartyApiException(
+        throw const PoApiException(
           'Unauthorized. Please login again.',
           statusCode: 401,
         );
       }
       if (code == null || code < 200 || code >= 300) {
-        throw PoPartyApiException('OTP send failed', statusCode: code);
+        throw PoApiException('OTP send failed', statusCode: code);
       }
-      final Object? body = res.data;
-      if (body is! Map) {
-        throw PoPartyApiException('OTP send failed', statusCode: code);
-      }
-      final Map<String, dynamic> map = Map<String, dynamic>.from(body);
-      final bool ok = map['Status'] == true || map['Success'] == true;
-      if (!ok) {
-        throw PoPartyApiException(
-          (map['Message'] ?? map['message'] ?? 'OTP send failed').toString(),
+      if (!ApiEnvelope.isSuccess(res.data)) {
+        throw PoApiException(
+          ApiEnvelope.message(res.data) ?? 'OTP send failed',
         );
       }
-    } on PoPartyApiException {
+    } on PoApiException {
       rethrow;
     } on DioException catch (e) {
-      throw PoPartyApiException(
-        _dioMessage(e, fallback: 'OTP send failed'),
+      throw PoApiException(
+        dioMessage(e, fallback: 'OTP send failed'),
         statusCode: e.response?.statusCode,
       );
     }
@@ -150,58 +113,39 @@ class PoPartyRemoteDatasource {
   /// Saves or updates party details via `save-po-party` (no OTP).
   /// Returns server id when available.
   Future<String?> savePartyDetails(PoPartyDetails details) async {
-    final String token = (await PoElectionAuth.accessToken())?.trim() ?? '';
-    if (token.isEmpty) {
-      throw const PoPartyApiException(
-        'PO session token missing. Please login again.',
-        statusCode: 401,
-      );
-    }
-
     try {
-      final Response<dynamic> res = await _dio.post<dynamic>(
+      final Response<dynamic> res = await authedPost(
         PoElectionEndpoints.savePoParty,
-        data: details.toSaveJson(),
-        queryParameters: <String, dynamic>{'token': token},
-        options: Options(
-          contentType: Headers.jsonContentType,
-          headers: <String, dynamic>{
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        ),
+        details.toSaveJson(),
       );
 
       final int? code = res.statusCode;
       if (code == 401 || code == 403) {
-        throw const PoPartyApiException(
+        throw const PoApiException(
           'Unauthorized. Please login again.',
           statusCode: 401,
         );
       }
       if (code == 404) {
-        throw const PoPartyApiException(
+        throw const PoApiException(
           'Save endpoint not found',
           statusCode: 404,
         );
       }
       if (code == null || code < 200 || code >= 300) {
-        throw PoPartyApiException(
-          'Save failed (HTTP $code)',
-          statusCode: code,
-        );
+        throw PoApiException('Save failed (HTTP $code)', statusCode: code);
       }
 
       final Object? body = res.data;
       if (body is! Map) {
-        throw const PoPartyApiException('Invalid save response');
+        throw const PoApiException('Invalid save response');
       }
       final Map<String, dynamic> map = Map<String, dynamic>.from(body);
       final bool ok = map['Success'] == true || map['Status'] == true;
       if (!ok) {
-        final String msg = (map['Message'] ?? map['message'] ?? 'Save failed')
-            .toString();
-        throw PoPartyApiException(msg);
+        final String msg =
+            (map['Message'] ?? map['message'] ?? 'Save failed').toString();
+        throw PoApiException(msg);
       }
 
       // `Status.Id` from save is an action status int (e.g. 1), NOT the party Guid.
@@ -222,13 +166,13 @@ class PoPartyRemoteDatasource {
         return refreshed.id;
       }
       return null;
-    } on PoPartyApiException {
+    } on PoApiException {
       rethrow;
     } on DioException catch (e) {
-      throw PoPartyApiException(
-        _dioMessage(e, fallback: 'Save failed'),
+      throw PoApiException(
+        dioMessage(e, fallback: 'Save failed'),
         statusCode: e.response?.statusCode,
-        offline: _isTransientDio(e),
+        offline: isTransientDio(e),
       );
     }
   }
@@ -261,7 +205,7 @@ class PoPartyRemoteDatasource {
         ? PoElectionEndpoints.psLogout
         : PoElectionEndpoints.poLogout;
     try {
-      final Response<dynamic> res = await _dio.post<dynamic>(
+      final Response<dynamic> res = await dio.post<dynamic>(
         endpoint,
         data: <String, dynamic>{
           'id': id,
@@ -278,80 +222,13 @@ class PoPartyRemoteDatasource {
           },
         ),
       );
-      final Object? body = res.data;
-      if (body is Map) {
-        return body['Status'] == true || body['Success'] == true;
-      }
-      final int? code = res.statusCode;
-      return code != null && code >= 200 && code < 300;
+      return ApiEnvelope.isSuccess(res.data) ||
+          (res.statusCode != null &&
+              res.statusCode! >= 200 &&
+              res.statusCode! < 300);
     } catch (e) {
       AppLogger.w('[PO Party] $endpoint failed (local clear continues): $e');
       return false;
     }
   }
-}
-
-bool _isTransientDio(DioException e) {
-  switch (e.type) {
-    case DioExceptionType.connectionError:
-    case DioExceptionType.connectionTimeout:
-    case DioExceptionType.sendTimeout:
-    case DioExceptionType.receiveTimeout:
-      return true;
-    default:
-      break;
-  }
-  final int? code = e.response?.statusCode;
-  if (code == 408 || code == 429 || (code != null && code >= 500)) {
-    return true;
-  }
-  final String msg = (e.message ?? '').toLowerCase();
-  return msg.contains('offline') ||
-      msg.contains('socket') ||
-      msg.contains('network');
-}
-
-String _dioMessage(DioException e, {required String fallback}) {
-  final Object? body = e.response?.data;
-  if (body is Map) {
-    final Object? msg = body['Message'] ?? body['message'] ?? body['title'];
-    if (msg != null && msg.toString().trim().isNotEmpty) {
-      return msg.toString();
-    }
-    final Object? errors = body['errors'];
-    if (errors is Map && errors.isNotEmpty) {
-      final Object? first = errors.values.first;
-      if (first is List && first.isNotEmpty) {
-        return first.first.toString();
-      }
-      return first.toString();
-    }
-  }
-  return fallback;
-}
-
-class PoPartyApiException implements Exception {
-  const PoPartyApiException(
-    this.message, {
-    this.statusCode,
-    this.offline = false,
-  });
-
-  final String message;
-  final int? statusCode;
-  final bool offline;
-
-  bool get isNotFound => statusCode == 404;
-  bool get isUnauthorized => statusCode == 401 || statusCode == 403;
-  bool get isOffline => offline;
-
-  bool get isInvalidOtp {
-    final String n = message.toLowerCase();
-    return n.contains('otp') ||
-        n.contains('ओटीपी') ||
-        n.contains('expire');
-  }
-
-  @override
-  String toString() => message;
 }

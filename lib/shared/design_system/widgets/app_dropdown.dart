@@ -114,7 +114,7 @@ class AppDropdown<T> extends StatelessWidget {
 
     return DropdownButtonFormField<T>(
       key: ValueKey('$label-$value-${items.length}-$enabled'),
-      value: _hasSelection ? value : null,
+      initialValue: _hasSelection ? value : null,
       isExpanded: true,
       isDense: true,
       borderRadius: AppRadius.brMd,

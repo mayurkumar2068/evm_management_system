@@ -53,6 +53,35 @@ void main() {
     expect(picked?.maleElectors, 100);
   });
 
+  test('mergePreservingIdentity keeps userId from disk fallback', () {
+    const PresidingElectionContext electorsOnly = PresidingElectionContext(
+      electionId: 0,
+      psId: '',
+      areaType: 'R',
+      maleElectors: 50,
+      femaleElectors: 45,
+      totalElectors: 95,
+    );
+    const PresidingElectionContext fromDisk = PresidingElectionContext(
+      electionId: 7,
+      psId: 'ps-rural',
+      areaType: 'R',
+      userId: 'po-123',
+      loginUserName: 'Rural PO',
+    );
+
+    final PresidingElectionContext merged =
+        PresidingElectionContextStore.mergePreservingIdentity(
+      electorsOnly,
+      fromDisk,
+    );
+
+    expect(merged.userId, 'po-123');
+    expect(merged.loginUserName, 'Rural PO');
+    expect(merged.psId, 'ps-rural');
+    expect(merged.totalElectors, 95);
+  });
+
   test('hasElectorCounts is false when all elector fields are absent', () {
     expect(withoutElectors.hasElectorCounts, isFalse);
     expect(withElectors.hasElectorCounts, isTrue);

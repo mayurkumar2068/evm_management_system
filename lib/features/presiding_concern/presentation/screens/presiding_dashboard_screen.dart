@@ -133,7 +133,9 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );
-    final electionContext = await store.read();
+    final PresidingElectionContext? stored = await store.read();
+    final PresidingElectionContext? electionContext =
+        PresidingElectorHeaderStrip.resolveContext(stored);
     if (!mounted) return;
     await PresidingTurnoutReportPdfService.openReport(
       session: widget.session,

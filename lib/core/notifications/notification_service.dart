@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:evm_management_system/core/time/app_time_zone.dart';
+import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -86,7 +87,7 @@ class LocalNotificationService {
       settings: settings,
       onDidReceiveNotificationResponse:
           (NotificationResponse response) {
-        debugPrint(
+        AppLogger.d(
           'Notification tapped: ${response.payload}',
         );
       },
@@ -120,7 +121,7 @@ class LocalNotificationService {
       sound: true,
     );
 
-    debugPrint('iOS Permission : $granted');
+    AppLogger.d('iOS Permission : $granted');
 
     _initialized = true;
 
@@ -150,22 +151,18 @@ class LocalNotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
 
-    debugPrint(
+    AppLogger.d(
       '[Notification] one-shot id=$id scheduled at $when '
       '(in ${minutes}m, tz=${tz.local.name})',
     );
 
     final List<PendingNotificationRequest> pending =
         await _plugin.pendingNotificationRequests();
-    debugPrint('[Notification] pending count=${pending.length}');
+    AppLogger.d('[Notification] pending count=${pending.length}');
     for (final PendingNotificationRequest item in pending) {
-      debugPrint('[Notification] pending ID:${item.id} Title:${item.title}');
+      AppLogger.d('[Notification] pending ID:${item.id} Title:${item.title}');
     }
   }
-
-  // ============================
-  // Daily Reminder Scheduling
-  // ============================
 
   static const List<int> _urbanHours = [9, 11, 13, 15, 17];
   static const List<int> _ruralHours = [9, 11, 13, 15];
@@ -175,7 +172,6 @@ class LocalNotificationService {
   }) async {
     await initialize();
 
-    // Remove previously scheduled reminder notifications only
     await _cancelReminderNotifications();
 
     final List<int> hours = areaType == PollingAreaType.urban
@@ -193,12 +189,12 @@ class LocalNotificationService {
 
     final pending = await _plugin.pendingNotificationRequests();
 
-    debugPrint(
+    AppLogger.d(
       'Scheduled ${hours.length} ${areaType.name} reminders',
     );
 
     for (final item in pending) {
-      debugPrint(
+      AppLogger.d(
         'ID:${item.id}  Title:${item.title}',
       );
     }
@@ -259,10 +255,6 @@ class LocalNotificationService {
   }
 
 
-  // ============================
-  // Cancel only reminder IDs
-  // ============================
-
   Future<void> _cancelReminderNotifications() async {
     for (int id = 100; id <= 104; id++) {
       await _plugin.cancel(id: id);
@@ -272,10 +264,6 @@ class LocalNotificationService {
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
   }
-
-  // ============================
-  // Helper
-  // ============================
 
   String _formatTime(int hour,
       int minute,) {
