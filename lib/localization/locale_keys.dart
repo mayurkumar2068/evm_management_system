@@ -766,6 +766,8 @@ abstract final class LocaleKeys {
   static const String presidingReportPrint = 'presiding.report_print';
   static const String presidingReportFooter = 'presiding.report_footer';
   static const String presidingReportFailed = 'presiding.report_failed';
+  static const String presidingReportPoName = 'presiding.report_po_name';
+  static const String presidingReportPoMobile = 'presiding.report_po_mobile';
   static const String presidingReportStation = 'presiding.report_station';
   static const String presidingReportArea = 'presiding.report_area';
   static const String presidingReportElectors = 'presiding.report_electors';
@@ -820,6 +822,8 @@ abstract final class LocaleKeys {
       'presiding.party_mandatory_title';
   static const String presidingPartyMandatoryBanner =
       'presiding.party_mandatory_banner';
+  static const String presidingPartyFilledBanner =
+      'presiding.party_filled_banner';
   static const String presidingPartyRequiredMessage =
       'presiding.party_required_message';
   static const String presidingPartyFillNow = 'presiding.party_fill_now';

@@ -12,7 +12,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_po_screen_header.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
@@ -59,10 +59,12 @@ class _LivePollBodyState extends State<_LivePollBody> {
   int? _femaleElectors;
   int? _otherElectors;
   int? _totalElectors;
+  PresidingElectionContext? _electionContext;
 
   @override
   void initState() {
     super.initState();
+    _electionContext = PresidingElectionContextStore.memoryCache;
     _syncFromSession();
     unawaited(_loadElectors());
     unawaited(_initConnectivity());
@@ -126,6 +128,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
       final PresidingElectionContext? ctx = await store.read();
       if (!mounted || ctx == null) return;
       setState(() {
+        _electionContext = ctx;
         _maleElectors = ctx.maleElectors;
         _femaleElectors = ctx.femaleElectors;
         _otherElectors = ctx.otherElectors;
@@ -346,8 +349,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AppGradientHeader(
-          centerTitle: true,
+        PresidingPoScreenHeader(
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingLivePollTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
@@ -356,8 +358,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
               stationLabel,
             ],
           ),
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-          bottom: const PresidingElectorHeaderStrip(),
+          electionContext: _electionContext,
         ),
         Expanded(
           child: ListView(

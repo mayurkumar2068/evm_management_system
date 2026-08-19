@@ -48,8 +48,7 @@ class PresidingTurnoutCard extends StatefulWidget {
   final bool queueOnly;
   final bool embedded;
   final bool forceReadOnly;
-  /// When false, collapsed card tap still fires [onExpansionChanged] so parent
-  /// can show a prerequisite snackbar, but the card stays locked.
+  /// When false, collapsed card is shown locked and ignores taps.
   final bool interactionEnabled;
 
   final Future<void> Function({
@@ -217,7 +216,9 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
         title: widget.title,
         record: widget.initialRecord,
         locked: !widget.interactionEnabled,
-        onTap: () => widget.onExpansionChanged?.call(true),
+        onTap: widget.interactionEnabled
+            ? () => widget.onExpansionChanged?.call(true)
+            : null,
       );
     }
 
@@ -572,7 +573,7 @@ class _CollapsedSummary extends StatelessWidget {
 
   final String title;
   final TurnoutRecord? record;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool locked;
 
   @override

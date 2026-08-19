@@ -73,6 +73,14 @@ class ServiceAuthController extends GetxController {
           jsonEncode(restored.toJson()),
         );
         PresidingConcernModule.resetClients();
+        if (restored.kind == ServiceLoginKind.presiding) {
+          PresidingElectionContextStore.warmFromServiceSession(restored);
+          unawaited(
+            PresidingElectionContextStore(
+              AppServices.secureStorage,
+            ).read(),
+          );
+        }
       } catch (_) {
         // Corrupt payload — do not wipe other auth keys here.
       }
@@ -155,6 +163,35 @@ class ServiceAuthController extends GetxController {
       data[PoLoginResponseFields.gpName],
     ]);
 
+    final int? maleElectors = _parseElectors(
+      _mapValue(data, <String>[
+        PoLoginResponseFields.maleElectors,
+        'maleElectors',
+        'male_electors',
+      ]),
+    );
+    final int? femaleElectors = _parseElectors(
+      _mapValue(data, <String>[
+        PoLoginResponseFields.femaleElectors,
+        'femaleElectors',
+        'female_electors',
+      ]),
+    );
+    final int? otherElectors = _parseElectors(
+      _mapValue(data, <String>[
+        PoLoginResponseFields.otherElectors,
+        'otherElectors',
+        'other_electors',
+      ]),
+    );
+    final int? totalElectors = _parseElectors(
+      _mapValue(data, <String>[
+        PoLoginResponseFields.totalElectors,
+        'totalElectors',
+        'total_electors',
+      ]),
+    );
+
     final ServiceSession next = ServiceSession(
       token: data[PoLoginResponseFields.accessToken].toString(),
       userId: data[PoLoginResponseFields.userId].toString(),
@@ -167,6 +204,10 @@ class ServiceAuthController extends GetxController {
       lat: lat,
       long: long,
       createdAt: DateTime.now(),
+      maleElectors: maleElectors,
+      femaleElectors: femaleElectors,
+      otherElectors: otherElectors,
+      totalElectors: totalElectors,
     );
 
     await _logoutStaleSessionIfSwitching(next.token);
@@ -192,12 +233,10 @@ class ServiceAuthController extends GetxController {
       pollingStationName: data[PoLoginResponseFields.psName]?.toString(),
       boothLat: lat,
       boothLong: long,
-      maleElectors: _parseElectors(data[PoLoginResponseFields.maleElectors]),
-      femaleElectors: _parseElectors(
-        data[PoLoginResponseFields.femaleElectors],
-      ),
-      otherElectors: _parseElectors(data[PoLoginResponseFields.otherElectors]),
-      totalElectors: _parseElectors(data[PoLoginResponseFields.totalElectors]),
+      maleElectors: maleElectors,
+      femaleElectors: femaleElectors,
+      otherElectors: otherElectors,
+      totalElectors: totalElectors,
     );
 
     final PresidingElectionContextStore store = PresidingElectionContextStore(
@@ -207,6 +246,7 @@ class ServiceAuthController extends GetxController {
     await store.save(context);
 
     await _saveSession(next);
+    PresidingElectionContextStore.warmFromServiceSession(next);
     // Keep offline milestone/turnout data across re-login of the same booth.
     // Only wipe when election / PS identity changes.
     final bool identityChanged =
@@ -489,6 +529,21 @@ class ServiceAuthController extends GetxController {
       return value.toDouble();
     }
     return double.tryParse(value.toString().trim());
+  }
+
+  Object? _mapValue(Map<String, dynamic> data, List<String> keys) {
+    for (final String key in keys) {
+      if (data.containsKey(key) && data[key] != null) return data[key];
+    }
+    for (final MapEntry<String, dynamic> entry in data.entries) {
+      final String lower = entry.key.toLowerCase();
+      for (final String key in keys) {
+        if (lower == key.toLowerCase() && entry.value != null) {
+          return entry.value;
+        }
+      }
+    }
+    return null;
   }
 
   int? _parseElectors(Object? value) {

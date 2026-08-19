@@ -22,6 +22,8 @@ class PresidingPoDetailsScreen extends StatefulWidget {
 
 enum _PoDetailsStep { form, otp }
 
+const String _otpEmptyMark = '\u200b';
+
 class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   late final PoOfficerDetailsDatasource _api;
 
@@ -29,9 +31,10 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   final TextEditingController _mobileCtrl = TextEditingController();
   final List<TextEditingController> _otpCtrls = List<TextEditingController>.generate(
     6,
-    (_) => TextEditingController(),
+    (_) => TextEditingController(text: _otpEmptyMark),
   );
   final List<FocusNode> _otpFocus = List<FocusNode>.generate(6, (_) => FocusNode());
+  final List<String> _otpPrev = List<String>.filled(6, '');
 
   bool _loading = true;
   bool _busy = false;
@@ -51,8 +54,12 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   /// Skip OTP only when profile exists and mobile is unchanged.
   bool get _canSkipOtp => _existingProfile && !_mobileChanged;
 
-  String get _otpValue =>
-      _otpCtrls.map((TextEditingController c) => c.text).join();
+  String get _otpValue => _otpCtrls
+      .map(
+        (TextEditingController c) =>
+            c.text.replaceAll(_otpEmptyMark, '').replaceAll(RegExp(r'\D'), ''),
+      )
+      .join();
 
   @override
   void initState() {
@@ -61,6 +68,13 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
     _mobileCtrl.addListener(() {
       if (mounted && _step == _PoDetailsStep.form) setState(() {});
     });
+    for (int i = 0; i < _otpFocus.length; i++) {
+      _otpFocus[i].addListener(() {
+        if (!_otpFocus[i].hasFocus) return;
+        final TextEditingController ctrl = _otpCtrls[i];
+        ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
+      });
+    }
     _load();
   }
 
@@ -128,8 +142,9 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   }
 
   void _clearOtp() {
-    for (final TextEditingController c in _otpCtrls) {
-      c.clear();
+    for (int i = 0; i < _otpCtrls.length; i++) {
+      _otpCtrls[i].text = _otpEmptyMark;
+      _otpPrev[i] = '';
     }
   }
 
@@ -285,11 +300,12 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   }
 
   void _onOtpChanged(int index, String value) {
-    final String digits = value.replaceAll(RegExp(r'\D'), '');
+    final String digits =
+        value.replaceAll(_otpEmptyMark, '').replaceAll(RegExp(r'\D'), '');
     if (digits.length > 1) {
-      // Paste support: distribute digits across boxes.
       for (int i = 0; i < 6; i++) {
-        _otpCtrls[i].text = i < digits.length ? digits[i] : '';
+        _otpCtrls[i].text = i < digits.length ? digits[i] : _otpEmptyMark;
+        _otpPrev[i] = i < digits.length ? digits[i] : '';
       }
       final int focusAt = (digits.length >= 6 ? 5 : digits.length).clamp(0, 5);
       _otpFocus[focusAt].requestFocus();
@@ -297,20 +313,33 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       return;
     }
     if (digits.isEmpty) {
-      _otpCtrls[index].text = '';
-      if (index > 0) {
+      final bool hadDigit = _otpPrev[index].isNotEmpty;
+      _otpCtrls[index].text = _otpEmptyMark;
+      _otpPrev[index] = '';
+      if (!hadDigit && index > 0) {
+        _otpCtrls[index - 1].text = _otpEmptyMark;
+        _otpPrev[index - 1] = '';
         _otpFocus[index - 1].requestFocus();
       }
       setState(() {});
       return;
     }
     _otpCtrls[index].text = digits[0];
+    _otpPrev[index] = digits[0];
     _otpCtrls[index].selection = const TextSelection.collapsed(offset: 1);
     if (index < 5) {
       _otpFocus[index + 1].requestFocus();
     } else {
       _otpFocus[index].unfocus();
     }
+    setState(() {});
+  }
+
+  void _onOtpBackspaceEmpty(int index) {
+    if (index <= 0) return;
+    _otpCtrls[index - 1].text = _otpEmptyMark;
+    _otpPrev[index - 1] = '';
+    _otpFocus[index - 1].requestFocus();
     setState(() {});
   }
 
@@ -519,6 +548,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
                     controller: _otpCtrls[i],
                     focusNode: _otpFocus[i],
                     onChanged: (String v) => _onOtpChanged(i, v),
+                    onBackspaceEmpty: () => _onOtpBackspaceEmpty(i),
                   ),
                 ],
               ],
@@ -569,6 +599,7 @@ class _OtpDigitBox extends StatefulWidget {
     required this.controller,
     required this.focusNode,
     required this.onChanged,
+    required this.onBackspaceEmpty,
   });
 
   final double width;
@@ -576,6 +607,7 @@ class _OtpDigitBox extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final ValueChanged<String> onChanged;
+  final VoidCallback onBackspaceEmpty;
 
   @override
   State<_OtpDigitBox> createState() => _OtpDigitBoxState();
@@ -587,13 +619,33 @@ class _OtpDigitBoxState extends State<_OtpDigitBox> {
     super.initState();
     widget.focusNode.addListener(_onFocus);
     widget.controller.addListener(_onText);
+    widget.focusNode.onKeyEvent = _onKeyEvent;
   }
 
   @override
   void dispose() {
+    widget.focusNode.onKeyEvent = null;
     widget.focusNode.removeListener(_onFocus);
     widget.controller.removeListener(_onText);
     super.dispose();
+  }
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    if (event.logicalKey != LogicalKeyboardKey.backspace) {
+      return KeyEventResult.ignored;
+    }
+    final bool hasDigit = widget.controller.text
+        .replaceAll(_otpEmptyMark, '')
+        .replaceAll(RegExp(r'\D'), '')
+        .isNotEmpty;
+    if (hasDigit) {
+      return KeyEventResult.ignored;
+    }
+    widget.onBackspaceEmpty();
+    return KeyEventResult.handled;
   }
 
   void _onFocus() => setState(() {});
@@ -602,7 +654,10 @@ class _OtpDigitBoxState extends State<_OtpDigitBox> {
   @override
   Widget build(BuildContext context) {
     final bool focused = widget.focusNode.hasFocus;
-    final bool filled = widget.controller.text.isNotEmpty;
+    final bool filled = widget.controller.text
+        .replaceAll(_otpEmptyMark, '')
+        .replaceAll(RegExp(r'\D'), '')
+        .isNotEmpty;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 140),
       width: widget.width,

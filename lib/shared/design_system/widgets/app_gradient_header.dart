@@ -149,8 +149,9 @@ class AppGradientHeader extends StatelessWidget {
                           ],
                         ),
                 if (bottom != null) ...<Widget>[
-                  if (title != null) const SizedBox(height: 18),
+                  if (title != null) const SizedBox(height: 14),
                   bottom!,
+                  const SizedBox(height: 4),
                 ],
               ],
             ),

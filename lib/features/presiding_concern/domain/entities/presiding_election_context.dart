@@ -53,6 +53,13 @@ final class PresidingElectionContext {
 
   bool get hasElectors => (totalElectors ?? 0) > 0;
 
+  /// True when login supplied at least one elector count field.
+  bool get hasElectorCounts =>
+      (maleElectors ?? 0) > 0 ||
+      (femaleElectors ?? 0) > 0 ||
+      (otherElectors ?? 0) > 0 ||
+      (totalElectors ?? 0) > 0;
+
   bool get isComplete =>
       electionId > 0 && psId.isNotEmpty && _isValidAreaType(areaType);
 

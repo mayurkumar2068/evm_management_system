@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 
 /// Persists presiding-officer election context from login as a single source of truth.
 final class PresidingElectionContextStore {
@@ -10,43 +11,114 @@ final class PresidingElectionContextStore {
 
   final SecureStorageService _secureStorage;
 
+  /// In-memory copy so the PO header can render on Android without waiting
+  /// on Keystore / EncryptedSharedPreferences (and without FutureBuilder reset).
+  static PresidingElectionContext? memoryCache;
+
+  /// Keeps elector counts from [fallback] when [primary] lacks them.
+  static PresidingElectionContext mergePreservingElectors(
+    PresidingElectionContext primary,
+    PresidingElectionContext? fallback,
+  ) {
+    if (primary.hasElectorCounts || fallback == null || !fallback.hasElectorCounts) {
+      return primary;
+    }
+    return primary.copyWith(
+      maleElectors: fallback.maleElectors,
+      femaleElectors: fallback.femaleElectors,
+      otherElectors: fallback.otherElectors,
+      totalElectors: fallback.totalElectors,
+    );
+  }
+
+  /// Prefers whichever context carries elector counts (Release cold-start safe).
+  static PresidingElectionContext? preferWithElectors(
+    PresidingElectionContext? a,
+    PresidingElectionContext? b,
+  ) {
+    if (a == null) return b;
+    if (b == null) return a;
+    if (a.hasElectorCounts) return a;
+    if (b.hasElectorCounts) return mergePreservingElectors(a, b);
+    return a.isComplete ? a : b;
+  }
+
+  /// Android fallback: PO service session also stores login elector totals.
+  static void warmFromServiceSession(ServiceSession session) {
+    if (session.kind != ServiceLoginKind.presiding || !session.hasElectorCounts) {
+      return;
+    }
+    final PresidingElectionContext fromSession = PresidingElectionContext(
+      electionId: 0,
+      psId: session.userId,
+      areaType: PresidingElectionContext.normalizeAreaType(session.section),
+      maleElectors: session.maleElectors,
+      femaleElectors: session.femaleElectors,
+      otherElectors: session.otherElectors,
+      totalElectors: session.totalElectors,
+    );
+    memoryCache = preferWithElectors(memoryCache, fromSession);
+  }
+
   /// Saves [context] to secure storage.
   Future<void> save(PresidingElectionContext context) async {
+    PresidingElectionContext toSave = mergePreservingElectors(
+      context,
+      memoryCache,
+    );
+    if (!toSave.hasElectorCounts) {
+      toSave = mergePreservingElectors(toSave, await _readFromDisk());
+    }
+    memoryCache = toSave;
     await _secureStorage.write(
       SecureStorageKeys.presidingElectionContext,
-      jsonEncode(_toJson(context)),
+      jsonEncode(_toJson(toSave)),
     );
     AppLogger.d(
       'Presiding election context saved '
-      '(electionId=${context.electionId}, psId=${_mask(context.psId)}, '
-      'areaType=${context.areaType})',
+      '(electionId=${toSave.electionId}, psId=${_mask(toSave.psId)}, '
+      'areaType=${toSave.areaType}, electors=${toSave.hasElectorCounts})',
     );
   }
 
   /// Reads the stored context, or `null` when absent or invalid.
   Future<PresidingElectionContext?> read() async {
-    final String? raw = await _secureStorage.read(
-      SecureStorageKeys.presidingElectionContext,
-    );
-    if (raw == null || raw.isEmpty) return null;
+    if (memoryCache != null &&
+        (memoryCache!.hasElectorCounts || memoryCache!.isComplete)) {
+      return memoryCache;
+    }
     try {
-      final PresidingElectionContext context = _fromJson(
-        jsonDecode(raw) as Map<String, dynamic>,
+      final PresidingElectionContext? fromDisk = await _readFromDisk();
+      if (fromDisk == null) return memoryCache;
+      final PresidingElectionContext merged = mergePreservingElectors(
+        fromDisk,
+        memoryCache,
       );
-      return context.isComplete ? context : null;
+      memoryCache = merged;
+      return merged;
     } catch (e, s) {
       AppLogger.w(
         'Failed to parse presiding election context',
         error: e,
         stackTrace: s,
       );
-      return null;
+      return memoryCache;
     }
   }
 
+  Future<PresidingElectionContext?> _readFromDisk() async {
+    final String? raw = await _secureStorage.read(
+      SecureStorageKeys.presidingElectionContext,
+    );
+    if (raw == null || raw.isEmpty) return null;
+    return _fromJson(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
   /// Clears stored presiding election context (e.g. on logout).
-  Future<void> clear() =>
-      _secureStorage.delete(SecureStorageKeys.presidingElectionContext);
+  Future<void> clear() {
+    memoryCache = null;
+    return _secureStorage.delete(SecureStorageKeys.presidingElectionContext);
+  }
 
   static Map<String, dynamic> _toJson(PresidingElectionContext context) {
     return <String, dynamic>{
@@ -96,16 +168,32 @@ final class PresidingElectionContextStore {
       boothLat: _parseCoord(json['booth_lat'] ?? json['boothLat']),
       boothLong: _parseCoord(json['booth_long'] ?? json['boothLong']),
       maleElectors: _parseElectors(
-        json['male_electors'] ?? json['MaleElectors'],
+        _electorField(json, const <String>[
+          'male_electors',
+          'maleElectors',
+          'MaleElectors',
+        ]),
       ),
       femaleElectors: _parseElectors(
-        json['female_electors'] ?? json['FemaleElectors'],
+        _electorField(json, const <String>[
+          'female_electors',
+          'femaleElectors',
+          'FemaleElectors',
+        ]),
       ),
       otherElectors: _parseElectors(
-        json['other_electors'] ?? json['OtherElectors'],
+        _electorField(json, const <String>[
+          'other_electors',
+          'otherElectors',
+          'OtherElectors',
+        ]),
       ),
       totalElectors: _parseElectors(
-        json['total_electors'] ?? json['TotalElectors'],
+        _electorField(json, const <String>[
+          'total_electors',
+          'totalElectors',
+          'TotalElectors',
+        ]),
       ),
     );
   }
@@ -114,6 +202,21 @@ final class PresidingElectionContextStore {
     if (raw == null) return null;
     if (raw is num) return raw.toDouble();
     return double.tryParse(raw.toString().trim());
+  }
+
+  static Object? _electorField(Map<String, dynamic> json, List<String> keys) {
+    for (final String key in keys) {
+      if (json.containsKey(key) && json[key] != null) return json[key];
+    }
+    for (final MapEntry<String, dynamic> entry in json.entries) {
+      final String lower = entry.key.toLowerCase();
+      for (final String key in keys) {
+        if (lower == key.toLowerCase() && entry.value != null) {
+          return entry.value;
+        }
+      }
+    }
+    return null;
   }
 
   static int? _parseElectors(Object? raw) {

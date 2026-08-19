@@ -22,6 +22,10 @@ class ServiceSession {
     this.lat,
     this.long,
     this.createdAt,
+    this.maleElectors,
+    this.femaleElectors,
+    this.otherElectors,
+    this.totalElectors,
   });
 
   factory ServiceSession.fromJson(Map<String, dynamic> json) => ServiceSession(
@@ -40,6 +44,10 @@ class ServiceSession {
     createdAt: json['createdAt'] != null
         ? DateTime.parse(json['createdAt'] as String)
         : null,
+    maleElectors: _parseElectors(json['maleElectors']),
+    femaleElectors: _parseElectors(json['femaleElectors']),
+    otherElectors: _parseElectors(json['otherElectors']),
+    totalElectors: _parseElectors(json['totalElectors']),
   );
 
   final String token;
@@ -60,8 +68,20 @@ class ServiceSession {
   final double? lat;
   final double? long;
 
+  /// PO login elector totals — Android fallback when election-context key fails.
+  final int? maleElectors;
+  final int? femaleElectors;
+  final int? otherElectors;
+  final int? totalElectors;
+
   /// When the session was created. Used to check expiry locally.
   final DateTime? createdAt;
+
+  bool get hasElectorCounts =>
+      (maleElectors ?? 0) > 0 ||
+      (femaleElectors ?? 0) > 0 ||
+      (otherElectors ?? 0) > 0 ||
+      (totalElectors ?? 0) > 0;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'token': token,
@@ -77,6 +97,10 @@ class ServiceSession {
     'lat': lat,
     'long': long,
     'createdAt': createdAt?.toIso8601String(),
+    if (maleElectors != null) 'maleElectors': maleElectors,
+    if (femaleElectors != null) 'femaleElectors': femaleElectors,
+    if (otherElectors != null) 'otherElectors': otherElectors,
+    if (totalElectors != null) 'totalElectors': totalElectors,
   };
 
   bool get isExpired {
@@ -89,5 +113,12 @@ class ServiceSession {
       return ServiceLoginKind.presiding;
     }
     return ServiceLoginKind.survey;
+  }
+
+  static int? _parseElectors(Object? raw) {
+    if (raw == null) return null;
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    return int.tryParse(raw.toString().trim());
   }
 }

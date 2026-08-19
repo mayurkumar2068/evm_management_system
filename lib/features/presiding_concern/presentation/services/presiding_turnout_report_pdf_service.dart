@@ -4,6 +4,9 @@ import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/cache/app_startup_cache.dart';
+import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/presiding_concern/data/datasource/po_officer_details_datasource.dart';
+import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
@@ -144,14 +147,46 @@ class _PresidingReportPreviewPageState
     extends State<_PresidingReportPreviewPage> {
   final GlobalKey _reportKey = GlobalKey();
   bool _busy = false;
+  late String _poName;
+  String _poMobile = '';
 
   @override
   void initState() {
     super.initState();
+    _poName = _fallbackPoName();
+    _loadPoName();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       precacheImage(const AssetImage(BrandLogo.asset), context);
     });
+  }
+
+  String _fallbackPoName() {
+    final String fromContext =
+        widget.electionContext?.loginUserName?.trim() ?? '';
+    if (fromContext.isNotEmpty) return fromContext;
+    final String fromSession = widget.session.loginUserName?.trim() ?? '';
+    if (fromSession.isNotEmpty) return fromSession;
+    return AppServices.serviceAuth.session.value?.name.trim() ?? '';
+  }
+
+  Future<void> _loadPoName() async {
+    final String userId = widget.electionContext?.userId?.trim() ?? '';
+    if (userId.isEmpty) return;
+    try {
+      final PoOfficerDetails? details =
+          await PoOfficerDetailsDatasource(AppServices.config).fetchDetails(
+        userId,
+      );
+      final String name = details?.poName.trim() ?? '';
+      final String mobile = details?.poMobileNo.trim() ?? '';
+      if (!mounted) return;
+      if (name.isEmpty && mobile.isEmpty) return;
+      setState(() {
+        if (name.isNotEmpty) _poName = name;
+        if (mobile.isNotEmpty) _poMobile = mobile;
+      });
+    } catch (_) {}
   }
 
   Future<pw.Document?> _capturePdf() async {
@@ -241,6 +276,8 @@ class _PresidingReportPreviewPageState
                   child: PresidingTurnoutReportView(
                     session: widget.session,
                     electionContext: widget.electionContext,
+                    poName: _poName,
+                    poMobile: _poMobile,
                     width: previewWidth,
                   ),
                 ),

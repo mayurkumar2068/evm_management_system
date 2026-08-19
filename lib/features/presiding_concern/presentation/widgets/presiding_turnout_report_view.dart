@@ -13,12 +13,16 @@ class PresidingTurnoutReportView extends StatelessWidget {
   const PresidingTurnoutReportView({
     required this.session,
     this.electionContext,
+    this.poName,
+    this.poMobile,
     this.width = 595,
     super.key,
   });
 
   final PresidingSession session;
   final PresidingElectionContext? electionContext;
+  final String? poName;
+  final String? poMobile;
   final double width;
 
   @override
@@ -79,6 +83,16 @@ class PresidingTurnoutReportView extends StatelessWidget {
             const SizedBox(height: 12),
             _InfoCard(
               rows: <_InfoRow>[
+                if ((poName ?? '').trim().isNotEmpty)
+                  _InfoRow(
+                    label: LocaleKeys.presidingReportPoName.tr(),
+                    value: poName!.trim(),
+                  ),
+                if ((poMobile ?? '').trim().isNotEmpty)
+                  _InfoRow(
+                    label: LocaleKeys.presidingReportPoMobile.tr(),
+                    value: poMobile!.trim(),
+                  ),
                 _InfoRow(
                   label: LocaleKeys.presidingReportStation.tr(),
                   value: '$stationName (${session.pollingStationCode})',
@@ -99,8 +113,6 @@ class PresidingTurnoutReportView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            _SectionTitle(LocaleKeys.presidingReportMilestones.tr()),
-            const SizedBox(height: 8),
             _MilestoneTable(milestones: session.milestones),
             const SizedBox(height: 14),
             _SectionTitle(LocaleKeys.presidingReportTurnout.tr()),

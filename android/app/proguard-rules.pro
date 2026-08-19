@@ -12,3 +12,9 @@
 # ── General ML Kit / Play Services ──────────────────────────────────────────
 -keep class com.google.android.gms.** { *; }
 -dontwarn com.google.android.gms.**
+
+# ── flutter_secure_storage (PO login electors + session) ────────────────────
+-keep class com.it_nomads.fluttersecurestorage.** { *; }
+-keep class androidx.security.crypto.** { *; }
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**

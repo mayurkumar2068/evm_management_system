@@ -3,7 +3,7 @@ import 'package:evm_management_system/features/presiding_concern/di/presiding_co
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
+import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_po_screen_header.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
@@ -239,8 +239,7 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AppGradientHeader(
-          centerTitle: true,
+        PresidingPoScreenHeader(
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
@@ -249,8 +248,6 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
               stationLabel,
             ],
           ),
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-          bottom: const PresidingElectorHeaderStrip(),
         ),
         // Last label kept outside the gradient header.
         Padding(
