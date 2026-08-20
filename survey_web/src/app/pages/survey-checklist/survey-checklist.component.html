@@ -27,6 +27,17 @@
               <span class="question-card__fill" [style.width.%]="progressPercent()"></span>
             </div>
           </div>
+          @if (!isLastQuestion() && hasSavedAnswer()) {
+            <button
+              type="button"
+              class="skip-next-btn"
+              [disabled]="saving() || loadingQuestions()"
+              (click)="goNextWithoutSave()"
+            >
+              <span>{{ 'chk.skipNext' | t }}</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          }
         </div>
 
         <app-checklist-item
@@ -102,8 +113,8 @@
       @if (saving()) {
         <mat-spinner diameter="20" strokeWidth="2" />
       } @else {
-        <span>{{ isLastQuestion() ? ('chk.submit' | t) : ('chk.next' | t) }}</span>
-        <mat-icon>{{ isLastQuestion() ? 'send' : 'arrow_forward' }}</mat-icon>
+        <span>{{ isLastQuestion() ? ('chk.submit' | t) : hasSavedAnswer() ? ('chk.update' | t) : ('chk.save' | t) }}</span>
+        <mat-icon>{{ isLastQuestion() ? 'send' : 'save' }}</mat-icon>
       }
     </button>
   </div>

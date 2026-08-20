@@ -169,6 +169,39 @@
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
+.skip-next-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--ec-border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 4px 10px 4px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ec-primary-dark);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.skip-next-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.skip-next-btn:not(:disabled):active {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.skip-next-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .question-card__empty {
   margin: 0;
   padding: 24px 0;

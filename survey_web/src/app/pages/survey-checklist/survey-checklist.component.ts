@@ -33,7 +33,14 @@ import { SurveyService } from '../../services/survey.service';
 import { APP_PARAMS } from '../../core/app-params';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import {
+  readSessionJson,
+  writeSessionJson,
+  clearSessionKey,
+} from '../../core/session-storage.util';
 import { shrinkDataUrlImage } from '../../utils/shrink-data-url-image';
+
+const CURRENT_INDEX_KEY = 'survey.current_index';
 
 @Component({
   selector: 'app-survey-checklist',
@@ -97,6 +104,12 @@ export class SurveyChecklistComponent implements OnInit {
     return total > 0 && this.currentIndex() >= total - 1;
   });
 
+  readonly hasSavedAnswer = computed(() => {
+    const q = this.currentQuestion();
+    if (!q) return false;
+    return !!this.survey.savedAnswerIds()[q.id];
+  });
+
   readonly progressLabel = computed(() => {
     const total = this.totalQuestions();
     if (total === 0) {
@@ -143,7 +156,10 @@ export class SurveyChecklistComponent implements OnInit {
           this.questions.set(items);
           this.loadingQuestions.set(false);
           if (items.length > 0) {
-            this.bindQuestionToForm(0);
+            const restored = readSessionJson<number>(CURRENT_INDEX_KEY) ?? 0;
+            const startIdx = restored >= 0 && restored < items.length ? restored : 0;
+            this.currentIndex.set(startIdx);
+            this.bindQuestionToForm(startIdx);
           } else {
             this.snack.open(this.i18n.t('chk.toast.loadFail'), 'OK', {
               duration: 3000,
@@ -356,9 +372,23 @@ export class SurveyChecklistComponent implements OnInit {
       return;
     }
     this.persistDraftForIndex(index);
-    const nextIndex = index - 1;
-    this.currentIndex.set(nextIndex);
-    this.bindQuestionToForm(nextIndex);
+    this.goToIndex(index - 1);
+  }
+
+  /** Navigate to next question without saving — for review/recheck only. */
+  goNextWithoutSave(): void {
+    const index = this.currentIndex();
+    if (this.isLastQuestion() || this.saving()) {
+      return;
+    }
+    this.persistDraftForIndex(index);
+    this.goToIndex(index + 1);
+  }
+
+  private goToIndex(index: number): void {
+    this.currentIndex.set(index);
+    writeSessionJson(CURRENT_INDEX_KEY, index);
+    this.bindQuestionToForm(index);
   }
 
   async saveAndContinue(): Promise<void> {
@@ -380,12 +410,18 @@ export class SurveyChecklistComponent implements OnInit {
     const normalizedAnswer = this.normalizeAnswerForSave(question, answerValue);
 
     if (question.mandatory && !answerValue) {
-      this.saveError.set(this.i18n.t('chk.validation.answerRequired'));
+      const key = question.qType === 'YN'
+        ? 'chk.validation.answerRequired'
+        : 'chk.validation.answerRequired.generic';
+      this.saveError.set(this.i18n.t(key));
       return;
     }
 
     if (this.isPhotoRequired(question, normalizedAnswer.answerYN) && !image) {
-      this.saveError.set(this.i18n.t('chk.validation.photoRequired'));
+      const key = question.qType === 'YN'
+        ? 'chk.validation.photoRequired'
+        : 'chk.validation.photoRequired.generic';
+      this.saveError.set(this.i18n.t(key));
       return;
     }
 
@@ -432,9 +468,7 @@ export class SurveyChecklistComponent implements OnInit {
             return;
           }
 
-          const nextIndex = this.currentIndex() + 1;
-          this.currentIndex.set(nextIndex);
-          this.bindQuestionToForm(nextIndex);
+          this.goToIndex(this.currentIndex() + 1);
         },
         error: () => {
           this.saving.set(false);
@@ -525,6 +559,7 @@ export class SurveyChecklistComponent implements OnInit {
 
   private completeSurvey(): void {
     this.survey.clearSurveySession();
+    clearSessionKey(CURRENT_INDEX_KEY);
     this.snack.open(this.i18n.t('chk.toast.submitOk'), 'OK', { duration: 3500 });
     void this.router.navigate(['/location']);
   }

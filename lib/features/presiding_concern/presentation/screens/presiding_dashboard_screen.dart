@@ -106,13 +106,13 @@ class _DashboardBodyState extends State<_DashboardBody> {
     if (auto && _partyPromptShown) return false;
     if (auto) _partyPromptShown = true;
 
-    final bool fillNow = await AppDialog.confirm(
+    await AppDialog.alert(
       context,
       title: LocaleKeys.presidingPartyMandatoryTitle.tr(),
       message: LocaleKeys.presidingPartyRequiredMessage.tr(),
-      confirmLabel: LocaleKeys.presidingPartyFillNow.tr(),
+      actionLabel: LocaleKeys.presidingPartyFillNow.tr(),
     );
-    if (!mounted || !fillNow) return false;
+    if (!mounted) return false;
     await _openPartySheet();
     return _partyCtrl.isComplete.value;
   }

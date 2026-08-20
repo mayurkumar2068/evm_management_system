@@ -151,6 +151,8 @@ type AnswerValue = string | null;
                 formControlName="answerValue"
                 [type]="inputType(question)"
                 [placeholder]="'chk.answer.placeholder' | t"
+                [attr.max]="question.qType === 'N' ? 10 : null"
+                [attr.maxlength]="question.qType === 'N' ? 2 : null"
                 (input)="onTextInput($event)"
               />
             }
@@ -161,7 +163,7 @@ type AnswerValue = string | null;
           <div class="ci__photo-meta">
             <span class="ci__photo-label">{{ 'ci.photo' | t }}</span>
             @if (question.photoRequired) {
-              <span class="ci__photo-hint">{{ 'ci.photoHint' | t }}</span>
+              <span class="ci__photo-hint">{{ photoHintKey(question) | t }}</span>
             }
           </div>
           <app-image-upload
@@ -420,6 +422,10 @@ export class ChecklistItemComponent implements OnChanges {
     return question.qType === 'LB';
   }
 
+  photoHintKey(question: SurveyQuestion): string {
+    return question.qType === 'YN' ? 'ci.photoHint' : 'ci.photoHint.generic';
+  }
+
   inputType(question: SurveyQuestion): string {
     return question.qType === 'N' ? 'number' : 'text';
   }
@@ -482,7 +488,19 @@ export class ChecklistItemComponent implements OnChanges {
 
   onTextInput(event: Event): void {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement | null;
-    this.answerChange.emit((target?.value ?? '').toString());
+    if (!target) return;
+    let value = target.value ?? '';
+
+    if (this.question.qType === 'N') {
+      value = value.replace(/[^\d]/g, '');
+      const num = parseInt(value, 10);
+      if (!isNaN(num) && num > 10) {
+        value = '10';
+      }
+      target.value = value;
+    }
+
+    this.answerChange.emit(value.toString());
   }
 
   onImage(image: string | null): void {

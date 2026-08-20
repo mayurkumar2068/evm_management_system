@@ -288,10 +288,9 @@ abstract final class TurnoutCountValidator {
     );
   }
 
-  /// Last hourly total + queue must **equal** मतदान समाप्ति total.
+  /// Final turnout must be ≥ last hourly total and ≤ last hourly + queue.
   ///
   /// Urban last slot = 5PM, rural = 3PM.
-  /// Rejects both `last + queue < final` and `last + queue > final`.
   static TurnoutCountValidationResult validateLastPlusQueueVsCompletion({
     required PresidingSession session,
     required String slotId,
@@ -335,6 +334,7 @@ abstract final class TurnoutCountValidator {
     if (slotId == TurnoutSlotIds.pollCompletion) {
       return _compareLastPlusQueueToFinal(
         lastPlusQueue: lastPlusQueue,
+        lastTotal: lastTotal,
         completionTotal: completionTotal,
       );
     }
@@ -347,19 +347,21 @@ abstract final class TurnoutCountValidator {
 
     return _compareLastPlusQueueToFinal(
       lastPlusQueue: lastPlusQueue,
+      lastTotal: lastTotal,
       completionTotal: completionTotal,
     );
   }
 
   static TurnoutCountValidationResult _compareLastPlusQueueToFinal({
     required int lastPlusQueue,
+    required int lastTotal,
     required int completionTotal,
   }) {
-    // Must be exactly equal — neither less nor greater.
-    if (completionTotal < lastPlusQueue) {
+    // final ≥ lastSlot total AND final ≤ lastSlot + queue.
+    if (completionTotal < lastTotal) {
       return TurnoutCountValidationResult.fail(
         'presiding.count_completion_below_last_plus_queue',
-        limit: lastPlusQueue,
+        limit: lastTotal,
       );
     }
     if (completionTotal > lastPlusQueue) {

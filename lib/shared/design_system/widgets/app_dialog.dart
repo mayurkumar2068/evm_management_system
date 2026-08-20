@@ -51,4 +51,44 @@ abstract final class AppDialog {
     );
     return result ?? false;
   }
+
+  /// Shows a single-action alert dialog (no cancel button).
+  static Future<void> alert(
+    BuildContext context, {
+    required String title,
+    required String message,
+    String? actionLabel,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) {
+        final ColorScheme scheme = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          backgroundColor: scheme.surface,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+          title: Text(
+            title,
+            style: AppTextStyles.titleLarge.copyWith(color: scheme.onSurface),
+          ),
+          content: Text(
+            message,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.8),
+            ),
+          ),
+          actions: <Widget>[
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(actionLabel ?? LocaleKeys.commonOk.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
