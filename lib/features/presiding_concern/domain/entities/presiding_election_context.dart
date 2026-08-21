@@ -16,6 +16,8 @@ final class PresidingElectionContext {
     this.femaleElectors,
     this.otherElectors,
     this.totalElectors,
+    this.isIpbms = false,
+    this.isLivePoll = false,
   });
 
   final int electionId;
@@ -39,6 +41,11 @@ final class PresidingElectionContext {
   final int? femaleElectors;
   final int? otherElectors;
   final int? totalElectors;
+
+  /// PO login feature flags (`IsIPBMS` / `IsLivePoll`). Both default `false`
+  /// (feature hidden) unless the login API explicitly returns `true`.
+  final bool isIpbms;
+  final bool isLivePoll;
 
   bool get hasBoothCoordinates =>
       boothLat != null &&
@@ -102,6 +109,8 @@ final class PresidingElectionContext {
     int? femaleElectors,
     int? otherElectors,
     int? totalElectors,
+    bool? isIpbms,
+    bool? isLivePoll,
   }) {
     return PresidingElectionContext(
       electionId: electionId ?? this.electionId,
@@ -117,6 +126,8 @@ final class PresidingElectionContext {
       femaleElectors: femaleElectors ?? this.femaleElectors,
       otherElectors: otherElectors ?? this.otherElectors,
       totalElectors: totalElectors ?? this.totalElectors,
+      isIpbms: isIpbms ?? this.isIpbms,
+      isLivePoll: isLivePoll ?? this.isLivePoll,
     );
   }
 }

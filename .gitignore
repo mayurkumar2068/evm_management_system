@@ -44,6 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android / iOS store signing secrets (never commit)
+**/key.properties
+**/*.jks
+**/*.keystore
+ios/ExportOptions.plist
+
 # FVM Version Cache
 .fvm/.venv_docs/
 /survey_web/

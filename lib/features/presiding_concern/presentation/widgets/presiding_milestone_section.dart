@@ -30,7 +30,8 @@ class PresidingMilestoneSectionCard extends StatelessWidget {
   /// When false, the incomplete action chip is shown disabled (non-tappable).
   final bool Function(PresidingMilestone milestone)? isMilestoneEnabled;
 
-  /// When set, shows booth name + "खोजें" chip above "मतदान केंद्र पहुँचे".
+  /// When set (and IPBMS is on), shows booth name + map chip above
+  /// "मतदान केंद्र पहुँचे".
   final String? boothMapStationName;
 
   @override

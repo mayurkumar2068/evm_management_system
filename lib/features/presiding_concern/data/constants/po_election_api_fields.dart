@@ -113,4 +113,8 @@ abstract final class PoLoginResponseFields {
   static const String femaleElectors = 'FemaleElectors';
   static const String otherElectors = 'OtherElectors';
   static const String totalElectors = 'TotalElectors';
+
+  /// Feature flags from PO login — gate PO-only features per booth/officer.
+  static const String isIpbms = 'IsIPBMS';
+  static const String isLivePoll = 'IsLivePoll';
 }

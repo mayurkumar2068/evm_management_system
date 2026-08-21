@@ -159,20 +159,22 @@ type AnswerValue = string | null;
           </mat-form-field>
         }
 
-        <div class="ci__photo">
-          <div class="ci__photo-meta">
-            <span class="ci__photo-label">{{ 'ci.photo' | t }}</span>
-            @if (question.photoRequired) {
-              <span class="ci__photo-hint">{{ photoHintKey(question) | t }}</span>
-            }
+        @if (question.photoRequired || image) {
+          <div class="ci__photo">
+            <div class="ci__photo-meta">
+              <span class="ci__photo-label">{{ 'ci.photo' | t }}</span>
+              @if (question.photoRequired) {
+                <span class="ci__photo-hint">{{ photoHintKey(question) | t }}</span>
+              }
+            </div>
+            <app-image-upload
+              [image]="image"
+              [disabled]="uploadDisabled && !image"
+              (imageChange)="onImage($event)"
+              (enlarge)="enlarge.emit($event)"
+            />
           </div>
-          <app-image-upload
-            [image]="image"
-            [disabled]="uploadDisabled && !image"
-            (imageChange)="onImage($event)"
-            (enlarge)="enlarge.emit($event)"
-          />
-        </div>
+        }
       </div>
     </div>
   `,

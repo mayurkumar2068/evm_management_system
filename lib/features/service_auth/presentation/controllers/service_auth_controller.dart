@@ -192,6 +192,15 @@ class ServiceAuthController extends GetxController {
       ]),
     );
 
+    // Feature flags — PO-only screens (e.g. Live Voting) stay hidden unless
+    // the login API explicitly returns `true`.
+    final bool isIpbms = _parseBool(
+      _mapValue(data, <String>[PoLoginResponseFields.isIpbms, 'isIPBMS']),
+    );
+    final bool isLivePoll = _parseBool(
+      _mapValue(data, <String>[PoLoginResponseFields.isLivePoll, 'isLivePoll']),
+    );
+
     final ServiceSession next = ServiceSession(
       token: data[PoLoginResponseFields.accessToken].toString(),
       userId: data[PoLoginResponseFields.userId].toString(),
@@ -237,6 +246,8 @@ class ServiceAuthController extends GetxController {
       femaleElectors: femaleElectors,
       otherElectors: otherElectors,
       totalElectors: totalElectors,
+      isIpbms: isIpbms,
+      isLivePoll: isLivePoll,
     );
 
     final PresidingElectionContextStore store = PresidingElectionContextStore(
@@ -551,6 +562,14 @@ class ServiceAuthController extends GetxController {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value.toString().trim());
+  }
+
+  /// Parses PO login boolean feature flags; missing/unknown → `false`
+  /// (feature hidden by default).
+  bool _parseBool(Object? value) {
+    if (value is bool) return value;
+    if (value == null) return false;
+    return value.toString().trim().toLowerCase() == 'true';
   }
 
   String? _firstNonEmptyString(List<Object?> values) {

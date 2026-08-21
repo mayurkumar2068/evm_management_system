@@ -10,6 +10,8 @@ abstract final class PresidingSessionMapper {
   static const String _psIdKey = 'ps_id';
   static const String _areaTypeKey = 'area_type';
   static const String _loginUserNameKey = 'login_user_name';
+  static const String _isLivePollKey = 'is_live_poll';
+  static const String _isIpbmsKey = 'is_ipbms';
 
   /// Seeds the default milestone catalogue matching the legacy workflow.
   static List<PresidingMilestone> defaultMilestones() {
@@ -87,6 +89,8 @@ abstract final class PresidingSessionMapper {
       if (session.areaType != null) _areaTypeKey: session.areaType,
       if (session.loginUserName != null && session.loginUserName!.isNotEmpty)
         _loginUserNameKey: session.loginUserName,
+      _isLivePollKey: session.isLivePoll,
+      _isIpbmsKey: session.isIpbms,
       _stationCodeKey: session.pollingStationCode,
       _stationNameKey: session.pollingStationName,
       _milestonesKey: session.milestones.map(_milestoneToJson).toList(),
@@ -111,6 +115,8 @@ abstract final class PresidingSessionMapper {
       psId: json[_psIdKey] as String?,
       areaType: json[_areaTypeKey] as String?,
       loginUserName: json[_loginUserNameKey] as String?,
+      isLivePoll: json[_isLivePollKey] as bool? ?? false,
+      isIpbms: json[_isIpbmsKey] as bool? ?? false,
       pollingStationCode: json[_stationCodeKey] as String? ?? '',
       pollingStationName:
           json[_stationNameKey] as String? ?? PresidingDefaults.stationNameKey,

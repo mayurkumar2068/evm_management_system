@@ -154,6 +154,15 @@ export class LocationSelectionComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    // Reload/refresh inside the WebView re-enters at this route (the Flutter
+    // host reloads the base URL, not the SPA path). If a location is still
+    // in session, the survey is already in progress — resume the checklist
+    // directly instead of forcing district/booth reselection.
+    if (this.survey.selectedLocation()) {
+      void this.router.navigate(['/checklist']);
+      return;
+    }
+
     const urbanRural = loginUrbanRural(this.surveyAuth.session?.urbanRural);
     if (urbanRural === 'U' || urbanRural === 'URBAN') {
       this.areaType.set('urban');

@@ -24,8 +24,6 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>
@@ -35,26 +33,22 @@
 		<string>comgooglemaps</string>
 		<string>googlemaps</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera access is required to scan EVM Control Unit and Ballot Unit barcodes.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo access is used to recover damaged barcodes from a captured image.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Location is used to tag polling-booth surveys with accurate GPS coordinates.</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>localhost</key>
+			<key>10.115.197.192</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
-			<key>10.115.197.192</key>
+			<key>localhost</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
@@ -63,6 +57,18 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to scan EVM Control Unit and Ballot Unit barcodes, and to capture polling-booth survey photos for election field work.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID is used to unlock MPSeCNet securely so election officers can re-authenticate quickly on shared field devices.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location is used to tag polling-booth surveys with accurate GPS coordinates during election field operations.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access may be required when the camera records video or audio as part of survey photo capture.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MPSeCNet may save captured barcode or survey photos to your photo library when you choose to keep a copy.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo access is used to recover damaged barcodes from a captured image and to attach survey evidence photos when needed.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -177,6 +177,8 @@ final class PresidingElectionContextStore {
         'other_electors': context.otherElectors,
       if (context.totalElectors != null)
         'total_electors': context.totalElectors,
+      'is_ipbms': context.isIpbms,
+      'is_live_poll': context.isLivePoll,
     };
   }
 
@@ -230,6 +232,9 @@ final class PresidingElectionContextStore {
           'TotalElectors',
         ]),
       ),
+      isIpbms: (json['is_ipbms'] ?? json['isIpbms']) as bool? ?? false,
+      isLivePoll:
+          (json['is_live_poll'] ?? json['isLivePoll']) as bool? ?? false,
     );
   }
 

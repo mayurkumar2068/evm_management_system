@@ -117,9 +117,16 @@ class _DashboardBodyState extends State<_DashboardBody> {
     return _partyCtrl.isComplete.value;
   }
 
+  /// IPBMS material-tracking is opt-in — when the officer doesn't do it,
+  /// treat पोल-एंड (auto-derived from 2-2 hourly finish) as the "done" mark
+  /// instead of the hidden निर्वाचन सामग्री सौंपी गई step.
   bool get _canGenerateReport => widget.session.milestones.any(
         (PresidingMilestone m) =>
-            m.id == PresidingMilestoneIds.materialHandedOver && m.isCompleted,
+            m.id ==
+                (widget.session.isIpbms
+                    ? PresidingMilestoneIds.materialHandedOver
+                    : PresidingMilestoneIds.pollEnd) &&
+            m.isCompleted,
       );
 
   Future<void> _generateReport() async {
@@ -181,6 +188,17 @@ class _DashboardBodyState extends State<_DashboardBody> {
     for (final PresidingMilestone milestone in widget.session.milestones) {
       // मतदान समाप्त is submitted via 2–2 hourly finish — hide from section 4.
       if (milestone.id == PresidingMilestoneIds.pollEnd) continue;
+      // Live Voting is opt-in per booth/officer (PO login `IsLivePoll` flag).
+      if (milestone.id == PresidingMilestoneIds.livePollInfo &&
+          !widget.session.isLivePoll) {
+        continue;
+      }
+      // IPBMS material-tracking steps are opt-in too (PO login `IsIPBMS`
+      // flag) — when disabled, the flow starts from "मतदान केंद्र पहुंचे".
+      if (!widget.session.isIpbms &&
+          PresidingSession.ipbmsMilestoneIds.contains(milestone.id)) {
+        continue;
+      }
       grouped.putIfAbsent(milestone.sectionId, () => <PresidingMilestone>[]);
       grouped[milestone.sectionId]!.add(milestone);
     }
@@ -308,8 +326,11 @@ class _DashboardBodyState extends State<_DashboardBody> {
                       index: section.index,
                       title: section.title,
                       milestones: grouped[section.id]!,
+                      // Booth map / "देखें" only when PO login `IsIPBMS` is true.
                       boothMapStationName:
-                          section.index == 1 ? stationLabel : null,
+                          section.index == 1 && widget.session.isIpbms
+                          ? stationLabel
+                          : null,
                       isMilestoneEnabled: (PresidingMilestone milestone) =>
                           widget.session.isMilestoneActionEnabled(milestone.id),
                       onMilestoneTap: (PresidingMilestone milestone) async {

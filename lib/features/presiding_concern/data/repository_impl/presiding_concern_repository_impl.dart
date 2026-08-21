@@ -72,6 +72,8 @@ final class PresidingConcernRepositoryImpl
         session.areaType != parsed.areaType ||
         session.pollingStationCode != parsed.pollingStationCode ||
         session.loginUserName != parsed.loginUserName ||
+        session.isLivePoll != parsed.isLivePoll ||
+        session.isIpbms != parsed.isIpbms ||
         !_sameMilestoneCatalog(parsed.milestones, session.milestones) ||
         parsed.turnoutRecords[TurnoutSlotIds.livePollInfo]?.isLocked !=
             session.turnoutRecords[TurnoutSlotIds.livePollInfo]?.isLocked) {
@@ -675,6 +677,8 @@ final class PresidingConcernRepositoryImpl
       psId: context?.psId,
       areaType: context?.areaType,
       loginUserName: context?.loginUserName,
+      isLivePoll: context?.isLivePoll ?? false,
+      isIpbms: context?.isIpbms ?? false,
       pollingStationCode: context?.pollingStationCode ?? '',
       pollingStationName: context?.pollingStationName?.isNotEmpty ?? false
           ? context!.pollingStationName!
@@ -706,6 +710,8 @@ final class PresidingConcernRepositoryImpl
       loginUserName: context.loginUserName?.isNotEmpty ?? false
           ? context.loginUserName
           : session.loginUserName,
+      isLivePoll: context.isLivePoll,
+      isIpbms: context.isIpbms,
     );
   }
 

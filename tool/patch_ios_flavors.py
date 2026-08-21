@@ -65,7 +65,7 @@ base_map = {
 
 flavors = {
     "dev": {
-        "bundle": "com.mpsedc.evmManagementSystem.dev",
+        "bundle": "com.mpsec.mpsecnet.dev",
         "name": '"EVM DEV"',
         "xc": {
             "Debug": (flavor_files["Debug-dev.xcconfig"], "Debug-dev.xcconfig"),
@@ -74,7 +74,7 @@ flavors = {
         },
     },
     "prod": {
-        "bundle": "com.mpsedc.evmManagementSystem",
+        "bundle": "com.mpsec.mpsecnet",
         "name": "EVM",
         "xc": {
             "Debug": (flavor_files["Debug-prod.xcconfig"], "Debug-prod.xcconfig"),

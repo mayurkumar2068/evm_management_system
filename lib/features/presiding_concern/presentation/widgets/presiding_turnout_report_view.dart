@@ -42,6 +42,17 @@ class PresidingTurnoutReportView extends StatelessWidget {
         session.turnoutRecords[TurnoutSlotIds.livePollInfo];
     final int liveTotal =
         (live?.male ?? 0) + (live?.female ?? 0) + (live?.thirdGender ?? 0);
+    // Mirror dashboard visibility: Live Voting / IPBMS material-tracking
+    // steps stay off the printed report too when the PO login flag is off.
+    final List<PresidingMilestone> reportMilestones = session.milestones
+        .where(
+          (PresidingMilestone m) =>
+              !(m.id == PresidingMilestoneIds.livePollInfo &&
+                  !session.isLivePoll) &&
+              !(!session.isIpbms &&
+                  PresidingSession.ipbmsMilestoneIds.contains(m.id)),
+        )
+        .toList(growable: false);
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
@@ -113,18 +124,20 @@ class PresidingTurnoutReportView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            _MilestoneTable(milestones: session.milestones),
+            _MilestoneTable(milestones: reportMilestones),
             const SizedBox(height: 14),
             _SectionTitle(LocaleKeys.presidingReportTurnout.tr()),
             const SizedBox(height: 8),
             _TurnoutTable(session: session, totalElectors: totalElectors),
-            const SizedBox(height: 14),
-            _LivePollCard(
-              title: LocaleKeys.presidingLivePollTitle.tr(),
-              live: live,
-              liveTotal: liveTotal,
-              totalElectors: totalElectors,
-            ),
+            if (session.isLivePoll) ...<Widget>[
+              const SizedBox(height: 14),
+              _LivePollCard(
+                title: LocaleKeys.presidingLivePollTitle.tr(),
+                live: live,
+                liveTotal: liveTotal,
+                totalElectors: totalElectors,
+              ),
+            ],
             const SizedBox(height: 14),
             Text(
               LocaleKeys.presidingReportFooter.tr(),

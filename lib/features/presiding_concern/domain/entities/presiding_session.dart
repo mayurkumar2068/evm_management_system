@@ -14,6 +14,8 @@ final class PresidingSession {
     required this.milestones,
     required this.turnoutRecords,
     this.loginUserName,
+    this.isLivePoll = false,
+    this.isIpbms = false,
   });
 
   final int? electionId;
@@ -26,6 +28,16 @@ final class PresidingSession {
 
   /// PO login username (`UserName`). Used for test-account bypasses.
   final String? loginUserName;
+
+  /// PO login flag (`IsLivePoll`). Live Voting stays hidden and its
+  /// milestone is treated as satisfied unless this is `true`.
+  final bool isLivePoll;
+
+  /// PO login flag (`IsIPBMS`). When `true`: material-tracking milestones and
+  /// the booth map row are shown. When `false`: those milestones stay hidden
+  /// (treated as satisfied) and the map is hidden — flow starts at
+  /// मतदान केंद्र पहुंचे without map.
+  final bool isIpbms;
 
   /// Mock-poll next-day / 7 AM gates are skipped for every PO.
   bool get bypassesMockPollRules => true;
@@ -228,7 +240,25 @@ final class PresidingSession {
   bool isMilestoneActionEnabled(String milestoneId) =>
       milestoneActionBlockKey(milestoneId) == null;
 
+  /// Material-tracking milestones hidden when IPBMS is opted out.
+  static const List<String> ipbmsMilestoneIds = <String>[
+    PresidingMilestoneIds.leftMaterialCenter,
+    PresidingMilestoneIds.materialReceived,
+    PresidingMilestoneIds.machineSealed,
+    PresidingMilestoneIds.materialHandedOver,
+  ];
+
   bool _isMilestoneCompleted(String milestoneId) {
+    // Live Voting is opt-in per booth/officer — when disabled, don't let its
+    // milestone (hidden from the UI) gate later steps like machine seal.
+    if (milestoneId == PresidingMilestoneIds.livePollInfo && !isLivePoll) {
+      return true;
+    }
+    // IPBMS material-tracking steps are opt-in too — when disabled, treat
+    // them as satisfied so "मतदान केंद्र पहुंचे" becomes the flow's start.
+    if (!isIpbms && ipbmsMilestoneIds.contains(milestoneId)) {
+      return true;
+    }
     for (final PresidingMilestone milestone in milestones) {
       if (milestone.id == milestoneId) {
         return milestone.isCompleted;
@@ -246,6 +276,8 @@ final class PresidingSession {
     List<PresidingMilestone>? milestones,
     Map<String, TurnoutRecord>? turnoutRecords,
     String? loginUserName,
+    bool? isLivePoll,
+    bool? isIpbms,
   }) {
     return PresidingSession(
       electionId: electionId ?? this.electionId,
@@ -256,6 +288,8 @@ final class PresidingSession {
       milestones: milestones ?? this.milestones,
       turnoutRecords: turnoutRecords ?? this.turnoutRecords,
       loginUserName: loginUserName ?? this.loginUserName,
+      isLivePoll: isLivePoll ?? this.isLivePoll,
+      isIpbms: isIpbms ?? this.isIpbms,
     );
   }
 }

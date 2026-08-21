@@ -10,6 +10,7 @@ import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/app/app.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:evm_management_system/core/media/configure_app_image_picker.dart';
 import 'package:evm_management_system/core/settings/settings_service.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/core/time/app_time_zone.dart';
@@ -26,6 +27,7 @@ Future<void> bootstrap(Flavor flavor) async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      configureAppImagePicker();
       await AppTimeZone.ensureInitialized();
       await EasyLocalization.ensureInitialized();
       WidgetsFlutterBinding.ensureInitialized();

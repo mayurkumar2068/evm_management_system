@@ -24,6 +24,9 @@ class AppPickedImage {
 
 /// Shared camera/gallery picker with JPEG compression — same pipeline as
 /// [WebViewBridge] `pickImage`, reusable from Flutter screens.
+///
+/// Gallery on Android uses the system Photo Picker (no storage/media permission).
+/// Camera still needs `CAMERA` / `NSCameraUsageDescription`.
 class AppImagePickerService {
   AppImagePickerService({ImagePicker? picker})
     : _picker = picker ?? ImagePicker();
@@ -42,6 +45,8 @@ class AppImagePickerService {
       maxHeight: maxSide,
       imageQuality: quality.clamp(1, 100),
       preferredCameraDevice: CameraDevice.rear,
+      // Android Photo Picker path: no media permission. iOS left on plugin default.
+      requestFullMetadata: !Platform.isAndroid,
     );
     if (file == null) {
       return null;

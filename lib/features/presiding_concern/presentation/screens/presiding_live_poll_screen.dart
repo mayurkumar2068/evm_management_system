@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/connectivity_service.dart';
@@ -30,6 +31,16 @@ class PresidingLivePollScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PresidingSessionScaffold(
       builder: (BuildContext context, PresidingSession session) {
+        // Live Voting is opt-in per booth/officer (PO login `IsLivePoll`
+        // flag) — guard the route itself, not just the dashboard tile.
+        if (!session.isLivePoll) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (Get.currentRoute == AppRoute.presidingLivePoll.path) {
+              Get.back<void>();
+            }
+          });
+          return const SizedBox.shrink();
+        }
         return _LivePollBody(session: session);
       },
     );
