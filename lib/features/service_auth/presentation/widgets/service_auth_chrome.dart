@@ -50,15 +50,23 @@ class ServiceAuthBackdrop extends StatelessWidget {
 class ServiceAuthHero extends StatelessWidget {
   const ServiceAuthHero({
     required this.title,
-    required this.subtitle,
+    this.subtitle,
+    this.showBottomOrb = true,
+    this.compactTitle = false,
     super.key,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
+  final bool showBottomOrb;
+  final bool compactTitle;
 
   @override
   Widget build(BuildContext context) {
+    final String? subtitleText = subtitle?.trim();
+    final bool hasSubtitle =
+        subtitleText != null && subtitleText.isNotEmpty;
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -86,18 +94,19 @@ class ServiceAuthHero extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            right: 28,
-            bottom: -36,
-            child: Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
+          if (showBottomOrb)
+            Positioned(
+              right: 28,
+              bottom: -36,
+              child: Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
               ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
             child: Column(
@@ -128,24 +137,29 @@ class ServiceAuthHero extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppTextStyles.titleLarge.copyWith(
+                        style: (compactTitle
+                                ? AppTextStyles.titleMedium
+                                : AppTextStyles.titleLarge)
+                            .copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
-                          height: 1.15,
+                          height: compactTitle ? 1.25 : 1.15,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    height: 1.35,
+                if (hasSubtitle) ...<Widget>[
+                  const SizedBox(height: 20),
+                  Text(
+                    subtitleText,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      height: 1.35,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

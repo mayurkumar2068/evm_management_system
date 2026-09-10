@@ -131,3 +131,9 @@ Deferred (still valid for later):
 - `AppDialog.confirmSignOut` shared by profile + WebView
 - Removed unused `AppColors` tokens (`titleGreen`, `muted`, `secondaryLight`, `surveyPrimaryDark`, `tealLight`)
 - Left service-auth `_parseBool` stricter-than-loose (intentional PO flag hide)
+
+### Phase 6 follow-up (2026-09-10)
+- Guest gateway reuses `ServiceAuthHero` (`compactTitle` / no bottom orb) + `ServiceAuthFormCard`
+- Removed unused `kBypassPoPartySaveOn404`
+- Trimmed unused spacing/radius tokens; dropped unused `AppGradients.brand`
+- Aliased identical `nominationButton` / `survey` CTA gradients to `primaryButton`

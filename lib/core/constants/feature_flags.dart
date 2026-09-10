@@ -37,7 +37,3 @@ const bool kHideAuditTrail = true;
 /// Skips green onboarding slides + first-run language bottomsheet.
 /// Splash continues as guest straight to the home/dashboard.
 const bool kSkipOnboarding = true;
-
-/// Until `po-party-details` / `save-po-party` are stable on prod, allow OTP when
-/// save returns HTTP 404/401. Set to `false` after backend auth is confirmed.
-const bool kBypassPoPartySaveOn404 = true;

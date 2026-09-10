@@ -73,24 +73,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const _SoftLoginHero(),
+                    ServiceAuthHero(
+                      title: LocaleKeys.dashboardBrandTitle.tr(),
+                      showBottomOrb: false,
+                      compactTitle: true,
+                    ),
                     const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
-                      decoration: BoxDecoration(
-                        color: context.appSurface,
-                        borderRadius: AppRadius.brXl,
-                        border: Border.all(color: context.appOutline),
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                            color: AppColors.primary.withValues(
-                              alpha: context.isAppDark ? 0.18 : 0.08,
-                            ),
-                            blurRadius: 28,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
+                    ServiceAuthFormCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
@@ -213,81 +202,6 @@ class _NavTile extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SoftLoginHero extends StatelessWidget {
-  const _SoftLoginHero();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: AppGradients.header,
-        borderRadius: AppRadius.brXl,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.22),
-            blurRadius: 26,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            right: -40,
-            top: -50,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  width: 56,
-                  height: 56,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const ClipOval(
-                    child: BrandLogo(width: 40),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    LocaleKeys.dashboardBrandTitle.tr(),
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
