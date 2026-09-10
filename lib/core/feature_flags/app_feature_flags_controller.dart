@@ -65,7 +65,7 @@ class AppFeatureFlagsController extends GetxController {
       final Object? nested = map['Data'] ?? map['data'] ?? map['Result'];
       final Map<String, dynamic> flags = asStringKeyedMap(nested) ?? map;
 
-      final bool? remote = _parseBool(
+      final bool? remote = parseLooseBool(
         flags['showRegistration'] ??
             flags['ShowRegistration'] ??
             flags['SHOW_REGISTRATION'],
@@ -87,14 +87,5 @@ class AppFeatureFlagsController extends GetxController {
         stackTrace: s,
       );
     }
-  }
-
-  static bool? _parseBool(Object? raw) {
-    if (raw == null) return null;
-    if (raw is bool) return raw;
-    final String s = raw.toString().trim().toLowerCase();
-    if (s == 'true' || s == '1' || s == 'yes') return true;
-    if (s == 'false' || s == '0' || s == 'no') return false;
-    return null;
   }
 }

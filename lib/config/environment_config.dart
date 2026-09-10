@@ -1,6 +1,7 @@
 import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/legal/privacy_urls.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EnvironmentConfig {
@@ -68,14 +69,7 @@ class EnvironmentConfig {
     bool optionalBool(String key, {required bool defaultValue}) {
       final String? value = dotenv.env[key]?.trim();
       if (value == null || value.isEmpty) return defaultValue;
-      final String normalized = value.toLowerCase();
-      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
-        return true;
-      }
-      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
-        return false;
-      }
-      return defaultValue;
+      return parseLooseBoolOr(value, defaultValue: defaultValue);
     }
 
     final String apiBaseUrl = require('API_BASE_URL');

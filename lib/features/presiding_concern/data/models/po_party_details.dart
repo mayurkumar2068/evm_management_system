@@ -1,3 +1,5 @@
+import 'package:evm_management_system/core/utils/json_map.dart';
+
 /// PO party / polling-party details from POElection API.
 class PoPartyDetails {
   const PoPartyDetails({
@@ -15,19 +17,19 @@ class PoPartyDetails {
   });
 
   factory PoPartyDetails.fromJson(Map<String, dynamic> json) {
-    final String rawId = _str(json['Id'] ?? json['id']);
+    final String rawId = coercedString(json['Id'] ?? json['id']);
     return PoPartyDetails(
       id: isPartyGuid(rawId) ? rawId : null,
-      poUserId: _str(json['POUserId'] ?? json['poUserId']),
-      partyNo: _str(json['PartyNo'] ?? json['partyNo']),
-      p1Name: _str(json['P1Name'] ?? json['p1Name']),
-      p1MobileNo: _str(json['P1MobileNo'] ?? json['p1MobileNo']),
-      p2Name: _str(json['P2Name'] ?? json['p2Name']),
-      p2MobileNo: _str(json['P2MobileNo'] ?? json['p2MobileNo']),
-      p3Name: _str(json['P3Name'] ?? json['p3Name']),
-      p3MobileNo: _str(json['P3MobileNo'] ?? json['p3MobileNo']),
-      p4Name: _str(json['P4Name'] ?? json['p4Name']),
-      p4MobileNo: _str(json['P4MobileNo'] ?? json['p4MobileNo']),
+      poUserId: coercedString(json['POUserId'] ?? json['poUserId']),
+      partyNo: coercedString(json['PartyNo'] ?? json['partyNo']),
+      p1Name: coercedString(json['P1Name'] ?? json['p1Name']),
+      p1MobileNo: coercedString(json['P1MobileNo'] ?? json['p1MobileNo']),
+      p2Name: coercedString(json['P2Name'] ?? json['p2Name']),
+      p2MobileNo: coercedString(json['P2MobileNo'] ?? json['p2MobileNo']),
+      p3Name: coercedString(json['P3Name'] ?? json['p3Name']),
+      p3MobileNo: coercedString(json['P3MobileNo'] ?? json['p3MobileNo']),
+      p4Name: coercedString(json['P4Name'] ?? json['p4Name']),
+      p4MobileNo: coercedString(json['P4MobileNo'] ?? json['p4MobileNo']),
     );
   }
 
@@ -116,11 +118,6 @@ class PoPartyDetails {
     );
   }
 
-  static String _str(Object? value, {String fallback = ''}) {
-    if (value == null) return fallback;
-    final String s = value.toString().trim();
-    return s.isEmpty ? fallback : s;
-  }
 
   static Object? _nullIfEmpty(String value) {
     final String t = value.trim();

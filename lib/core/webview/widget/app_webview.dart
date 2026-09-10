@@ -187,14 +187,7 @@ class _AppWebViewState extends State<AppWebView> {
   /// Header logout action — same [ServiceAuthController.signOut] call used
   /// by the Presiding Officer flow, then leaves the WebView.
   Future<void> _confirmLogout() async {
-    final bool confirmed = await AppDialog.confirm(
-      context,
-      title: LocaleKeys.profileSignOutTitle.tr(),
-      message: LocaleKeys.profileSignOutMessage.tr(),
-      confirmLabel: LocaleKeys.profileSignOut.tr(),
-      cancelLabel: LocaleKeys.commonCancel.tr(),
-      destructive: true,
-    );
+    final bool confirmed = await AppDialog.confirmSignOut(context);
     if (!confirmed || !mounted) return;
 
     await AppServices.serviceAuth.signOut();

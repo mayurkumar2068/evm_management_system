@@ -131,14 +131,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _confirmSignOut(BuildContext context) async {
-    final bool confirmed = await AppDialog.confirm(
-      context,
-      title: LocaleKeys.profileSignOutTitle.tr(),
-      message: LocaleKeys.profileSignOutMessage.tr(),
-      confirmLabel: LocaleKeys.profileSignOut.tr(),
-      cancelLabel: LocaleKeys.commonCancel.tr(),
-      destructive: true,
-    );
+    final bool confirmed = await AppDialog.confirmSignOut(context);
     if (!confirmed) return;
 
     final AuthUser? user = AppServices.auth.authState.value.user;

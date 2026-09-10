@@ -124,3 +124,10 @@ Deferred (still valid for later):
 - Shared `localizedAuthMessage` for login + self-register
 - Removed unused `Validators.requiredOfficerId` / `password` / `dropdownRequired`
 - Trimmed unused `AppIcons` aliases (logout, flash, camera, offline, visibility, fingerprint)
+
+### Phase 5 follow-up (2026-09-10)
+- Extended `json_map.dart`: `parseOptionalDouble`, `mapValueByKeys`, `parseLooseBool`/`Or`, `trimmedOrNull`, `coercedString`
+- Wired auth controller + election context coords/keys; dashboard cards/feature flags/env bools; dashboard + PO string coerce
+- `AppDialog.confirmSignOut` shared by profile + WebView
+- Removed unused `AppColors` tokens (`titleGreen`, `muted`, `secondaryLight`, `surveyPrimaryDark`, `tealLight`)
+- Left service-auth `_parseBool` stricter-than-loose (intentional PO flag hide)

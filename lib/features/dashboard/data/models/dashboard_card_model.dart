@@ -22,13 +22,13 @@ class DashboardCardModel {
       categoryNameEn: _str(json['CategoryNameEn'] ?? json['categoryNameEn']),
       cardName: _str(json['CardName'] ?? json['cardName']),
       cardNameEn: _str(json['CardNameEn'] ?? json['cardNameEn']),
-      isRegistrationAllowed: _asBool(
+      isRegistrationAllowed: parseLooseBoolOr(
         json['IsRegistrationAllowed'] ?? json['isRegistrationAllowed'],
       ),
-      isLogin: _asBool(json['IsLogin'] ?? json['isLogin']),
-      isWebView: _asBool(json['IsWebView'] ?? json['isWebView']),
-      url: _nullableStr(json['Url'] ?? json['url']),
-      isActive: _asBool(json['IsActive'] ?? json['isActive'], defaultValue: true),
+      isLogin: parseLooseBoolOr(json['IsLogin'] ?? json['isLogin']),
+      isWebView: parseLooseBoolOr(json['IsWebView'] ?? json['isWebView']),
+      url: trimmedOrNull(json['Url'] ?? json['url']),
+      isActive: parseLooseBoolOr(json['IsActive'] ?? json['isActive'], defaultValue: true),
     );
   }
 
@@ -62,17 +62,4 @@ class DashboardCardModel {
 
   static String _str(Object? value) => value?.toString().trim() ?? '';
 
-  static String? _nullableStr(Object? value) {
-    final String s = _str(value);
-    return s.isEmpty ? null : s;
-  }
-
-
-  static bool _asBool(Object? value, {bool defaultValue = false}) {
-    if (value is bool) return value;
-    final String s = value?.toString().trim().toLowerCase() ?? '';
-    if (s == 'true' || s == '1' || s == 'yes') return true;
-    if (s == 'false' || s == '0' || s == 'no') return false;
-    return defaultValue;
-  }
 }

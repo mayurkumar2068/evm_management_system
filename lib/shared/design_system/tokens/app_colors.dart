@@ -9,9 +9,7 @@ abstract final class AppColors {
   // Brand — soft blue / mint (Booth Survey reference).
   static const Color saffron = Color(0xFFF4801F);
   static const Color green = Color(0xFF10B981);
-  static const Color titleGreen = Color(0xFF059669);
   static const Color teal = Color(0xFF0D9488);
-  static const Color muted = Color(0xFF94A3B8);
 
   /// Soft sky blue (hero / primary actions).
   static const Color primary = Color(0xFF3B82F6);
@@ -21,7 +19,6 @@ abstract final class AppColors {
   static const Color primaryBright = Color(0xFF60A5FA);
 
   static const Color secondary = Color(0xFF10B981);
-  static const Color secondaryLight = Color(0xFFD1FAE5);
 
   static const Color greenLight = Color(0xFF34D399);
   static const Color greenDark = Color(0xFF059669);
@@ -32,8 +29,6 @@ abstract final class AppColors {
 
   /// Survey WebView — same soft primary as the rest of the app.
   static const Color surveyPrimary = Color(0xFF3B82F6);
-  static const Color surveyPrimaryDark = Color(0xFF2563EB);
-  static const Color tealLight = Color(0xFF14B8A6);
 
   // Neutrals
   static const Color background = Color(0xFFEEF5FC);

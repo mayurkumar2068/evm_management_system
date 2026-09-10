@@ -5,6 +5,7 @@ import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
@@ -385,10 +386,10 @@ class DashboardController extends GetxController {
     required AuthUser? authUser,
     required bool isGuestAuth,
   }) {
-    final String? sessionName = _trimmedOrNull(session?.name);
+    final String? sessionName = trimmedOrNull(session?.name);
     if (sessionName != null) return sessionName;
     if (!isGuestAuth) {
-      final String? fullName = _trimmedOrNull(authUser?.fullName);
+      final String? fullName = trimmedOrNull(authUser?.fullName);
       if (fullName != null) return fullName;
     }
     return LocaleKeys.dashboardGuest.tr();
@@ -399,10 +400,10 @@ class DashboardController extends GetxController {
     required AuthUser? authUser,
     required bool isGuestAuth,
   }) {
-    final String? section = _trimmedOrNull(session?.section);
+    final String? section = trimmedOrNull(session?.section);
     if (section != null) return section;
     if (!isGuestAuth) {
-      final String? designation = _trimmedOrNull(authUser?.designation);
+      final String? designation = trimmedOrNull(authUser?.designation);
       if (designation != null) return designation;
     }
     return LocaleKeys.dashboardRole.tr();
@@ -413,22 +414,17 @@ class DashboardController extends GetxController {
     required AuthUser? authUser,
     required bool isGuestAuth,
   }) {
-    final String? districtName = _trimmedOrNull(session?.districtName);
+    final String? districtName = trimmedOrNull(session?.districtName);
     if (districtName != null) return districtName;
-    final String? districtId = _trimmedOrNull(session?.districtId);
+    final String? districtId = trimmedOrNull(session?.districtId);
     if (districtId != null) return districtId;
     if (!isGuestAuth) {
-      final String? districtCode = _trimmedOrNull(authUser?.districtCode);
+      final String? districtCode = trimmedOrNull(authUser?.districtCode);
       if (districtCode != null) return districtCode;
     }
     return LocaleKeys.dashboardDistrictUnset.tr();
   }
 
-  static String? _trimmedOrNull(String? value) {
-    if (value == null) return null;
-    final String trimmed = value.trim();
-    return trimmed.isEmpty ? null : trimmed;
-  }
 
   /// Recent activity from locally tracked survey / web form submissions.
   static List<ActivityEvent> _activityFromSubmissions(

@@ -149,10 +149,10 @@ class ServiceAuthController extends GetxController {
       }
     } catch (_) {}
 
-    final double? lat = _parseCoord(
+    final double? lat = parseOptionalDouble(
       data[PoLoginResponseFields.lat] ?? data['lat'],
     );
-    final double? long = _parseCoord(
+    final double? long = parseOptionalDouble(
       data[PoLoginResponseFields.long] ?? data['long'],
     );
 
@@ -165,28 +165,28 @@ class ServiceAuthController extends GetxController {
     ]);
 
     final int? maleElectors = parseOptionalInt(
-      _mapValue(data, <String>[
+      mapValueByKeys(data, <String>[
         PoLoginResponseFields.maleElectors,
         'maleElectors',
         'male_electors',
       ]),
     );
     final int? femaleElectors = parseOptionalInt(
-      _mapValue(data, <String>[
+      mapValueByKeys(data, <String>[
         PoLoginResponseFields.femaleElectors,
         'femaleElectors',
         'female_electors',
       ]),
     );
     final int? otherElectors = parseOptionalInt(
-      _mapValue(data, <String>[
+      mapValueByKeys(data, <String>[
         PoLoginResponseFields.otherElectors,
         'otherElectors',
         'other_electors',
       ]),
     );
     final int? totalElectors = parseOptionalInt(
-      _mapValue(data, <String>[
+      mapValueByKeys(data, <String>[
         PoLoginResponseFields.totalElectors,
         'totalElectors',
         'total_electors',
@@ -196,10 +196,10 @@ class ServiceAuthController extends GetxController {
     // Feature flags — PO-only screens (e.g. Live Voting) stay hidden unless
     // the login API explicitly returns `true`.
     final bool isIpbms = _parseBool(
-      _mapValue(data, <String>[PoLoginResponseFields.isIpbms, 'isIPBMS']),
+      mapValueByKeys(data, <String>[PoLoginResponseFields.isIpbms, 'isIPBMS']),
     );
     final bool isLivePoll = _parseBool(
-      _mapValue(data, <String>[PoLoginResponseFields.isLivePoll, 'isLivePoll']),
+      mapValueByKeys(data, <String>[PoLoginResponseFields.isLivePoll, 'isLivePoll']),
     );
 
     final ServiceSession next = ServiceSession(
@@ -512,8 +512,8 @@ class ServiceAuthController extends GetxController {
 
     final String? districtId = data['DistID']?.toString();
     final String? bodyId = data['BodyID']?.toString();
-    final double? lat = _parseCoord(data['Lat'] ?? data['lat']);
-    final double? long = _parseCoord(data['Long'] ?? data['long']);
+    final double? lat = parseOptionalDouble(data['Lat'] ?? data['lat']);
+    final double? long = parseOptionalDouble(data['Long'] ?? data['long']);
     final String? districtName = await _resolveDistrictName(
       districtId: districtId,
       accessToken: token,
@@ -602,34 +602,8 @@ class ServiceAuthController extends GetxController {
     );
   }
 
-  double? _parseCoord(Object? value) {
-    if (value == null) {
-      return null;
-    }
-    if (value is num) {
-      return value.toDouble();
-    }
-    return double.tryParse(value.toString().trim());
-  }
-
-  Object? _mapValue(Map<String, dynamic> data, List<String> keys) {
-    for (final String key in keys) {
-      if (data.containsKey(key) && data[key] != null) return data[key];
-    }
-    for (final MapEntry<String, dynamic> entry in data.entries) {
-      final String lower = entry.key.toLowerCase();
-      for (final String key in keys) {
-        if (lower == key.toLowerCase() && entry.value != null) {
-          return entry.value;
-        }
-      }
-    }
-    return null;
-  }
-
-
   /// Parses PO login boolean feature flags; missing/unknown → `false`
-  /// (feature hidden by default).
+  /// (feature hidden by default). Intentionally stricter than [parseLooseBool].
   bool _parseBool(Object? value) {
     if (value is bool) return value;
     if (value == null) return false;

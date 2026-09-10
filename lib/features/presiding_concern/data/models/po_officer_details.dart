@@ -1,3 +1,5 @@
+import 'package:evm_management_system/core/utils/json_map.dart';
+
 /// Presiding officer profile details from `po-details` / save-with-otp APIs.
 class PoOfficerDetails {
   const PoOfficerDetails({
@@ -9,10 +11,10 @@ class PoOfficerDetails {
 
   factory PoOfficerDetails.fromJson(Map<String, dynamic> json) {
     return PoOfficerDetails(
-      id: _str(json['Id'] ?? json['id']),
-      poUserId: _str(json['POUserId'] ?? json['poUserId']),
-      poName: _str(json['POName'] ?? json['PoName'] ?? json['poName']),
-      poMobileNo: _str(
+      id: coercedString(json['Id'] ?? json['id']),
+      poUserId: coercedString(json['POUserId'] ?? json['poUserId']),
+      poName: coercedString(json['POName'] ?? json['PoName'] ?? json['poName']),
+      poMobileNo: coercedString(
         json['POMobileNo'] ?? json['PoMobileNo'] ?? json['poMobileNo'],
       ),
     );
@@ -74,9 +76,4 @@ class PoOfficerDetails {
     );
   }
 
-  static String _str(Object? value, {String fallback = ''}) {
-    if (value == null) return fallback;
-    final String s = value.toString().trim();
-    return s.isEmpty ? fallback : s;
-  }
 }

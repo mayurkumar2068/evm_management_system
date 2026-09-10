@@ -57,15 +57,15 @@ final class PresidingElectionContextStore {
       fallback.areaType,
     );
     return primary.copyWith(
-      userId: _nonEmpty(primary.userId) ?? fallback.userId,
-      loginUserName: _nonEmpty(primary.loginUserName) ?? fallback.loginUserName,
+      userId: trimmedOrNull(primary.userId) ?? fallback.userId,
+      loginUserName: trimmedOrNull(primary.loginUserName) ?? fallback.loginUserName,
       electionId: primary.electionId > 0 ? primary.electionId : fallback.electionId,
-      psId: _nonEmpty(primary.psId) ?? fallback.psId,
+      psId: trimmedOrNull(primary.psId) ?? fallback.psId,
       areaType: primaryArea.isNotEmpty ? primaryArea : fallbackArea,
       pollingStationCode:
-          _nonEmpty(primary.pollingStationCode) ?? fallback.pollingStationCode,
+          trimmedOrNull(primary.pollingStationCode) ?? fallback.pollingStationCode,
       pollingStationName:
-          _nonEmpty(primary.pollingStationName) ?? fallback.pollingStationName,
+          trimmedOrNull(primary.pollingStationName) ?? fallback.pollingStationName,
       boothLat: primary.boothLat ?? fallback.boothLat,
       boothLong: primary.boothLong ?? fallback.boothLong,
     );
@@ -203,31 +203,31 @@ final class PresidingElectionContextStore {
                   json['pollingStationName'] ??
                   json['boothName'])
               ?.toString(),
-      boothLat: _parseCoord(json['booth_lat'] ?? json['boothLat']),
-      boothLong: _parseCoord(json['booth_long'] ?? json['boothLong']),
+      boothLat: parseOptionalDouble(json['booth_lat'] ?? json['boothLat']),
+      boothLong: parseOptionalDouble(json['booth_long'] ?? json['boothLong']),
       maleElectors: parseOptionalInt(
-        _electorField(json, const <String>[
+        mapValueByKeys(json, const <String>[
           'male_electors',
           'maleElectors',
           'MaleElectors',
         ]),
       ),
       femaleElectors: parseOptionalInt(
-        _electorField(json, const <String>[
+        mapValueByKeys(json, const <String>[
           'female_electors',
           'femaleElectors',
           'FemaleElectors',
         ]),
       ),
       otherElectors: parseOptionalInt(
-        _electorField(json, const <String>[
+        mapValueByKeys(json, const <String>[
           'other_electors',
           'otherElectors',
           'OtherElectors',
         ]),
       ),
       totalElectors: parseOptionalInt(
-        _electorField(json, const <String>[
+        mapValueByKeys(json, const <String>[
           'total_electors',
           'totalElectors',
           'TotalElectors',
@@ -239,28 +239,6 @@ final class PresidingElectionContextStore {
     );
   }
 
-  static double? _parseCoord(Object? raw) {
-    if (raw == null) return null;
-    if (raw is num) return raw.toDouble();
-    return double.tryParse(raw.toString().trim());
-  }
-
-  static Object? _electorField(Map<String, dynamic> json, List<String> keys) {
-    for (final String key in keys) {
-      if (json.containsKey(key) && json[key] != null) return json[key];
-    }
-    for (final MapEntry<String, dynamic> entry in json.entries) {
-      final String lower = entry.key.toLowerCase();
-      for (final String key in keys) {
-        if (lower == key.toLowerCase() && entry.value != null) {
-          return entry.value;
-        }
-      }
-    }
-    return null;
-  }
-
-
   static int _parseElectionId(Object? raw) {
     if (raw is int) return raw;
     return int.tryParse(raw?.toString() ?? '') ?? 0;
@@ -269,10 +247,5 @@ final class PresidingElectionContextStore {
   static String _mask(String psId) {
     if (psId.length <= 8) return '***';
     return '${psId.substring(0, 4)}…${psId.substring(psId.length - 4)}';
-  }
-
-  static String? _nonEmpty(String? value) {
-    final String trimmed = value?.trim() ?? '';
-    return trimmed.isEmpty ? null : trimmed;
   }
 }

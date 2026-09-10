@@ -52,6 +52,18 @@ abstract final class AppDialog {
     return result ?? false;
   }
 
+  /// Shared destructive sign-out confirmation (profile + WebView chrome).
+  static Future<bool> confirmSignOut(BuildContext context) {
+    return confirm(
+      context,
+      title: LocaleKeys.profileSignOutTitle.tr(),
+      message: LocaleKeys.profileSignOutMessage.tr(),
+      confirmLabel: LocaleKeys.profileSignOut.tr(),
+      cancelLabel: LocaleKeys.commonCancel.tr(),
+      destructive: true,
+    );
+  }
+
   /// Shows a single-action alert dialog (no cancel button).
   static Future<void> alert(
     BuildContext context, {
