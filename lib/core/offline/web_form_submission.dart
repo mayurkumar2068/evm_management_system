@@ -2,6 +2,9 @@
 ///
 /// Angular never persists this — Flutter is the single source of truth for
 /// offline storage. [clientId] prevents duplicate enqueue/sync.
+///
+/// [authToken] is held in memory for the current session only. It is never
+/// written to local JSON; uploads after restart use Keychain via [PoElectionAuth].
 class WebFormSubmission {
   const WebFormSubmission({
     required this.clientId,
@@ -24,7 +27,7 @@ class WebFormSubmission {
         endpoint: json['endpoint'] as String,
         payload:
             (json['payload'] as Map<String, dynamic>?) ?? <String, dynamic>{},
-        authToken: json['authToken'] as String? ?? '',
+        authToken: '',
         createdAt: DateTime.parse(json['createdAt'] as String),
         status: WebSubmissionStatus.values.byName(
           json['status'] as String? ?? WebSubmissionStatus.pending.name,
@@ -55,12 +58,13 @@ class WebFormSubmission {
     String? lastError,
     String? referenceId,
     DateTime? syncedAt,
+    String? authToken,
   }) => WebFormSubmission(
     clientId: clientId,
     formType: formType,
     endpoint: endpoint,
     payload: payload,
-    authToken: authToken,
+    authToken: authToken ?? this.authToken,
     createdAt: createdAt,
     status: status ?? this.status,
     attempts: attempts ?? this.attempts,
@@ -74,7 +78,6 @@ class WebFormSubmission {
     'formType': formType,
     'endpoint': endpoint,
     'payload': payload,
-    'authToken': authToken,
     'createdAt': createdAt.toIso8601String(),
     'status': status.name,
     'attempts': attempts,

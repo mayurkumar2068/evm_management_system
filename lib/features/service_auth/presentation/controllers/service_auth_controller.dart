@@ -321,6 +321,75 @@ class ServiceAuthController extends GetxController {
     );
   }
 
+  /// Registers a Booth/PS Survey officer (`POST /api/Account/register-ps-user`).
+  Future<String> registerPsUser({
+    required String mobileNo,
+    required String name,
+    required String designation,
+  }) async {
+    final Response<dynamic> res;
+    try {
+      res = await _surveyDioClient().post<dynamic>(
+        ApiEndpoints.surveyRegisterPsUser,
+        data: <String, dynamic>{
+          'mobileNo': mobileNo.trim(),
+          'name': name.trim(),
+          'designation': designation.trim(),
+        },
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: <String, dynamic>{'skipAuth': true},
+        ),
+      );
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
+    }
+    return _requireRegistrationSuccess(res);
+  }
+
+  /// Registers a Presiding Officer (`POST /api/Account/register-po-user`).
+  Future<String> registerPoUser({
+    required String userName,
+    required String password,
+  }) async {
+    final Response<dynamic> res;
+    try {
+      res = await _poElectionDio().post<dynamic>(
+        PoElectionEndpoints.registerPoUser,
+        data: <String, dynamic>{
+          'userName': userName.trim(),
+          'password': password,
+        },
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: <String, dynamic>{'skipAuth': true},
+        ),
+      );
+    } on DioException catch (e) {
+      throw ServiceAuthException(_networkOrServerMessage(e));
+    }
+    return _requireRegistrationSuccess(res);
+  }
+
+  /// Parses `{ Status, Message }` registration envelopes.
+  String _requireRegistrationSuccess(Response<dynamic> res) {
+    final dynamic body = res.data;
+    final Map<String, dynamic> envelope = body is Map<String, dynamic>
+        ? body
+        : <String, dynamic>{};
+    final bool ok = envelope['Status'] == true;
+    final String message = (envelope['Message'] as String?)?.trim() ?? '';
+
+    if (res.statusCode != 200 || !ok) {
+      throw ServiceAuthException(
+        message.isNotEmpty ? message : LocaleKeys.serviceAuthGenericError,
+      );
+    }
+    return message.isNotEmpty
+        ? message
+        : LocaleKeys.serviceAuthRegisterSuccess;
+  }
+
   /// Sends a login OTP to [mobileNo] for the Booth/PS Survey OTP login.
   /// Throws [ServiceAuthException] on failure.
   Future<void> sendSurveyLoginOtp({required String mobileNo}) async {
@@ -622,12 +691,14 @@ class ServiceAuthController extends GetxController {
     await AppServices.secureStorage.delete(SecureStorageKeys.serviceSession);
     // Legacy key cleanup (older builds stored service login here).
     await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
-    await PresidingConcernModule.clearLocalCache();
-    await AppStartupCache.clearDisposableCaches();
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );
+    // Clear election context before PO DB wipe so watchSession re-seed does
+    // not rewrite an empty session during logout.
     await store.clear();
+    await PresidingConcernModule.clearLocalCache();
+    await AppStartupCache.clearDisposableCaches();
     return remoteOk;
   }
 }

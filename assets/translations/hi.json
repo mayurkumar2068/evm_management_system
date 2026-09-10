@@ -69,7 +69,25 @@
     "resend_otp_in": "{} सेकंड में OTP पुनः भेजें",
     "verify_otp_button": "सत्यापित करें और लॉगिन करें",
     "otp_sent_success": "OTP सफलतापूर्वक भेजा गया।",
-    "change_mobile": "मोबाइल नंबर बदलें"
+    "change_mobile": "मोबाइल नंबर बदलें",
+    "no_account": "खाता नहीं है?",
+    "register_button": "पंजीकरण करें",
+    "register_title": "स्व-पंजीकरण",
+    "register_subtitle": "बूथ/पीएस सर्वे खाता बनाने के लिए नाम, मोबाइल और पदनाम जमा करें।",
+    "register_subtitle_po": "यूज़र नेम और पासवर्ड से पीठासीन अधिकारी लॉगिन बनाएँ।",
+    "register_full_name": "पूरा नाम",
+    "register_full_name_hint": "पूरा नाम दर्ज करें",
+    "register_full_name_required": "पूरा नाम दर्ज करें।",
+    "register_designation": "पदनाम",
+    "register_designation_hint": "पदनाम दर्ज करें",
+    "register_designation_required": "पदनाम दर्ज करें।",
+    "register_password_confirm": "पासवर्ड की पुष्टि",
+    "register_password_confirm_hint": "पासवर्ड दोबारा दर्ज करें",
+    "register_password_mismatch": "पासवर्ड मेल नहीं खाते।",
+    "register_submit": "पंजीकरण जमा करें",
+    "register_success": "पंजीकरण सफल।",
+    "register_success_po": "पंजीकरण सफल। अब आप अपने यूज़र नेम और पासवर्ड से साइन इन कर सकते हैं।",
+    "register_url_missing": "पंजीकरण पोर्टल अभी कॉन्फ़िगर नहीं है।"
   },
   "onboarding": {
     "security": {
@@ -549,7 +567,13 @@
     "push_alerts_sub": "पंजीकरण और समन्वयन अपडेट",
     "data_sync": "डेटा और समन्वयन",
     "offline_storage": "ऑफ़लाइन भंडारण",
-    "records_stored": "डिवाइस पर {} रिकॉर्ड संग्रहीत"
+    "records_stored": "डिवाइस पर {} रिकॉर्ड संग्रहीत",
+    "legal": "कानूनी"
+  },
+  "legal": {
+    "privacy_policy": "गोपनीयता कथन",
+    "privacy_policy_sub": "मध्य प्रदेश राज्य निर्वाचन आयोग",
+    "privacy_policy_open_failed": "यह पृष्ठ नहीं खुल सका। कृपया पुनः प्रयास करें।"
   },
   "audit": {
     "title": "ऑडिट ट्रेल",

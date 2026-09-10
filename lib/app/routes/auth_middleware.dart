@@ -34,6 +34,11 @@ class AuthMiddleware extends GetMiddleware {
         if (atSplash || atLogin || atOnboarding) {
           return RouteSettings(name: AppRoute.dashboard.path);
         }
+        // App Store 5.1.1 — nomination is compiled but unreachable this build.
+        if (kHideOnlineNomination &&
+            AppRoute.isOnlineNominationPath(location)) {
+          return RouteSettings(name: AppRoute.dashboard.path);
+        }
         final AppDestination? dest = AppDestinations.byPath(location);
         final role = auth.user?.role;
         if (dest != null && role != null && !dest.isAllowedFor(role)) {

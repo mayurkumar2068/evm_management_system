@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
+import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
 import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/di/onboarding_store.dart';
 import 'package:evm_management_system/core/network/api_client.dart';
@@ -113,6 +115,11 @@ abstract final class AppServices {
     ]);
     Get.put<ApiClient>(apiClient, permanent: true);
 
+    Get.put<AppFeatureFlagsController>(
+      AppFeatureFlagsController(config: config, dio: dio),
+      permanent: true,
+    );
+
     final SyncQueue syncQueue = SyncQueue(database);
     Get.put<SyncQueue>(syncQueue, permanent: true);
     Get.put<SyncService>(SyncService(apiClient), permanent: true);
@@ -150,16 +157,19 @@ abstract final class AppServices {
     Get.put<DeviceIdService>(DeviceIdService(secureStorage), permanent: true);
     Get.put<WebSessionService>(WebSessionService(), permanent: true);
 
-    Get.put<NominationDraftRepository>(
-      NominationDraftRepository(database),
-      permanent: true,
-    );
-    Get.put<UrbanNominationMasterRepository>(
-      UrbanNominationMasterRepository(
-        UrbanNominationRemoteDatasource(OlinApiClient.instance(config)),
-      ),
-      permanent: true,
-    );
+    // App Store 5.1.1 — do not construct OLIN/nomination clients this build.
+    if (!kHideOnlineNomination) {
+      Get.put<NominationDraftRepository>(
+        NominationDraftRepository(database),
+        permanent: true,
+      );
+      Get.put<UrbanNominationMasterRepository>(
+        UrbanNominationMasterRepository(
+          UrbanNominationRemoteDatasource(OlinApiClient.instance(config)),
+        ),
+        permanent: true,
+      );
+    }
     // Voter search: Dio/repo created lazily via VoterSearchModule on first open.
 
     Get.put<DeviceRecordsController>(
@@ -194,6 +204,8 @@ abstract final class AppServices {
       Get.find<SecureStorageService>();
   static OnboardingStore get onboarding => Get.find<OnboardingStore>();
   static ApiClient get apiClient => Get.find<ApiClient>();
+  static AppFeatureFlagsController get featureFlags =>
+      Get.find<AppFeatureFlagsController>();
   static TokenVault get tokenVault => Get.find<TokenVault>();
   static ConnectivityService get connectivity =>
       Get.find<ConnectivityService>();

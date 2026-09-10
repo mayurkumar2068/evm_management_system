@@ -20,6 +20,9 @@ abstract final class ApiEndpoints {
   /// OTP login (Booth/PS Survey) — `POST /api/Account/ps-login-with-otp`.
   static const String surveyPsLoginWithOtp = '/Account/ps-login-with-otp';
 
+  /// Self-registration (Booth/PS Survey) — `POST /api/Account/register-ps-user`.
+  static const String surveyRegisterPsUser = '/Account/register-ps-user';
+
   // Logout — see `PoElectionEndpoints.poLogout` / `PoElectionEndpoints.psLogout`
   // via `PoPartyRemoteDatasource.logout`, which picks the endpoint by login kind.
   static String surveyDistrictById(String id) => '/Masters/districts/$id';
@@ -31,6 +34,8 @@ abstract final class ApiEndpoints {
 abstract final class PoElectionEndpoints {
   // Account / Auth
   static const String loginPoPass = '/api/Account/login-po-pass';
+  /// Self-registration (Presiding Officer) — `POST /api/Account/register-po-user`.
+  static const String registerPoUser = '/api/Account/register-po-user';
   static const String poLogout = '/api/Account/po-logout';
 
   /// Logout for Booth/PS Survey users (password or OTP login) — the
@@ -78,6 +83,13 @@ abstract final class PoElectionEndpoints {
       '/api/POElection/insert-machine-sealed';
   static const String insertMaterialSubmitted =
       '/api/POElection/insert-material-submitted';
+
+  /// Public (no-auth) app feature flags for guest dashboard tiles.
+  /// Expected JSON includes `showRegistration` / `ShowRegistration`.
+  static const String appFeatureFlags = '/api/App/feature-flags';
+
+  /// Guest dashboard service cards — `GET /api/Masters/card-list`.
+  static const String mastersCardList = '/api/Masters/card-list';
 }
 
 /// Online Nomination (OLINAPI) urban master lookup paths.

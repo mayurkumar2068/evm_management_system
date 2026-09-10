@@ -54,7 +54,12 @@ final class PresidingConcernRepositoryImpl
           liveLoginName.isNotEmpty) {
         seeded = seeded.copyWith(loginUserName: liveLoginName);
       }
-      await _persist(seeded);
+      // After logout there is no officer context — avoid writing a seed doc
+      // that races with clearLocalCache and trips flush(presiding_concern).
+      if (context != null ||
+          (liveLoginName != null && liveLoginName.isNotEmpty)) {
+        await _persist(seeded);
+      }
       return seeded;
     }
     final PresidingSession parsed = PresidingSessionMapper.fromJson(raw);
@@ -442,9 +447,19 @@ final class PresidingConcernRepositoryImpl
 
   @override
   Stream<PresidingSession> watchSession() async* {
-    yield await loadSession();
-    await for (final List<Map<String, dynamic>> _ in _local.watchAll()) {
+    try {
       yield await loadSession();
+    } catch (e, s) {
+      AppLogger.w('PO watchSession initial load failed', error: e, stackTrace: s);
+    }
+    await for (final List<Map<String, dynamic>> _ in _local.watchAll()) {
+      try {
+        yield await loadSession();
+      } catch (e, s) {
+        // Logout clears the cache while this stream is still subscribed; a
+        // transient flush race must not become an uncaught zone error.
+        AppLogger.w('PO watchSession reload failed', error: e, stackTrace: s);
+      }
     }
   }
 

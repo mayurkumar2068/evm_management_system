@@ -45,8 +45,8 @@ class AppImagePickerService {
       maxHeight: maxSide,
       imageQuality: quality.clamp(1, 100),
       preferredCameraDevice: CameraDevice.rear,
-      // Android Photo Picker path: no media permission. iOS left on plugin default.
-      requestFullMetadata: !Platform.isAndroid,
+      // PHPicker / system picker: do not request full EXIF (can include GPS).
+      requestFullMetadata: false,
     );
     if (file == null) {
       return null;

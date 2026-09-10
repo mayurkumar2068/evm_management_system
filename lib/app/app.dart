@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/routes/app_pages.dart';
 import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/providers/session_event_bus.dart';
 import 'package:evm_management_system/core/security/screen_security_service.dart';
@@ -12,10 +13,8 @@ import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:permission_handler/permission_handler.dart';
 
 /// Root application widget. Wires GetX navigation, theme and localization,
 /// restores the session on first build, and reacts to session-expiry events.
@@ -61,9 +60,6 @@ class _EvmAppState extends State<EvmApp> {
   }
 
   Future<void> _runSplashBootstrap() async {
-    // Auth restore must not wait on permission dialogs — those can hang on
-    // some iOS/simulator builds and leave the user stuck on splash forever.
-    unawaited(_requestLocationPermission());
     await AppServices.auth.restoreSession();
     if (!mounted) return;
 
@@ -78,29 +74,6 @@ class _EvmAppState extends State<EvmApp> {
 
     // Ensure redirect runs even if the auth worker missed a frame.
     AuthNavigationGuard.apply();
-
-    // Camera can follow after the user lands in the app.
-    unawaited(_requestCameraPermission());
-  }
-
-  Future<void> _requestLocationPermission() async {
-    try {
-      final PermissionStatus current = await Permission.locationWhenInUse.status;
-      if (current.isGranted || current.isLimited) return;
-      await Permission.locationWhenInUse.request();
-    } on Exception catch (e) {
-      AppLogger.d('Location permission request failed: $e');
-    }
-  }
-
-  Future<void> _requestCameraPermission() async {
-    try {
-      final PermissionStatus current = await Permission.camera.status;
-      if (current.isGranted) return;
-      await Permission.camera.request();
-    } on Exception catch (e) {
-      AppLogger.d('Camera permission request failed: $e');
-    }
   }
 
   @override
@@ -139,6 +112,15 @@ class _EvmAppState extends State<EvmApp> {
         themeMode: themeMode,
         getPages: AppPages.routes,
         initialRoute: AppPages.initial,
+        unknownRoute: GetPage<dynamic>(
+          name: '/not-found',
+          page: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.offAllNamed<void>(AppRoute.dashboard.path);
+            });
+            return const SizedBox.shrink();
+          },
+        ),
         routingCallback: (_) {},
         builder: (BuildContext context, Widget? child) {
           final MediaQueryData mq = MediaQuery.of(context);

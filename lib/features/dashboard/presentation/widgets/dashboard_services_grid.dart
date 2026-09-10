@@ -5,6 +5,7 @@ import 'package:evm_management_system/features/dashboard/presentation/utils/dash
 import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_brand.dart';
 import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_stat_strip.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/features/service_auth/presentation/models/service_login_args.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -62,7 +63,11 @@ class DashboardServicesGrid extends StatelessWidget {
       if (needsLogin) {
         await Get.toNamed<dynamic>(
           AppRoute.serviceLogin.path,
-          arguments: s.title,
+          arguments: ServiceLoginArgs(
+            serviceTitle: s.title,
+            loginKind: s.requiredLoginKind,
+            registrationAllowed: s.registrationAllowed,
+          ),
         );
         session = AppServices.serviceAuth.session.value;
         if (session == null) return;

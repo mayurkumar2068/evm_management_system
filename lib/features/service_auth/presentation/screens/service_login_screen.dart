@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/features/dashboard/presentation/utils/dashboard_webview_launcher.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
+import 'package:evm_management_system/features/service_auth/presentation/screens/service_self_register_screen.dart';
+import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -17,10 +21,21 @@ enum _LoginMode { password, otp }
 /// Officer login gate shown before opening any service tile.
 /// Soft Booth-Survey look: hero strip + label-above fields + pill CTA.
 class ServiceLoginScreen extends StatefulWidget {
-  const ServiceLoginScreen({super.key, this.serviceTitle});
+  const ServiceLoginScreen({
+    super.key,
+    this.serviceTitle,
+    this.loginKind,
+    this.registrationAllowed,
+  });
 
   /// Name of the tile the user tapped — shown as context in the header.
   final String? serviceTitle;
+
+  /// Prefer this over title matching so API-localized titles still work.
+  final ServiceLoginKind? loginKind;
+
+  /// From Masters `IsRegistrationAllowed`. Register UI shows only when `true`.
+  final bool? registrationAllowed;
 
   @override
   State<ServiceLoginScreen> createState() => _ServiceLoginScreenState();
@@ -48,8 +63,12 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   bool _busy = false;
   String? _error;
 
-  bool get _isPoLogin =>
-      widget.serviceTitle == LocaleKeys.servicePresidingTitle.tr();
+  bool get _isPoLogin {
+    if (widget.loginKind != null) {
+      return widget.loginKind == ServiceLoginKind.presiding;
+    }
+    return widget.serviceTitle == LocaleKeys.servicePresidingTitle.tr();
+  }
 
   bool get _isOtpMode => !_isPoLogin && _loginMode == _LoginMode.otp;
 
@@ -66,6 +85,32 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
           : LocaleKeys.serviceAuthSendOtpButton.tr();
     }
     return LocaleKeys.serviceAuthSignInButton.tr();
+  }
+
+  /// Masters `IsRegistrationAllowed == true` only — otherwise hide register.
+  bool get _showRegisterOption => widget.registrationAllowed == true;
+
+  Future<void> _openRegister() async {
+    if (_busy) return;
+    final String url = _isPoLogin
+        ? AppServices.config.poSelfRegisterUrl.trim()
+        : AppServices.config.psSelfRegisterUrl.trim();
+
+    if (url.isNotEmpty) {
+      await Get.toNamed<dynamic>(
+        AppRoute.webView.path,
+        arguments: DashboardWebViewLauncher.args(
+          title: LocaleKeys.serviceAuthRegisterTitle.tr(),
+          url: url,
+          openAsExternalPortal: true,
+        ),
+      );
+      return;
+    }
+
+    await Get.to<void>(
+      () => ServiceSelfRegisterScreen(isPresidingOfficer: _isPoLogin),
+    );
   }
 
   String _localizedAuthMessage(String message) {
@@ -299,7 +344,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       backgroundColor: context.appBackground,
       body: Stack(
         children: <Widget>[
-          const _SoftBackdrop(),
+          const ServiceAuthBackdrop(),
           SafeArea(
             top: false,
             child: SingleChildScrollView(
@@ -324,33 +369,18 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _LoginHero(
+                  ServiceAuthHero(
                     title: widget.serviceTitle ??
                         LocaleKeys.serviceAuthSignInButton.tr(),
                     subtitle: LocaleKeys.serviceAuthSubtitleDefault.tr(),
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
-                    decoration: BoxDecoration(
-                      color: context.appSurface,
-                      borderRadius: AppRadius.brXl,
-                      border: Border.all(color: context.appOutline),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: AppColors.primary.withValues(
-                            alpha: context.isAppDark ? 0.18 : 0.08,
-                          ),
-                          blurRadius: 28,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
+                  ServiceAuthFormCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         if (_isOtpMode) ...<Widget>[
-                          _SoftField(
+                          ServiceAuthSoftField(
                             controller: _mobileCtrl,
                             focusNode: _mobileFocus,
                             label: LocaleKeys.serviceAuthMobileNo.tr(),
@@ -395,7 +425,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _SoftField(
+                            ServiceAuthSoftField(
                               controller: _otpCtrl,
                               focusNode: _otpFocus,
                               label: LocaleKeys.serviceAuthOtp.tr(),
@@ -418,7 +448,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                             ),
                           ],
                         ] else ...<Widget>[
-                          _SoftField(
+                          ServiceAuthSoftField(
                             controller: _userCtrl,
                             focusNode: _userFocus,
                             label: _isPoLogin
@@ -433,7 +463,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                             onSubmitted: (_) => _passFocus.requestFocus(),
                           ),
                           const SizedBox(height: 14),
-                          _SoftField(
+                          ServiceAuthSoftField(
                             controller: _passCtrl,
                             focusNode: _passFocus,
                             label: LocaleKeys.serviceAuthPassword.tr(),
@@ -461,7 +491,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                           AppStatusBanner(message: _error!, tone: StatusTone.error, icon: Icons.error_outline_rounded),
                         ],
                         const SizedBox(height: 16),
-                        _HintStrip(
+                        ServiceAuthHintStrip(
                           text: _isOtpMode && _otpSent
                               ? LocaleKeys.serviceAuthOtpSentHint.tr(
                                   args: <String>[_maskedMobile],
@@ -469,11 +499,47 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                               : LocaleKeys.serviceAuthHintStrip.tr(),
                         ),
                         const SizedBox(height: 20),
-                        _SubmitButton(
+                        ServiceAuthSubmitButton(
                           busy: _busy,
                           onPressed: _submit,
                           text: _submitLabel,
                         ),
+                        if (_showRegisterOption) ...<Widget>[
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Flexible(
+                                child: Text(
+                                  LocaleKeys.serviceAuthNoAccount.tr(),
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.slate500,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _busy ? null : _openRegister,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  LocaleKeys.serviceAuthRegisterButton.tr(),
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -487,150 +553,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   }
 }
 
-class _SoftBackdrop extends StatelessWidget {
-  const _SoftBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            top: -80,
-            right: -60,
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.10),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 120,
-            left: -90,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.green.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Soft survey-style hero: icon + title row, decorative orbs.
-class _LoginHero extends StatelessWidget {
-  const _LoginHero({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: AppGradients.header,
-        borderRadius: AppRadius.brXl,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.22),
-            blurRadius: 26,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            right: -40,
-            top: -50,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 28,
-            bottom: -36,
-            child: Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: 56,
-                      height: 56,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const ClipOval(
-                        child: BrandLogo(width: 40),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: AppTextStyles.titleLarge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          height: 1.15,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// "OTP sent • Resend in Ns / Resend OTP" row shown under the OTP field.
 class _ResendOtpRow extends StatelessWidget {
   const _ResendOtpRow({
     required this.remainingSeconds,
@@ -666,223 +588,6 @@ class _ResendOtpRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _HintStrip extends StatelessWidget {
-  const _HintStrip({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: AppRadius.brMd,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        children: <Widget>[
-          Icon(
-            Icons.lightbulb_outline_rounded,
-            size: 18,
-            color: AppColors.primaryDark.withValues(alpha: 0.85),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.slate600,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-class _SubmitButton extends StatelessWidget {
-  const _SubmitButton({
-    required this.busy,
-    required this.onPressed,
-    required this.text,
-  });
-  final bool busy;
-  final VoidCallback onPressed;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 54,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: AppGradients.primaryButton,
-          borderRadius: AppRadius.brPill,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.28),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: busy ? null : onPressed,
-            borderRadius: AppRadius.brPill,
-            child: Center(
-              child: busy
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          text,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Label-above soft field — same chrome for focused / unfocused (no floating label).
-class _SoftField extends StatelessWidget {
-  const _SoftField({
-    required this.controller,
-    required this.focusNode,
-    required this.label,
-    required this.hint,
-    required this.icon,
-    this.enabled = true,
-    this.obscure = false,
-    this.suffix,
-    this.onSubmitted,
-    this.textInputAction,
-    this.keyboardType,
-    this.inputFormatters,
-  });
-
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final String label;
-  final String hint;
-  final IconData icon;
-  final bool enabled;
-  final bool obscure;
-  final Widget? suffix;
-  final ValueChanged<String>? onSubmitted;
-  final TextInputAction? textInputAction;
-  final TextInputType? keyboardType;
-
-  /// Overrides the default whitespace-denying formatter (used by the
-  /// mobile-number / OTP fields, which need digits-only + max length).
-  final List<TextInputFormatter>? inputFormatters;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool focused = focusNode.hasFocus;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: focused ? AppColors.primaryBright : context.appMutedStrong,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-          ),
-        ),
-        const SizedBox(height: 8),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          decoration: BoxDecoration(
-            color: focused ? context.appSurface : context.appChip,
-            borderRadius: AppRadius.brLg,
-            border: Border.all(
-              color: focused ? AppColors.primary : context.appOutline,
-              width: focused ? 1.6 : 1,
-            ),
-            boxShadow: focused
-                ? <BoxShadow>[
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: TextField(
-            controller: controller,
-            focusNode: focusNode,
-            enabled: enabled,
-            obscureText: obscure,
-            textInputAction: textInputAction,
-            keyboardType: keyboardType,
-            onSubmitted: onSubmitted,
-            inputFormatters: inputFormatters ??
-                (obscure
-                    ? null
-                    : <TextInputFormatter>[
-                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                      ]),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: context.appOnSurface,
-              fontWeight: FontWeight.w600,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: context.appMuted,
-                fontWeight: FontWeight.w500,
-              ),
-              prefixIcon: Icon(
-                icon,
-                color: focused ? AppColors.primary : context.appMuted,
-                size: 20,
-              ),
-              suffixIcon: suffix,
-              filled: false,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 4,
-                vertical: 14,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

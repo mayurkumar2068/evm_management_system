@@ -7,6 +7,7 @@ import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/dashboard/presentation/utils/dashboard_webview_launcher.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/features/service_auth/presentation/models/service_login_args.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,7 @@ class _LoginServiceOption {
     this.routeName,
     this.url,
     this.openAsExternalPortal = false,
+    this.registrationAllowed = false,
   });
 
   final String title;
@@ -68,6 +70,9 @@ class _LoginServiceOption {
   final String? routeName;
   final String? url;
   final bool openAsExternalPortal;
+
+  /// Mirrors Masters `IsRegistrationAllowed`.
+  final bool registrationAllowed;
 }
 
 class _ProfileLoginSheet extends StatelessWidget {
@@ -84,6 +89,7 @@ class _ProfileLoginSheet extends StatelessWidget {
         kind: ServiceLoginKind.survey,
         tabLabel: electionTab,
         url: AppServices.config.surveyWebBaseUrl,
+        registrationAllowed: true,
       ),
       _LoginServiceOption(
         title: LocaleKeys.servicePresidingTitle.tr(),
@@ -93,6 +99,7 @@ class _ProfileLoginSheet extends StatelessWidget {
         kind: ServiceLoginKind.presiding,
         tabLabel: electionTab,
         routeName: AppRoute.presidingDashboard.path,
+        registrationAllowed: true,
       ),
     ];
     if (!kHideExpenditureAccount) {
@@ -107,6 +114,7 @@ class _ProfileLoginSheet extends StatelessWidget {
           tabLabel: electionTab,
           url: AppServices.config.candidateExpenditureUrl,
           openAsExternalPortal: true,
+          registrationAllowed: false,
         ),
       );
     }
@@ -117,7 +125,11 @@ class _ProfileLoginSheet extends StatelessWidget {
     Get.back<void>();
     await Get.toNamed<dynamic>(
       AppRoute.serviceLogin.path,
-      arguments: option.title,
+      arguments: ServiceLoginArgs(
+        serviceTitle: option.title,
+        loginKind: option.kind,
+        registrationAllowed: option.registrationAllowed,
+      ),
     );
     final ServiceSession? session = AppServices.serviceAuth.session.value;
     if (session == null) return;

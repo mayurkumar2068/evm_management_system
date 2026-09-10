@@ -43,8 +43,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const DashboardBackdrop(),
             RefreshIndicator(
               onRefresh: () async {
-                controller.rebuildDashboard();
-                await Future<void>.delayed(const Duration(milliseconds: 300));
+                controller.rebuildDashboard(refreshCards: true);
+                await Future<void>.delayed(const Duration(milliseconds: 400));
               },
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 120),
@@ -65,9 +65,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   DashboardCategoryToggle(
                     active: category,
                     onChanged: controller.setCategory,
+                    voterServicesLabel: state.voterServicesLabel,
+                    electionServicesLabel: state.electionServicesLabel,
                   ),
                   const SizedBox(height: 10),
                   DashboardServicesGrid(services: services),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),

@@ -39,6 +39,7 @@ class DashboardService {
     this.openAsExternalPortal = false,
     this.forceFreshLogin = false,
     this.requiredLoginKind,
+    this.registrationAllowed,
   });
 
   final String title;
@@ -67,4 +68,7 @@ class DashboardService {
 
   /// When set, an existing session of a different kind cannot be reused.
   final ServiceLoginKind? requiredLoginKind;
+
+  /// From Masters `IsRegistrationAllowed`. Register UI shows only when `true`.
+  final bool? registrationAllowed;
 }

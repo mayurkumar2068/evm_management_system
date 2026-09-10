@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/legal/privacy_policy.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
 import 'package:evm_management_system/features/offline/presentation/widgets/offline_status_sheet.dart';
@@ -105,6 +106,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             LocaleKeys.settingsOfflineStorage.tr(),
             offlineSub,
             onTap: () => showOfflineStatusSheet(context),
+          ),
+        ]),
+        _Section(LocaleKeys.settingsLegal.tr(), <_Item>[
+          _Item(
+            Icons.privacy_tip_outlined,
+            LocaleKeys.legalPrivacyPolicy.tr(),
+            LocaleKeys.legalPrivacyPolicySub.tr(),
+            onTap: () => PrivacyPolicy.open(context),
           ),
         ]),
       ];

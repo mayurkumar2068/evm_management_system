@@ -91,6 +91,38 @@ abstract final class LocaleKeys {
   static const String serviceAuthOtpSentSuccess =
       'service_auth.otp_sent_success';
   static const String serviceAuthChangeMobile = 'service_auth.change_mobile';
+  static const String serviceAuthNoAccount = 'service_auth.no_account';
+  static const String serviceAuthRegisterButton = 'service_auth.register_button';
+  static const String serviceAuthRegisterTitle = 'service_auth.register_title';
+  static const String serviceAuthRegisterSubtitle =
+      'service_auth.register_subtitle';
+  static const String serviceAuthRegisterSubtitlePo =
+      'service_auth.register_subtitle_po';
+  static const String serviceAuthRegisterFullName =
+      'service_auth.register_full_name';
+  static const String serviceAuthRegisterFullNameHint =
+      'service_auth.register_full_name_hint';
+  static const String serviceAuthRegisterFullNameRequired =
+      'service_auth.register_full_name_required';
+  static const String serviceAuthRegisterDesignation =
+      'service_auth.register_designation';
+  static const String serviceAuthRegisterDesignationHint =
+      'service_auth.register_designation_hint';
+  static const String serviceAuthRegisterDesignationRequired =
+      'service_auth.register_designation_required';
+  static const String serviceAuthRegisterPasswordConfirm =
+      'service_auth.register_password_confirm';
+  static const String serviceAuthRegisterPasswordConfirmHint =
+      'service_auth.register_password_confirm_hint';
+  static const String serviceAuthRegisterPasswordMismatch =
+      'service_auth.register_password_mismatch';
+  static const String serviceAuthRegisterSubmit = 'service_auth.register_submit';
+  static const String serviceAuthRegisterSuccess =
+      'service_auth.register_success';
+  static const String serviceAuthRegisterSuccessPo =
+      'service_auth.register_success_po';
+  static const String serviceAuthRegisterUrlMissing =
+      'service_auth.register_url_missing';
 
   // Onboarding
   static const String onboardingSecurityTag = 'onboarding.security.tag';
@@ -262,6 +294,13 @@ abstract final class LocaleKeys {
   static const String settingsDataSync = 'settings.data_sync';
   static const String settingsOfflineStorage = 'settings.offline_storage';
   static const String settingsRecordsStored = 'settings.records_stored';
+  static const String settingsLegal = 'settings.legal';
+
+  // Legal / privacy (Apple 5.1.1(i))
+  static const String legalPrivacyPolicy = 'legal.privacy_policy';
+  static const String legalPrivacyPolicySub = 'legal.privacy_policy_sub';
+  static const String legalPrivacyPolicyOpenFailed =
+      'legal.privacy_policy_open_failed';
 
   // Device Detail
   static const String detailTitle = 'detail.title';

@@ -9,14 +9,28 @@ class DashboardCategoryToggle extends StatelessWidget {
   const DashboardCategoryToggle({
     required this.active,
     required this.onChanged,
+    this.voterServicesLabel,
+    this.electionServicesLabel,
     super.key,
   });
 
   final DashboardCategory active;
   final ValueChanged<DashboardCategory> onChanged;
+  final String? voterServicesLabel;
+  final String? electionServicesLabel;
 
   @override
   Widget build(BuildContext context) {
+    final String voterLabel =
+        (voterServicesLabel != null && voterServicesLabel!.trim().isNotEmpty)
+        ? voterServicesLabel!.trim()
+        : LocaleKeys.dashboardVoterServices.tr();
+    final String electionLabel =
+        (electionServicesLabel != null &&
+            electionServicesLabel!.trim().isNotEmpty)
+        ? electionServicesLabel!.trim()
+        : LocaleKeys.dashboardAboutElections.tr();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: DashboardGap.page),
       child: Container(
@@ -30,14 +44,14 @@ class DashboardCategoryToggle extends StatelessWidget {
           children: <Widget>[
             Expanded(
               child: _ToggleOption(
-                label: LocaleKeys.dashboardVoterServices.tr(),
+                label: voterLabel,
                 selected: active == DashboardCategory.voterServices,
                 onTap: () => onChanged(DashboardCategory.voterServices),
               ),
             ),
             Expanded(
               child: _ToggleOption(
-                label: LocaleKeys.dashboardAboutElections.tr(),
+                label: electionLabel,
                 selected: active == DashboardCategory.aboutElections,
                 onTap: () => onChanged(DashboardCategory.aboutElections),
               ),

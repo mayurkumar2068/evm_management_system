@@ -69,7 +69,25 @@
     "resend_otp_in": "Resend OTP in {}s",
     "verify_otp_button": "Verify & Sign in",
     "otp_sent_success": "OTP sent successfully.",
-    "change_mobile": "Change mobile number"
+    "change_mobile": "Change mobile number",
+    "no_account": "Don't have an account?",
+    "register_button": "Register",
+    "register_title": "Self Registration",
+    "register_subtitle": "Submit name, mobile and designation to create your Booth/PS Survey account.",
+    "register_subtitle_po": "Create a Presiding Officer login with user name and password.",
+    "register_full_name": "Full name",
+    "register_full_name_hint": "Enter full name",
+    "register_full_name_required": "Enter full name.",
+    "register_designation": "Designation",
+    "register_designation_hint": "Enter designation",
+    "register_designation_required": "Enter designation.",
+    "register_password_confirm": "Confirm password",
+    "register_password_confirm_hint": "Re-enter password",
+    "register_password_mismatch": "Passwords do not match.",
+    "register_submit": "Submit registration",
+    "register_success": "Registration successful.",
+    "register_success_po": "Registration successful. You can sign in with your user name and password.",
+    "register_url_missing": "Registration portal is not configured yet."
   },
   "onboarding": {
     "security": {
@@ -549,7 +567,13 @@
     "push_alerts_sub": "Registration and sync updates",
     "data_sync": "Data & Sync",
     "offline_storage": "Offline Storage",
-    "records_stored": "{} records stored on device"
+    "records_stored": "{} records stored on device",
+    "legal": "Legal"
+  },
+  "legal": {
+    "privacy_policy": "Privacy Policy",
+    "privacy_policy_sub": "MP State Election Commission",
+    "privacy_policy_open_failed": "Unable to open this page. Please try again."
   },
   "audit": {
     "title": "Audit Trail",

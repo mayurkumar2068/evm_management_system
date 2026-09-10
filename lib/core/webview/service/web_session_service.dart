@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:evm_management_system/config/app_config.dart';
+import 'package:evm_management_system/core/app_build_info.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/core/time/app_time_zone.dart';
@@ -9,12 +10,6 @@ import 'package:uuid/uuid.dart';
 
 import '../models/web_session_context.dart';
 import 'device_id_service.dart';
-
-
-/// App version/build mirrored from pubspec (`1.0.0+1`). Kept as constants to
-/// avoid an extra `package_info_plus` dependency.
-const String kWebAppVersion = '1.0.0';
-const String kWebBuildNumber = '1';
 
 /// Builds the [WebSessionContext] that pre-authenticates every WebView.
 class WebSessionService {
@@ -43,8 +38,8 @@ class WebSessionService {
       boothLat: session?.lat,
       boothLong: session?.long,
       apiBaseUrl: AppServices.config.poElectionApiBaseUrl,
-      appVersion: kWebAppVersion,
-      buildNumber: kWebBuildNumber,
+      appVersion: AppBuildInfo.versionName,
+      buildNumber: AppBuildInfo.buildNumber,
       platform: Platform.isIOS ? 'ios' : 'android',
       environment: AppConfig.environment.name,
       timezone: AppTimeZone.headerValue,

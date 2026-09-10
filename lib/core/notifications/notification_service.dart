@@ -67,9 +67,9 @@ class LocalNotificationService {
 
     const DarwinInitializationSettings darwin =
     DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
       defaultPresentAlert: true,
       defaultPresentBadge: true,
       defaultPresentSound: true,
@@ -97,8 +97,6 @@ class LocalNotificationService {
     _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
 
-    await android?.requestNotificationsPermission();
-
     await android?.createNotificationChannel(
       const AndroidNotificationChannel(
         _channelId,
@@ -108,25 +106,29 @@ class LocalNotificationService {
       ),
     );
 
-    if (!kIsWeb && Platform.isAndroid) {
-      await android?.requestExactAlarmsPermission();
-    }
-
-    final granted = await _plugin
-        .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    AppLogger.d('iOS Permission : $granted');
-
     _initialized = true;
 
     // Production-like behavior: no automatic debug test notification on init.
     // Trigger test manually via NotificationUtils.scheduleTestInMinutes().
+  }
+
+  Future<void> _ensureRuntimePermissions() async {
+    await initialize();
+    if (kIsWeb) return;
+
+    if (Platform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? android = _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      await android?.requestNotificationsPermission();
+      await android?.requestExactAlarmsPermission();
+      return;
+    }
+
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
   /// One-shot notification after [minutes] from now (does not repeat).
@@ -137,6 +139,7 @@ class LocalNotificationService {
     required String body,
   }) async {
     await initialize();
+    await _ensureRuntimePermissions();
 
     final tz.TZDateTime when =
         tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
@@ -171,6 +174,7 @@ class LocalNotificationService {
     required PollingAreaType areaType,
   }) async {
     await initialize();
+    await _ensureRuntimePermissions();
 
     await _cancelReminderNotifications();
 
@@ -285,6 +289,7 @@ class LocalNotificationService {
     required String body,
   }) async {
     await initialize();
+    await _ensureRuntimePermissions();
 
     await _plugin.show(
       id: id,

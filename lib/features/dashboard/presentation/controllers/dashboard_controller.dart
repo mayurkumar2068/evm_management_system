@@ -4,10 +4,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:evm_management_system/features/dashboard/data/dashboard_card_mapper.dart';
+import 'package:evm_management_system/features/dashboard/data/dashboard_cards_repository.dart';
+import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
 import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
@@ -25,6 +29,8 @@ class DashboardState {
     required this.stats,
     required this.services,
     required this.activity,
+    this.voterServicesLabel = '',
+    this.electionServicesLabel = '',
   });
 
   final String userName;
@@ -36,10 +42,25 @@ class DashboardState {
   final List<DashboardStat> stats;
   final List<DashboardService> services;
   final List<ActivityEvent> activity;
+
+  /// Category tab labels from Masters API (empty → locale fallback).
+  final String voterServicesLabel;
+  final String electionServicesLabel;
 }
 
 /// Builds dashboard view-model from session + local survey submissions.
 class DashboardController extends GetxController {
+  DashboardController({DashboardCardsRepository? cardsRepository})
+    : _cardsRepository = cardsRepository;
+
+  DashboardCardsRepository? _cardsRepository;
+
+  DashboardCardsRepository get _cards {
+    return _cardsRepository ??= DashboardCardsRepository(
+      config: AppServices.config,
+    );
+  }
+
   final Rx<DashboardState> state = const DashboardState(
     userName: '',
     designation: '',
@@ -74,6 +95,9 @@ class DashboardController extends GetxController {
       ever(AppServices.auth.authState, (_) => _rebuild());
     }
     ever(AppServices.settings.locale, (_) => _rebuild());
+    if (Get.isRegistered<AppFeatureFlagsController>()) {
+      ever(AppServices.featureFlags.showRegistration, (_) => _rebuild());
+    }
     _submissionWatch = AppServices.webSubmissionRepository
         .watchPendingCount()
         .listen((_) => _rebuild());
@@ -86,7 +110,12 @@ class DashboardController extends GetxController {
   }
 
   /// Rebuilds dashboard labels after EasyLocalization is available.
-  void rebuildDashboard() => _rebuild();
+  void rebuildDashboard({bool refreshCards = false}) {
+    if (refreshCards) {
+      _cards.clearCache();
+    }
+    _rebuild();
+  }
 
   void _rebuild() {
     final int token = ++_rebuildToken;
@@ -107,6 +136,8 @@ class DashboardController extends GetxController {
     final String voterRegistrationUrl = AppServices.config.voterRegistrationUrl;
     final String expenditureUrl = AppServices.config.candidateExpenditureUrl;
     final String emsUrl = AppServices.config.emsUrl;
+    final bool preferHindi =
+        AppServices.settings.locale.value.languageCode.toLowerCase() == 'hi';
     final ServiceSession? session = AppServices.serviceAuth.session.value;
     final AuthUser? authUser = Get.isRegistered<AuthController>()
         ? AppServices.auth.authState.value.user
@@ -119,7 +150,37 @@ class DashboardController extends GetxController {
         await AppServices.webSubmissionRepository.all();
     if (token != _rebuildToken || isClosed) return;
 
+    final List<DashboardCardModel> apiCards = await _cards.fetchCards();
+    if (token != _rebuildToken || isClosed) return;
+
     final _SubmissionCounts counts = _countSubmissions(submissions);
+
+    final List<DashboardService> services;
+    String voterLabel = '';
+    String electionLabel = '';
+    if (apiCards.isNotEmpty) {
+      services = DashboardCardMapper.mapServices(
+        cards: apiCards,
+        preferHindi: preferHindi,
+        surveyWebUrl: surveyWebUrl,
+        voterRegistrationUrl: voterRegistrationUrl,
+        expenditureUrl: expenditureUrl,
+      );
+      final ({String? voter, String? election}) labels =
+          DashboardCardMapper.categoryLabels(
+            cards: apiCards,
+            preferHindi: preferHindi,
+          );
+      voterLabel = labels.voter ?? '';
+      electionLabel = labels.election ?? '';
+    } else {
+      services = _buildServices(
+        surveyWebUrl: surveyWebUrl,
+        voterRegistrationUrl: voterRegistrationUrl,
+        expenditureUrl: expenditureUrl,
+        emsUrl: emsUrl,
+      );
+    }
 
     state.value = DashboardState(
       userName: _resolveUserName(
@@ -139,13 +200,10 @@ class DashboardController extends GetxController {
       ),
       pendingCount: counts.pending + counts.failed,
       stats: _buildStats(submissions.length, counts),
-      services: _buildServices(
-        surveyWebUrl: surveyWebUrl,
-        voterRegistrationUrl: voterRegistrationUrl,
-        expenditureUrl: expenditureUrl,
-        emsUrl: emsUrl,
-      ),
+      services: services,
       activity: _activityFromSubmissions(submissions),
+      voterServicesLabel: voterLabel,
+      electionServicesLabel: electionLabel,
     );
   }
 
@@ -227,19 +285,24 @@ class DashboardController extends GetxController {
     required String expenditureUrl,
     required String emsUrl,
   }) {
+    final bool showRegistration = Get.isRegistered<AppFeatureFlagsController>()
+        ? AppServices.featureFlags.showRegistration.value
+        : true;
+
     return <DashboardService>[
       // Tab 1 — Voter Services
-      DashboardService(
-        title: LocaleKeys.serviceVoterRegistrationTitle.tr(),
-        desc: '',
-        icon: Icons.app_registration_rounded,
-        color: AppColors.teal,
-        url: voterRegistrationUrl,
-        category: DashboardCategory.voterServices,
-        requiresServiceLogin: false,
-        passSessionContext: false,
-        openAsExternalPortal: true,
-      ),
+      if (showRegistration)
+        DashboardService(
+          title: LocaleKeys.serviceVoterRegistrationTitle.tr(),
+          desc: '',
+          icon: Icons.app_registration_rounded,
+          color: AppColors.teal,
+          url: voterRegistrationUrl,
+          category: DashboardCategory.voterServices,
+          requiresServiceLogin: false,
+          passSessionContext: false,
+          openAsExternalPortal: true,
+        ),
       DashboardService(
         title: LocaleKeys.serviceVoterSearchEngineTitle.tr(),
         desc: '',
@@ -295,6 +358,7 @@ class DashboardController extends GetxController {
         url: surveyWebUrl,
         category: DashboardCategory.aboutElections,
         requiredLoginKind: ServiceLoginKind.survey,
+        registrationAllowed: true,
       ),
       DashboardService(
         title: LocaleKeys.servicePresidingTitle.tr(),
@@ -306,6 +370,7 @@ class DashboardController extends GetxController {
         routeName: AppRoute.presidingDashboard.path,
         forceFreshLogin: false,
         requiredLoginKind: ServiceLoginKind.presiding,
+        registrationAllowed: true,
       ),
     ];
   }

@@ -1,11 +1,8 @@
 import 'package:evm_management_system/config/flavor.dart';
+import 'package:evm_management_system/core/legal/privacy_urls.dart';
+import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Strongly-typed, immutable view over the active `.env` configuration.
-///
-/// No URL or tunable is ever hardcoded in the codebase — everything is read
-/// from the flavor-specific `.env` file loaded at bootstrap. Construct exactly
-/// one instance via [EnvironmentConfig.load] and expose it through Riverpod.
 class EnvironmentConfig {
   const EnvironmentConfig({
     required this.flavor,
@@ -21,6 +18,7 @@ class EnvironmentConfig {
     required this.voterRegistrationUrl,
     required this.candidateExpenditureUrl,
     required this.emsUrl,
+    required this.privacyPolicyUrl,
     required this.electionId,
     required this.devPoPsId,
     required this.devPoAreaType,
@@ -35,6 +33,10 @@ class EnvironmentConfig {
     required this.sessionTimeout,
     required this.syncInterval,
     required this.syncMaxRetry,
+    required this.showRegistrationDefault,
+    required this.featureFlagsPath,
+    required this.poSelfRegisterUrl,
+    required this.psSelfRegisterUrl,
   });
 
   /// Reads values from the already-loaded [dotenv] for the given [flavor].
@@ -63,6 +65,19 @@ class EnvironmentConfig {
       return value;
     }
 
+    bool optionalBool(String key, {required bool defaultValue}) {
+      final String? value = dotenv.env[key]?.trim();
+      if (value == null || value.isEmpty) return defaultValue;
+      final String normalized = value.toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+      return defaultValue;
+    }
+
     final String apiBaseUrl = require('API_BASE_URL');
     final String? poElectionRaw = dotenv.env['PO_ELECTION_API_BASE_URL']
         ?.trim();
@@ -81,6 +96,7 @@ class EnvironmentConfig {
     final String? candidateExpenditureRaw =
         dotenv.env['CANDIDATE_EXPENDITURE_URL']?.trim();
     final String? emsRaw = dotenv.env['EMS_URL']?.trim();
+    final String? privacyPolicyRaw = dotenv.env['PRIVACY_POLICY_URL']?.trim();
 
     return EnvironmentConfig(
       flavor: flavor,
@@ -137,6 +153,10 @@ class EnvironmentConfig {
       emsUrl: (emsRaw != null && emsRaw.isNotEmpty)
           ? emsRaw
           : 'https://www.mplocalelection.mp.gov.in/iems/EMS/Login.aspx',
+      privacyPolicyUrl:
+          (privacyPolicyRaw != null && privacyPolicyRaw.isNotEmpty)
+          ? privacyPolicyRaw
+          : PrivacyUrls.statement,
       electionId: optionalInt('ELECTION_ID'),
       devPoPsId: optionalString('DEV_PO_PS_ID'),
       devPoAreaType: optionalString('DEV_PO_AREA_TYPE'),
@@ -155,6 +175,16 @@ class EnvironmentConfig {
       sessionTimeout: Duration(minutes: requireInt('SESSION_TIMEOUT_MINUTES')),
       syncInterval: Duration(seconds: requireInt('SYNC_INTERVAL_SECONDS')),
       syncMaxRetry: requireInt('SYNC_MAX_RETRY'),
+      // App Store / public tile: default SHOW. API can force-hide later.
+      showRegistrationDefault: optionalBool(
+        'SHOW_REGISTRATION',
+        defaultValue: true,
+      ),
+      featureFlagsPath:
+          optionalString('FEATURE_FLAGS_PATH') ??
+          PoElectionEndpoints.appFeatureFlags,
+      poSelfRegisterUrl: optionalString('PO_SELF_REGISTER_URL') ?? '',
+      psSelfRegisterUrl: optionalString('PS_SELF_REGISTER_URL') ?? '',
     );
   }
 
@@ -194,6 +224,9 @@ class EnvironmentConfig {
   /// EMS (IEMS) portal opened from the dashboard grid.
   final String emsUrl;
 
+  /// Official MPSEC privacy statement (in-app + App Store Connect).
+  final String privacyPolicyUrl;
+
   /// Active election cycle ID sent with officer login (deployment config).
   final int? electionId;
 
@@ -211,6 +244,21 @@ class EnvironmentConfig {
   final Duration sessionTimeout;
   final Duration syncInterval;
   final int syncMaxRetry;
+
+  /// Baseline for guest Claim–Objection / voter registration tile.
+  /// Overridden at runtime by [AppFeatureFlagsController] when the API
+  /// returns `showRegistration`.
+  final bool showRegistrationDefault;
+
+  /// Relative path or absolute URL for public feature flags.
+  /// Empty disables remote refresh (env baseline only).
+  final String featureFlagsPath;
+
+  /// Optional portal for Presiding Officer self-registration (login screen).
+  final String poSelfRegisterUrl;
+
+  /// Optional portal for Booth/PS Survey self-registration (login screen).
+  final String psSelfRegisterUrl;
 
   bool get isProduction => flavor.isProduction;
 

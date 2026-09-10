@@ -17,6 +17,11 @@ class JsonLocalDatabase implements LocalDatabase {
       <String, Map<String, Map<String, dynamic>>>{};
   final Map<String, StreamController<List<Map<String, dynamic>>>> _watchers =
       <String, StreamController<List<Map<String, dynamic>>>>{};
+
+  /// Serialises put/delete/clear per collection so logout + watchSession
+  /// re-seed cannot race two atomic renames on the same file.
+  final Map<String, Future<void>> _writeChain = <String, Future<void>>{};
+
   late final Directory _dir;
   bool _initialized = false;
 
@@ -32,6 +37,19 @@ class JsonLocalDatabase implements LocalDatabase {
   }
 
   File _file(String collection) => File('${_dir.path}/$collection.json');
+
+  Future<void> _runExclusive(
+    String collection,
+    Future<void> Function() action,
+  ) {
+    final Future<void> previous =
+        _writeChain[collection] ?? Future<void>.value();
+    final Future<void> next = previous.catchError((Object _) {}).then((_) {
+      return action();
+    });
+    _writeChain[collection] = next.catchError((Object _) {});
+    return next;
+  }
 
   Future<Map<String, Map<String, dynamic>>> _load(String collection) async {
     if (_cache.containsKey(collection)) return _cache[collection]!;
@@ -61,15 +79,41 @@ class JsonLocalDatabase implements LocalDatabase {
       // an orphan ".tmp" — never a half-written, corrupt JSON document.
       final File target = _file(collection);
       final File tmp = File('${target.path}.tmp');
-      await tmp.writeAsString(jsonEncode(_cache[collection]), flush: true);
-      await tmp.rename(target.path);
+      final Map<String, Map<String, dynamic>> snapshot =
+          _cache[collection] ?? <String, Map<String, dynamic>>{};
+      await tmp.writeAsString(jsonEncode(snapshot), flush: true);
+      await _replaceAtomically(tmp: tmp, target: target);
       _emit(collection);
     } catch (e, s) {
       throw CacheException(
-        'flush($collection) failed',
+        'flush($collection) failed: $e',
         cause: e,
         stackTrace: s,
       );
+    }
+  }
+
+  /// [File.rename] can fail when the destination already exists (platform
+  /// dependent) or when a concurrent writer deleted the temp file — fall back
+  /// to delete-then-rename / copy.
+  Future<void> _replaceAtomically({
+    required File tmp,
+    required File target,
+  }) async {
+    try {
+      if (await target.exists()) {
+        await target.delete();
+      }
+      await tmp.rename(target.path);
+    } on FileSystemException {
+      if (await tmp.exists()) {
+        await tmp.copy(target.path);
+        try {
+          await tmp.delete();
+        } catch (_) {}
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -80,7 +124,10 @@ class JsonLocalDatabase implements LocalDatabase {
     final StreamController<List<Map<String, dynamic>>>? controller =
         _watchers[collection];
     if (controller != null && !controller.isClosed) {
-      controller.add(_cache[collection]!.values.toList(growable: false));
+      controller.add(
+        (_cache[collection] ?? <String, Map<String, dynamic>>{}).values
+            .toList(growable: false),
+      );
     }
   }
 
@@ -89,10 +136,12 @@ class JsonLocalDatabase implements LocalDatabase {
     String collection,
     String id,
     Map<String, dynamic> value,
-  ) async {
-    final Map<String, Map<String, dynamic>> data = await _load(collection);
-    data[id] = value;
-    await _flush(collection);
+  ) {
+    return _runExclusive(collection, () async {
+      final Map<String, Map<String, dynamic>> data = await _load(collection);
+      data[id] = value;
+      await _flush(collection);
+    });
   }
 
   @override
@@ -108,21 +157,27 @@ class JsonLocalDatabase implements LocalDatabase {
   }
 
   @override
-  Future<void> delete(String collection, String id) async {
-    final Map<String, Map<String, dynamic>> data = await _load(collection);
-    data.remove(id);
-    await _flush(collection);
+  Future<void> delete(String collection, String id) {
+    return _runExclusive(collection, () async {
+      final Map<String, Map<String, dynamic>> data = await _load(collection);
+      data.remove(id);
+      await _flush(collection);
+    });
   }
 
   @override
-  Future<void> clear(String collection) async {
-    final Map<String, Map<String, dynamic>> data = await _load(collection);
-    data.clear();
-    await _flush(collection);
+  Future<void> clear(String collection) {
+    return _runExclusive(collection, () async {
+      final Map<String, Map<String, dynamic>> data = await _load(collection);
+      data.clear();
+      await _flush(collection);
+    });
   }
 
   @override
   Stream<List<Map<String, dynamic>>> watch(String collection) {
+    // Borrowed reference; ownership/closing is handled by [dispose].
+    // ignore: close_sinks
     final StreamController<List<Map<String, dynamic>>> controller = _watchers
         .putIfAbsent(
           collection,

@@ -2,6 +2,7 @@ import 'package:evm_management_system/app/app_splash_screen.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/app/router/app_shell.dart';
 import 'package:evm_management_system/app/routes/auth_middleware.dart';
+import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/features/about/presentation/screens/about_screen.dart';
 import 'package:evm_management_system/features/audit_trail/presentation/screens/audit_trail_screen.dart';
 import 'package:evm_management_system/features/auth/presentation/screens/login_screen.dart';
@@ -33,6 +34,7 @@ import 'package:evm_management_system/features/profile/presentation/screens/prof
 import 'package:evm_management_system/features/reports/presentation/screens/reports_screen.dart';
 import 'package:evm_management_system/features/scanner/presentation/screens/scanner_screen.dart';
 import 'package:evm_management_system/features/search/presentation/screens/search_screen.dart';
+import 'package:evm_management_system/features/service_auth/presentation/models/service_login_args.dart';
 import 'package:evm_management_system/features/service_auth/presentation/screens/service_login_screen.dart';
 import 'package:evm_management_system/features/settings/presentation/screens/settings_screen.dart';
 import 'package:evm_management_system/features/sync_management/presentation/screens/sync_management_screen.dart';
@@ -66,9 +68,14 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoute.serviceLogin.path,
-      page: () => ServiceLoginScreen(
-        serviceTitle: Get.arguments is String ? Get.arguments as String : null,
-      ),
+      page: () {
+        final ServiceLoginArgs args = ServiceLoginArgs.from(Get.arguments);
+        return ServiceLoginScreen(
+          serviceTitle: args.serviceTitle,
+          loginKind: args.loginKind,
+          registrationAllowed: args.registrationAllowed,
+        );
+      },
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
     GetPage<dynamic>(
@@ -137,81 +144,11 @@ abstract final class AppPages {
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
     GetPage<dynamic>(
-      name: AppRoute.onlineNominationHome.path,
-      page: () => const OnlineNominationHomeScreen(),
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
       name: AppRoute.voterSearch.path,
       page: () => const VoterSearchScreen(),
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
-    GetPage<dynamic>(
-      name: AppRoute.urbanNominationSelection.path,
-      page: () => const UrbanNominationSelectionScreen(),
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
-      name: AppRoute.panchayatNominationSelection.path,
-      page: () => const PanchayatNominationSelectionScreen(),
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
-      name: AppRoute.nominationWorkflow.path,
-      page: () {
-        final Object? args = Get.arguments;
-        final NominationFlowArgs resolved = args is NominationFlowArgs
-            ? args
-            : const NominationFlowArgs(
-                electionType: NominationElectionType.urban,
-                postType: NominationPostType.mahapaur,
-              );
-        return NominationWorkflowScreen(args: resolved);
-      },
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
-      name: AppRoute.nominationSuccess.path,
-      page: () {
-        final Object? args = Get.arguments;
-        final NominationFlowArgs resolved = args is NominationFlowArgs
-            ? args
-            : const NominationFlowArgs(
-                electionType: NominationElectionType.urban,
-                postType: NominationPostType.mahapaur,
-              );
-        return NominationSuccessScreen(args: resolved);
-      },
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
-      name: AppRoute.nominationReceipt.path,
-      page: () {
-        final Object? args = Get.arguments;
-        final NominationFlowArgs resolved = args is NominationFlowArgs
-            ? args
-            : const NominationFlowArgs(
-                electionType: NominationElectionType.urban,
-                postType: NominationPostType.mahapaur,
-              );
-        return NominationReceiptScreen(args: resolved);
-      },
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
-    GetPage<dynamic>(
-      name: AppRoute.nominationTrackStatus.path,
-      page: () {
-        final Object? args = Get.arguments;
-        final NominationFlowArgs resolved = args is NominationFlowArgs
-            ? args
-            : const NominationFlowArgs(
-                electionType: NominationElectionType.urban,
-                postType: NominationPostType.mahapaur,
-              );
-        return NominationTrackStatusScreen(args: resolved);
-      },
-      middlewares: <GetMiddleware>[AuthMiddleware()],
-    ),
+    ..._onlineNominationPages,
     GetPage<dynamic>(
       name: AppRoute.controlUnit.path,
       page: () => const ControlUnitScreen(),
@@ -287,4 +224,85 @@ abstract final class AppPages {
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
   ];
+
+  /// Online Nomination GetX pages. Empty while [kHideOnlineNomination] is true
+  /// so deep links cannot open screens. Restore the list when the flag is false.
+  static List<GetPage<dynamic>> get _onlineNominationPages {
+    if (kHideOnlineNomination) {
+      return const <GetPage<dynamic>>[];
+    }
+    return <GetPage<dynamic>>[
+      GetPage<dynamic>(
+        name: AppRoute.onlineNominationHome.path,
+        page: () => const OnlineNominationHomeScreen(),
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.urbanNominationSelection.path,
+        page: () => const UrbanNominationSelectionScreen(),
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.panchayatNominationSelection.path,
+        page: () => const PanchayatNominationSelectionScreen(),
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.nominationWorkflow.path,
+        page: () {
+          final Object? args = Get.arguments;
+          final NominationFlowArgs resolved = args is NominationFlowArgs
+              ? args
+              : const NominationFlowArgs(
+                  electionType: NominationElectionType.urban,
+                  postType: NominationPostType.mahapaur,
+                );
+          return NominationWorkflowScreen(args: resolved);
+        },
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.nominationSuccess.path,
+        page: () {
+          final Object? args = Get.arguments;
+          final NominationFlowArgs resolved = args is NominationFlowArgs
+              ? args
+              : const NominationFlowArgs(
+                  electionType: NominationElectionType.urban,
+                  postType: NominationPostType.mahapaur,
+                );
+          return NominationSuccessScreen(args: resolved);
+        },
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.nominationReceipt.path,
+        page: () {
+          final Object? args = Get.arguments;
+          final NominationFlowArgs resolved = args is NominationFlowArgs
+              ? args
+              : const NominationFlowArgs(
+                  electionType: NominationElectionType.urban,
+                  postType: NominationPostType.mahapaur,
+                );
+          return NominationReceiptScreen(args: resolved);
+        },
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+      GetPage<dynamic>(
+        name: AppRoute.nominationTrackStatus.path,
+        page: () {
+          final Object? args = Get.arguments;
+          final NominationFlowArgs resolved = args is NominationFlowArgs
+              ? args
+              : const NominationFlowArgs(
+                  electionType: NominationElectionType.urban,
+                  postType: NominationPostType.mahapaur,
+                );
+          return NominationTrackStatusScreen(args: resolved);
+        },
+        middlewares: <GetMiddleware>[AuthMiddleware()],
+      ),
+    ];
+  }
 }

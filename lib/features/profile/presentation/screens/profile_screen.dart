@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/constants/feature_flags.dart';
+import 'package:evm_management_system/core/app_build_info.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:evm_management_system/core/legal/privacy_policy.dart';
 import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
 import 'package:evm_management_system/core/utils/string_extensions.dart';
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
@@ -103,6 +105,14 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () =>
                       Get.toNamed<dynamic>(AppRoute.notifications.path),
                 ),
+                const _RowDivider(),
+                _RowTile(
+                  icon: Icons.privacy_tip_outlined,
+                  color: AppColors.primary,
+                  title: LocaleKeys.legalPrivacyPolicy.tr(),
+                  subtitle: LocaleKeys.legalPrivacyPolicySub.tr(),
+                  onTap: () => PrivacyPolicy.open(context),
+                ),
               ],
             ),
             // Sign Out only when an officer/service session exists.
@@ -112,6 +122,8 @@ class ProfileScreen extends StatelessWidget {
               _SignOutButton(onTap: () => _confirmSignOut(context))
             else
               _SignInButton(onTap: () => _goToSignIn(context)),
+            const SizedBox(height: 28),
+            const _BuildFooter(),
           ],
         ),
       );
@@ -869,6 +881,49 @@ class _SignInButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BuildFooter extends StatelessWidget {
+  const _BuildFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Text(
+          LocaleKeys.appName.tr(),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption.copyWith(
+            color: context.appMuted,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          LocaleKeys.appVersion.tr(
+            args: <String>[AppBuildInfo.versionWithBuild],
+          ),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption.copyWith(
+            color: context.appMuted,
+            fontSize: 11,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          AppBuildInfo.flavorLabel,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption.copyWith(
+            color: context.appMuted,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.4,
+          ),
+        ),
+      ],
     );
   }
 }

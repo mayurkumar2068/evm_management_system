@@ -34,7 +34,9 @@ If a keystore was already generated on this machine for first packaging, reuse t
 ## 1. Google Play Console
 
 1. Create the app (or open existing) with package name **`com.mpsec.mpsecnet`**.
-2. Complete **Store listing**: short description, full description, screenshots, feature graphic, icon, contact email, privacy policy URL (org must provide the URL).
+2. Complete **Store listing**: short description, full description, screenshots, feature graphic, icon, contact email, privacy policy URL:
+
+   `https://mplocalelection.mp.gov.in/privacystatement.aspx`
 3. Complete **Content rating**, **Target audience**, **News apps** / **COVID** declarations as applicable.
 4. **Data safety** — declare data collected/shared to match the app. Permissions in `android/app/src/main/AndroidManifest.xml` that typically need answers:
 
@@ -87,6 +89,12 @@ If a keystore was already generated on this machine for first packaging, reuse t
    Or: Xcode → Product → Archive → Distribute App → App Store Connect.
 
 6. Upload to **TestFlight**, smoke-test, then submit for **App Review** (screenshots, export compliance, review notes for election field use).
+
+   **Privacy Policy URL** (App Store Connect → App Privacy / App Information):
+
+   `https://mplocalelection.mp.gov.in/privacystatement.aspx`
+
+   The same URL is linked in-app (dashboard footer, Profile, Settings, About).
 
 ---
 

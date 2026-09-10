@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
+import 'package:evm_management_system/core/app_build_info.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/connectivity_service.dart';
+import 'package:evm_management_system/core/network/po_election_auth.dart';
 import 'package:evm_management_system/core/offline/survey_api_upload_service.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 import 'package:evm_management_system/core/offline/web_submission_repository.dart';
 import 'package:evm_management_system/core/sync/retry_policy.dart';
-import 'package:evm_management_system/core/webview/service/web_session_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// Offline-first orchestrator for every Angular form submitted via the bridge.
@@ -73,7 +74,7 @@ class OfflineSyncService {
       ...data,
       'clientSubmissionId': id,
       if (officerId != null && officerId.isNotEmpty) 'submittedBy': officerId,
-      'appVersion': kWebAppVersion,
+      'appVersion': AppBuildInfo.versionName,
       'deviceInfo': _deviceInfo(deviceId),
     };
 
@@ -88,7 +89,9 @@ class OfflineSyncService {
 
     if (await _connectivity.isOnline) {
       try {
-        final Map<String, dynamic> server = await _upload.upload(submission);
+        final Map<String, dynamic> server = await _upload.upload(
+          await _withUploadToken(submission),
+        );
         final WebFormSubmission synced = submission.copyWith(
           status: WebSubmissionStatus.synced,
           referenceId: server['referenceId']?.toString(),
@@ -154,7 +157,9 @@ class OfflineSyncService {
     await _repository.save(syncing);
 
     try {
-      final Map<String, dynamic> server = await _upload.upload(syncing);
+      final Map<String, dynamic> server = await _upload.upload(
+        await _withUploadToken(syncing),
+      );
       await _repository.save(
         syncing.copyWith(
           status: WebSubmissionStatus.synced,
@@ -189,6 +194,14 @@ class OfflineSyncService {
   void dispose() {
     _connectivitySub?.cancel();
     _timer?.cancel();
+  }
+
+  /// Bearer token from memory this session, else Keychain officer session.
+  Future<WebFormSubmission> _withUploadToken(WebFormSubmission submission) async {
+    if (submission.authToken.isNotEmpty) return submission;
+    final String? stored = await PoElectionAuth.accessToken();
+    if (stored == null || stored.isEmpty) return submission;
+    return submission.copyWith(authToken: stored);
   }
 
   static String _normalizeEndpoint(String endpoint) {

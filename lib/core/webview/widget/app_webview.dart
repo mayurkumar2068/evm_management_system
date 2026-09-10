@@ -11,6 +11,7 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart' hide Trans;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../config/webview_config.dart';
 import '../url/webview_url_utils.dart';
@@ -698,6 +699,34 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
+  /// OS location prompt only when the page asks — never auto-allow.
+  Future<GeolocationPermissionShowPromptResponse> _onGeolocationPermission(
+    InAppWebViewController _,
+    String origin,
+  ) async {
+    PermissionStatus status = await Permission.locationWhenInUse.status;
+    if (!status.isGranted && !status.isLimited) {
+      status = await Permission.locationWhenInUse.request();
+    }
+    final bool allow = status.isGranted || status.isLimited;
+    return GeolocationPermissionShowPromptResponse(
+      origin: origin,
+      allow: allow,
+      retain: allow,
+    );
+  }
+
+  /// Camera/mic in the WebView are denied. Survey photos use native pickImage.
+  Future<PermissionResponse> _onWebViewPermissionRequest(
+    InAppWebViewController _,
+    PermissionRequest _,
+  ) async {
+    return PermissionResponse(
+      resources: const <PermissionResourceType>[],
+      action: PermissionResponseAction.DENY,
+    );
+  }
+
   /// Builds the platform WebView widget with all lifecycle hooks attached.
   Widget _webView() {
     return InAppWebView(
@@ -716,17 +745,8 @@ class _AppWebViewState extends State<AppWebView> {
               _security.decide(challenge),
       onDidReceiveServerRedirectForProvisionalNavigation: _onRedirect,
       onUpdateVisitedHistory: _onUpdateVisitedHistory,
-      onGeolocationPermissionsShowPrompt: (_, String origin) async =>
-          GeolocationPermissionShowPromptResponse(
-            origin: origin,
-            allow: true,
-            retain: true,
-          ),
-      onPermissionRequest: (_, PermissionRequest request) async =>
-          PermissionResponse(
-            resources: request.resources,
-            action: PermissionResponseAction.GRANT,
-          ),
+      onGeolocationPermissionsShowPrompt: _onGeolocationPermission,
+      onPermissionRequest: _onWebViewPermissionRequest,
       onLoadStart: _onLoadStart,
       onReceivedIcon: (_, Uint8List icon) async {
         if (!mounted) return;

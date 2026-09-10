@@ -2,7 +2,7 @@ name: evm_management_system
 description: "EVM Management System is a mobile-based inventory and tracking solution developed for the Election Commission of India to manage Control Units and Ballot Units using Barcode/QR scanning, real-time stock monitoring, audit trails, offline synchronization, and reporting dashboards, ensuring secure and transparent EVM lifecycle management."
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.0.0+5
 
 environment:
   sdk: ^3.9.0
@@ -47,8 +47,6 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  build_runner: ^2.9.0
-  mocktail: ^1.0.5
   flutter_launcher_icons: ^0.14.4
 
 # Launcher icon generation (run: dart run flutter_launcher_icons).

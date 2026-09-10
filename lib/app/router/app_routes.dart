@@ -53,6 +53,15 @@ enum AppRoute {
   final String path;
   final String name;
 
+  /// True for every Online Nomination path (kept even while the feature is disabled).
+  bool get isOnlineNomination => path.startsWith('/online-nomination');
+
+  static bool isOnlineNominationPath(String? route) {
+    final String location = route ?? '';
+    return location == onlineNominationHome.path ||
+        location.startsWith('/online-nomination');
+  }
+
   @override
   String toString() => name;
 }

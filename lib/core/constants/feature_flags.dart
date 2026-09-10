@@ -10,10 +10,15 @@ const bool kHideDashboardStats = true;
 /// Hides the reports screen and all navigation entry points.
 const bool kHideReports = true;
 
-/// Hides Online Nomination tile (dashboard + related entry points).
-/// Kept ON per explicit product decision (2026-08-14 cleanup) — Nomination is
-/// an active, in-use module. Do not flip this without checking with product.
+/// App Store 5.1.1 — Online Nomination is fully disabled for this build.
+/// Screens, models, and APIs stay in the tree; routes/DI/nav are not registered.
+/// Restore by setting this to `false` (routes in `AppPages`, DI in `AppServices`).
 const bool kHideOnlineNomination = true;
+
+/// Voter Registration / Claim–Objection is **not** gated by a compile-time
+/// hide flag. Visibility is controlled at runtime by
+/// `AppFeatureFlagsController.showRegistration` (env `SHOW_REGISTRATION`
+/// baseline + public API `showRegistration`). Default = shown (App Store).
 
 /// Hides the EMS/IMS dashboard tile.
 const bool kHideEms = true;
