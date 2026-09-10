@@ -4,7 +4,12 @@ import 'package:flutter/services.dart';
 
 /// Soft decorative orbs behind PO / PS auth screens.
 class ServiceAuthBackdrop extends StatelessWidget {
-  const ServiceAuthBackdrop({super.key});
+  const ServiceAuthBackdrop({
+    super.key,
+    this.leftOrbTop = 120,
+  });
+
+  final double leftOrbTop;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +29,7 @@ class ServiceAuthBackdrop extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 120,
+            top: leftOrbTop,
             left: -90,
             child: Container(
               width: 200,

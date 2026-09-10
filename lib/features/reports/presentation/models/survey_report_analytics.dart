@@ -1,4 +1,5 @@
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 
 /// Location fields extracted from a survey / web-form payload.
 class SurveyLocationFacts {
@@ -62,7 +63,8 @@ class SurveyReportAnalytics {
   const SurveyReportAnalytics._();
 
   static SurveyLocationFacts fromPayload(Map<String, dynamic> payload) {
-    final Map<String, dynamic> location = _asMap(payload['location']);
+    final Map<String, dynamic> location =
+        asStringKeyedMap(payload['location']) ?? const <String, dynamic>{};
     final String districtId = _firstNonEmpty(<String?>[
       payload['districtId']?.toString(),
       payload['DistID']?.toString(),
@@ -173,15 +175,5 @@ class SurveyReportAnalytics {
       if (v != null && v.trim().isNotEmpty) return v.trim();
     }
     return '';
-  }
-
-  static Map<String, dynamic> _asMap(Object? value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) {
-      return value.map(
-        (Object? k, Object? v) => MapEntry(k.toString(), v),
-      );
-    }
-    return const <String, dynamic>{};
   }
 }

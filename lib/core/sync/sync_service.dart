@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/network/api_client.dart';
 import 'package:evm_management_system/core/sync/sync_models.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 
 /// Outcome of pushing one [SyncTask] to the server.
 sealed class SyncOutcome {
@@ -42,11 +43,13 @@ class SyncService {
   Future<SyncOutcome> push(SyncTask task) async {
     try {
       final Response<dynamic> response = await _send(task);
-      return SyncSucceeded(_asMap(response.data));
+      return SyncSucceeded(asStringKeyedMap(response.data));
     } on DioException catch (e) {
       final int? code = e.response?.statusCode;
       if (code == 409) {
-        return SyncConflict(_asMap(e.response?.data) ?? <String, dynamic>{});
+        return SyncConflict(
+          asStringKeyedMap(e.response?.data) ?? <String, dynamic>{},
+        );
       }
       if (code != null && code >= 400 && code < 500 && code != 408) {
         return SyncFatal('HTTP $code: ${e.message}');
@@ -74,7 +77,4 @@ class SyncService {
       ),
     };
   }
-
-  Map<String, dynamic>? _asMap(Object? data) =>
-      data is Map<String, dynamic> ? data : null;
 }

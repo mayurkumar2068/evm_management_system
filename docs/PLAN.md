@@ -106,7 +106,12 @@ Completed on `chore/code-optimisation`:
 - Phase B3 `categoryLabels` one-pass
 
 Deferred (still valid for later):
-- Wire more `_asMap` call sites to `asStringKeyedMap`
-- Reuse `ServiceAuthChrome` on main `login_screen`
+- ~~Wire more `_asMap` call sites to `asStringKeyedMap`~~ (sync + survey_report done; voter_search kept — string JSON decode)
+- ~~Reuse `ServiceAuthChrome` backdrop on main `login_screen`~~ (hero kept local — different layout)
 - Dashboard rebuild debounce (needs measurement)
 - Nomination `NominationFeatureBullet` unused check under flag tree
+
+### Phase 2 follow-up (2026-09-10)
+- `sync_service.dart` / `survey_report_analytics.dart` → `asStringKeyedMap`
+- `login_screen` → `ServiceAuthBackdrop(leftOrbTop: 140)`; removed duplicate `_SoftBackdrop`
+- `ServiceAuthBackdrop` accepts `leftOrbTop` so guest gateway layout stays identical

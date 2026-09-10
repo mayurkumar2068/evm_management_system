@@ -3,6 +3,7 @@ import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
+import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: context.appBackground,
         body: Stack(
           children: <Widget>[
-            const _SoftBackdrop(),
+            const ServiceAuthBackdrop(leftOrbTop: 140),
             SafeArea(
               top: false,
               child: SingleChildScrollView(
@@ -212,44 +213,6 @@ class _NavTile extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SoftBackdrop extends StatelessWidget {
-  const _SoftBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            top: -80,
-            right: -60,
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.10),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 140,
-            left: -90,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.green.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
