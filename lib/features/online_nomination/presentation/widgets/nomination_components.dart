@@ -1,5 +1,4 @@
 export 'aadhaar_input_formatter.dart';
-export 'nomination_feature_bullet.dart';
 export 'nomination_gov_button.dart';
 export 'nomination_hero_card.dart';
 export 'nomination_horizontal_stepper.dart';

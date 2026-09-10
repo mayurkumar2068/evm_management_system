@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 import 'package:evm_management_system/features/online_nomination/data/models/urban_master_dtos.dart';
 
 /// Remote datasource for OLINAPI urban nomination master cascade.
@@ -91,7 +92,7 @@ class UrbanNominationRemoteDatasource {
       }
 
       final Object? data = response.data;
-      final Map<String, dynamic>? map = _asStringKeyedMap(data);
+      final Map<String, dynamic>? map = asStringKeyedMap(data);
       if (map == null) {
         throw UrbanMasterApiException(
           'Unexpected registration response (${code ?? 'no status'}).',
@@ -100,7 +101,7 @@ class UrbanNominationRemoteDatasource {
 
       // Support both flat and { data: {...} } envelopes.
       final Map<String, dynamic> payload =
-          _asStringKeyedMap(map['data']) ?? map;
+          asStringKeyedMap(map['data']) ?? map;
 
       final UrbanRegistrationResponse parsed =
           UrbanRegistrationResponse.fromJson(payload);
@@ -182,16 +183,6 @@ class UrbanNominationRemoteDatasource {
     }
   }
 
-  static Map<String, dynamic>? _asStringKeyedMap(Object? data) {
-    if (data is Map<String, dynamic>) return data;
-    if (data is Map) {
-      return data.map(
-        (Object? key, Object? value) =>
-            MapEntry<String, dynamic>(key.toString(), value),
-      );
-    }
-    return null;
-  }
 
   static String _messageFromBody(Object? data, [int? statusCode]) {
     if (data is String && data.trim().isNotEmpty) {
@@ -205,7 +196,7 @@ class UrbanNominationRemoteDatasource {
       return trimmed.length > 240 ? '${trimmed.substring(0, 240)}…' : trimmed;
     }
 
-    final Map<String, dynamic>? map = _asStringKeyedMap(data);
+    final Map<String, dynamic>? map = asStringKeyedMap(data);
     if (map != null) {
       for (final String key in <String>[
         'message',

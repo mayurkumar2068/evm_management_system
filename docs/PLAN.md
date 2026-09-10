@@ -106,12 +106,15 @@ Completed on `chore/code-optimisation`:
 - Phase B3 `categoryLabels` one-pass
 
 Deferred (still valid for later):
-- ~~Wire more `_asMap` call sites to `asStringKeyedMap`~~ (sync + survey_report done; voter_search kept — string JSON decode)
-- ~~Reuse `ServiceAuthChrome` backdrop on main `login_screen`~~ (hero kept local — different layout)
-- Dashboard rebuild debounce (needs measurement)
-- Nomination `NominationFeatureBullet` unused check under flag tree
+- Voter-search `_asJsonMap` (string JSON decode — keep separate)
+- Broader Dio error-mapper unify (NEEDS VERIFICATION)
 
 ### Phase 2 follow-up (2026-09-10)
 - `sync_service.dart` / `survey_report_analytics.dart` → `asStringKeyedMap`
 - `login_screen` → `ServiceAuthBackdrop(leftOrbTop: 140)`; removed duplicate `_SoftBackdrop`
 - `ServiceAuthBackdrop` accepts `leftOrbTop` so guest gateway layout stays identical
+
+### Phase 3 follow-up (2026-09-10)
+- Removed unused `NominationFeatureBullet` (+ barrel export)
+- Dashboard `_rebuild` 50ms debounce (existing token cancel kept)
+- `urban_nomination_remote_datasource` uses shared `asStringKeyedMap`

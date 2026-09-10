@@ -85,6 +85,7 @@ class DashboardController extends GetxController {
 
   int _rebuildToken = 0;
   StreamSubscription<int>? _submissionWatch;
+  Timer? _rebuildDebounce;
 
   @override
   void onInit() {
@@ -105,11 +106,11 @@ class DashboardController extends GetxController {
 
   @override
   void onClose() {
+    _rebuildDebounce?.cancel();
     _submissionWatch?.cancel();
     super.onClose();
   }
 
-  /// Rebuilds dashboard labels after EasyLocalization is available.
   void rebuildDashboard({bool refreshCards = false}) {
     if (refreshCards) {
       _cards.clearCache();
@@ -118,8 +119,12 @@ class DashboardController extends GetxController {
   }
 
   void _rebuild() {
-    final int token = ++_rebuildToken;
-    unawaited(_rebuildAsync(token));
+    _rebuildDebounce?.cancel();
+    _rebuildDebounce = Timer(const Duration(milliseconds: 50), () {
+      if (isClosed) return;
+      final int token = ++_rebuildToken;
+      unawaited(_rebuildAsync(token));
+    });
   }
 
   Future<void> _rebuildAsync(int token) async {
