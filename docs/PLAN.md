@@ -118,3 +118,9 @@ Deferred (still valid for later):
 - Removed unused `NominationFeatureBullet` (+ barrel export)
 - Dashboard `_rebuild` 50ms debounce (existing token cancel kept)
 - `urban_nomination_remote_datasource` uses shared `asStringKeyedMap`
+
+### Phase 4 follow-up (2026-09-10)
+- `parseOptionalInt` in `json_map.dart`; wired session/auth/election context/dashboard cards/urban masters/`UserModel`
+- Shared `localizedAuthMessage` for login + self-register
+- Removed unused `Validators.requiredOfficerId` / `password` / `dropdownRequired`
+- Trimmed unused `AppIcons` aliases (logout, flash, camera, offline, visibility, fingerprint)

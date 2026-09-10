@@ -7,6 +7,7 @@ import 'package:evm_management_system/features/dashboard/presentation/utils/dash
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
 import 'package:evm_management_system/features/service_auth/presentation/screens/service_self_register_screen.dart';
+import 'package:evm_management_system/features/service_auth/presentation/utils/localized_auth_message.dart';
 import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -113,14 +114,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     );
   }
 
-  String _localizedAuthMessage(String message) {
-    if (message.startsWith('auth.') ||
-        message.startsWith('error.') ||
-        message.startsWith('common.')) {
-      return message.tr();
-    }
-    return message;
-  }
 
   @override
   void initState() {
@@ -235,7 +228,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = _localizedAuthMessage(e.message);
+        _error = localizedAuthMessage(e.message);
       });
     } catch (_) {
       if (!mounted) return;
@@ -270,7 +263,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = _localizedAuthMessage(e.message);
+        _error = localizedAuthMessage(e.message);
       });
     } catch (_) {
       if (!mounted) return;
@@ -326,7 +319,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = _localizedAuthMessage(e.message);
+        _error = localizedAuthMessage(e.message);
       });
     } catch (_) {
       if (!mounted) return;

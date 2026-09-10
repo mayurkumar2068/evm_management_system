@@ -1,12 +1,7 @@
 /// DTOs for OLINAPI urban master lookups (`/Master/*`).
 library;
 
-int? _asInt(Object? value) {
-  if (value is int) return value;
-  if (value is num) return value.toInt();
-  if (value is String) return int.tryParse(value.trim());
-  return null;
-}
+import 'package:evm_management_system/core/utils/json_map.dart';
 
 String _asString(Object? value) {
   if (value == null) return '';
@@ -27,7 +22,7 @@ class ElectionUrbanDto {
 
   factory ElectionUrbanDto.fromJson(Map<String, dynamic> json) {
     final int id =
-        _pick<int>(json, <String>['election_Id', 'election_id', 'Election_Id'], _asInt) ??
+        _pick<int>(json, <String>['election_Id', 'election_id', 'Election_Id'], parseOptionalInt) ??
         0;
     final String name =
         _pick<String>(json, <String>['ename', 'Ename', 'eName'], (Object? v) {
@@ -47,7 +42,7 @@ class PostUrbanDto {
 
   factory PostUrbanDto.fromJson(Map<String, dynamic> json) {
     final int id =
-        _pick<int>(json, <String>['postID', 'postId', 'PostID'], _asInt) ?? 0;
+        _pick<int>(json, <String>['postID', 'postId', 'PostID'], parseOptionalInt) ?? 0;
     final String name =
         _pick<String>(json, <String>['postName', 'PostName'], (Object? v) {
           final String s = _asString(v);
@@ -102,7 +97,7 @@ class UrbanBodyDto {
         }) ??
         '';
     final int typeId =
-        _pick<int>(json, <String>['typeID', 'typeId', 'TypeID'], _asInt) ?? 0;
+        _pick<int>(json, <String>['typeID', 'typeId', 'TypeID'], parseOptionalInt) ?? 0;
     final String name =
         _pick<String>(json, <String>['ubName', 'UBName', 'ubname'], (
           Object? v,
@@ -130,7 +125,7 @@ class UrbanWardDto {
         }) ??
         '';
     final int wardNo =
-        _pick<int>(json, <String>['wardNO', 'wardNo', 'WardNO'], _asInt) ?? 0;
+        _pick<int>(json, <String>['wardNO', 'wardNo', 'WardNO'], parseOptionalInt) ?? 0;
     return UrbanWardDto(wardId: id, wardNo: wardNo);
   }
 

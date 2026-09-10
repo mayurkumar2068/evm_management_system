@@ -19,6 +19,7 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:get/get.dart' hide Trans, Response;
+import 'package:evm_management_system/core/utils/json_map.dart';
 
 /// Thrown when a service login fails; carries a user-facing message.
 class ServiceAuthException implements Exception {
@@ -163,28 +164,28 @@ class ServiceAuthController extends GetxController {
       data[PoLoginResponseFields.gpName],
     ]);
 
-    final int? maleElectors = _parseElectors(
+    final int? maleElectors = parseOptionalInt(
       _mapValue(data, <String>[
         PoLoginResponseFields.maleElectors,
         'maleElectors',
         'male_electors',
       ]),
     );
-    final int? femaleElectors = _parseElectors(
+    final int? femaleElectors = parseOptionalInt(
       _mapValue(data, <String>[
         PoLoginResponseFields.femaleElectors,
         'femaleElectors',
         'female_electors',
       ]),
     );
-    final int? otherElectors = _parseElectors(
+    final int? otherElectors = parseOptionalInt(
       _mapValue(data, <String>[
         PoLoginResponseFields.otherElectors,
         'otherElectors',
         'other_electors',
       ]),
     );
-    final int? totalElectors = _parseElectors(
+    final int? totalElectors = parseOptionalInt(
       _mapValue(data, <String>[
         PoLoginResponseFields.totalElectors,
         'totalElectors',
@@ -626,12 +627,6 @@ class ServiceAuthController extends GetxController {
     return null;
   }
 
-  int? _parseElectors(Object? value) {
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    return int.tryParse(value.toString().trim());
-  }
 
   /// Parses PO login boolean feature flags; missing/unknown → `false`
   /// (feature hidden by default).

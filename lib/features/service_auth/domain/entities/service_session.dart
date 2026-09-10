@@ -1,4 +1,5 @@
 /// Which officer login produced the current [ServiceSession].
+import 'package:evm_management_system/core/utils/json_map.dart';
 enum ServiceLoginKind {
   survey,
   presiding,
@@ -44,10 +45,10 @@ class ServiceSession {
     createdAt: json['createdAt'] != null
         ? DateTime.parse(json['createdAt'] as String)
         : null,
-    maleElectors: _parseElectors(json['maleElectors']),
-    femaleElectors: _parseElectors(json['femaleElectors']),
-    otherElectors: _parseElectors(json['otherElectors']),
-    totalElectors: _parseElectors(json['totalElectors']),
+    maleElectors: parseOptionalInt(json['maleElectors']),
+    femaleElectors: parseOptionalInt(json['femaleElectors']),
+    otherElectors: parseOptionalInt(json['otherElectors']),
+    totalElectors: parseOptionalInt(json['totalElectors']),
   );
 
   final String token;
@@ -115,10 +116,4 @@ class ServiceSession {
     return ServiceLoginKind.survey;
   }
 
-  static int? _parseElectors(Object? raw) {
-    if (raw == null) return null;
-    if (raw is int) return raw;
-    if (raw is num) return raw.toInt();
-    return int.tryParse(raw.toString().trim());
-  }
 }

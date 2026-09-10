@@ -3,23 +3,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 
 /// Reusable, localized form validators shared across feature screens.
 abstract final class Validators {
-  static String? requiredOfficerId(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return LocaleKeys.authUsernameRequired.tr();
-    }
-    return null;
-  }
-
-  static String? password(String? value) {
-    if (value == null || value.isEmpty) {
-      return LocaleKeys.authPasswordRequired.tr();
-    }
-    if (value.length < 6) {
-      return LocaleKeys.authPasswordTooShort.tr();
-    }
-    return null;
-  }
-
   static String? required(String? value) {
     if (value == null || value.trim().isEmpty) {
       return LocaleKeys.nominationValidationRequired.tr();
@@ -100,10 +83,4 @@ abstract final class Validators {
     return null;
   }
 
-  static String? dropdownRequired<T>(T? value) {
-    if (value == null) {
-      return LocaleKeys.nominationValidationDropdown.tr();
-    }
-    return null;
-  }
 }

@@ -1,3 +1,5 @@
+import 'package:evm_management_system/core/utils/json_map.dart';
+
 /// Data-transfer object for the user as returned by the API / stored locally.
 ///
 /// Kept separate from the [AuthUser] domain entity; conversion happens in
@@ -30,7 +32,7 @@ class UserModel {
     stateCode: json['stateCode'] as String? ?? json['state_code'] as String?,
     districtCode:
         json['districtCode'] as String? ?? json['district_code'] as String?,
-    electionId: _parseOptionalInt(json['electionId'] ?? json['election_id']),
+    electionId: parseOptionalInt(json['electionId'] ?? json['election_id']),
     psId:
         json['psId'] as String? ??
         json['ps_id'] as String? ??
@@ -45,12 +47,6 @@ class UserModel {
         json['polling_station_name'] as String? ??
         json['boothName'] as String?,
   );
-
-  static int? _parseOptionalInt(Object? raw) {
-    if (raw == null) return null;
-    if (raw is int) return raw;
-    return int.tryParse(raw.toString());
-  }
 
   final String id;
   final String officerId;

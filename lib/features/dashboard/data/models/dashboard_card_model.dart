@@ -1,3 +1,5 @@
+import 'package:evm_management_system/core/utils/json_map.dart';
+
 /// Master dashboard card from `GET /api/Masters/card-list`.
 class DashboardCardModel {
   const DashboardCardModel({
@@ -15,7 +17,7 @@ class DashboardCardModel {
 
   factory DashboardCardModel.fromJson(Map<String, dynamic> json) {
     return DashboardCardModel(
-      id: _asInt(json['ID'] ?? json['Id'] ?? json['id']) ?? 0,
+      id: parseOptionalInt(json['ID'] ?? json['Id'] ?? json['id']) ?? 0,
       categoryName: _str(json['CategoryName'] ?? json['categoryName']),
       categoryNameEn: _str(json['CategoryNameEn'] ?? json['categoryNameEn']),
       cardName: _str(json['CardName'] ?? json['cardName']),
@@ -65,11 +67,6 @@ class DashboardCardModel {
     return s.isEmpty ? null : s;
   }
 
-  static int? _asInt(Object? value) {
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    return int.tryParse(value?.toString() ?? '');
-  }
 
   static bool _asBool(Object? value, {bool defaultValue = false}) {
     if (value is bool) return value;

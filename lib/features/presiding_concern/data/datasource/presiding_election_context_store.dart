@@ -4,6 +4,7 @@ import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/core/utils/json_map.dart';
 
 /// Persists presiding-officer election context from login as a single source of truth.
 final class PresidingElectionContextStore {
@@ -204,28 +205,28 @@ final class PresidingElectionContextStore {
               ?.toString(),
       boothLat: _parseCoord(json['booth_lat'] ?? json['boothLat']),
       boothLong: _parseCoord(json['booth_long'] ?? json['boothLong']),
-      maleElectors: _parseElectors(
+      maleElectors: parseOptionalInt(
         _electorField(json, const <String>[
           'male_electors',
           'maleElectors',
           'MaleElectors',
         ]),
       ),
-      femaleElectors: _parseElectors(
+      femaleElectors: parseOptionalInt(
         _electorField(json, const <String>[
           'female_electors',
           'femaleElectors',
           'FemaleElectors',
         ]),
       ),
-      otherElectors: _parseElectors(
+      otherElectors: parseOptionalInt(
         _electorField(json, const <String>[
           'other_electors',
           'otherElectors',
           'OtherElectors',
         ]),
       ),
-      totalElectors: _parseElectors(
+      totalElectors: parseOptionalInt(
         _electorField(json, const <String>[
           'total_electors',
           'totalElectors',
@@ -259,12 +260,6 @@ final class PresidingElectionContextStore {
     return null;
   }
 
-  static int? _parseElectors(Object? raw) {
-    if (raw == null) return null;
-    if (raw is int) return raw;
-    if (raw is num) return raw.toInt();
-    return int.tryParse(raw.toString().trim());
-  }
 
   static int _parseElectionId(Object? raw) {
     if (raw is int) return raw;

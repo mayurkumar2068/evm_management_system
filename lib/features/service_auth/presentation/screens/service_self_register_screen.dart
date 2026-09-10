@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
+import 'package:evm_management_system/features/service_auth/presentation/utils/localized_auth_message.dart';
 import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
@@ -81,15 +82,6 @@ class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
     super.dispose();
   }
 
-  String _localizedAuthMessage(String message) {
-    if (message.startsWith('auth.') ||
-        message.startsWith('error.') ||
-        message.startsWith('service_auth.') ||
-        message.startsWith('common.')) {
-      return message.tr();
-    }
-    return message;
-  }
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
@@ -136,11 +128,11 @@ class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
         designation: designation,
       );
       if (!mounted) return;
-      AppSnackbar.success(context, _localizedAuthMessage(message));
+      AppSnackbar.success(context, localizedAuthMessage(message));
       Get.back<void>();
     } on ServiceAuthException catch (e) {
       if (!mounted) return;
-      setState(() => _error = _localizedAuthMessage(e.message));
+      setState(() => _error = localizedAuthMessage(e.message));
     } catch (_) {
       if (!mounted) return;
       setState(() => _error = LocaleKeys.serviceAuthGenericError.tr());
@@ -186,12 +178,12 @@ class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
       if (!mounted) return;
       final String toast = message == LocaleKeys.serviceAuthRegisterSuccess
           ? LocaleKeys.serviceAuthRegisterSuccessPo.tr()
-          : _localizedAuthMessage(message);
+          : localizedAuthMessage(message);
       AppSnackbar.success(context, toast);
       Get.back<void>();
     } on ServiceAuthException catch (e) {
       if (!mounted) return;
-      setState(() => _error = _localizedAuthMessage(e.message));
+      setState(() => _error = localizedAuthMessage(e.message));
     } catch (_) {
       if (!mounted) return;
       setState(() => _error = LocaleKeys.serviceAuthGenericError.tr());

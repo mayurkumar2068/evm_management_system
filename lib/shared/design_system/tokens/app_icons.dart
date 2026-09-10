@@ -17,15 +17,7 @@ abstract final class AppIcons {
   static const IconData search = Icons.search_outlined;
   static const IconData help = Icons.help_outline;
   static const IconData about = Icons.info_outline;
-  static const IconData logout = Icons.logout_outlined;
-  static const IconData flashOn = Icons.flash_on_outlined;
-  static const IconData flashOff = Icons.flash_off_outlined;
-  static const IconData switchCamera = Icons.cameraswitch_outlined;
   static const IconData error = Icons.error_outline;
   static const IconData empty = Icons.inbox_outlined;
-  static const IconData offline = Icons.cloud_off_outlined;
   static const IconData success = Icons.check_circle_outline;
-  static const IconData visibility = Icons.visibility_outlined;
-  static const IconData visibilityOff = Icons.visibility_off_outlined;
-  static const IconData fingerprint = Icons.fingerprint;
 }
