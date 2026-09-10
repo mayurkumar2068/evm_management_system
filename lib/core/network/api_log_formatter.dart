@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-/// Formats HTTP traffic for debug logs with redaction and size limits.
 abstract final class ApiLogFormatter {
   static const int _maxBodyChars = 2048;
 
@@ -21,7 +20,6 @@ abstract final class ApiLogFormatter {
     'token',
   };
 
-  /// Builds a multi-line request log block.
   static String formatRequest(RequestOptions options) {
     final StringBuffer buffer = StringBuffer()
       ..writeln('${options.method} ${_redactedUri(options.uri)}')
@@ -40,7 +38,6 @@ abstract final class ApiLogFormatter {
     return buffer.toString().trimRight();
   }
 
-  /// Builds a multi-line response log block including [statusCode].
   static String formatResponse(Response<dynamic> response) {
     final RequestOptions request = response.requestOptions;
     final StringBuffer buffer = StringBuffer()
@@ -50,7 +47,6 @@ abstract final class ApiLogFormatter {
     return buffer.toString().trimRight();
   }
 
-  /// Builds a multi-line error log block when Dio throws.
   static String formatError(DioException error) {
     final RequestOptions request = error.requestOptions;
     final StringBuffer buffer = StringBuffer()
@@ -67,9 +63,6 @@ abstract final class ApiLogFormatter {
     return buffer.toString().trimRight();
   }
 
-  /// [uri] with sensitive query values (e.g. `token`) masked — the request
-  /// line is logged separately from the already-redacted `query:`/`body:`
-  /// blocks below, so the raw URL must not carry secrets in the clear.
   static String _redactedUri(Uri uri) {
     if (uri.queryParameters.isEmpty) return uri.toString();
     final Map<String, String> redacted = <String, String>{

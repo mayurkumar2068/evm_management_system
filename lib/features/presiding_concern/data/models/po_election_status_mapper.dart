@@ -2,7 +2,6 @@ import 'package:evm_management_system/features/presiding_concern/data/config/tur
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Maps `po-status` API payload into presiding session entities.
 abstract final class PoElectionStatusMapper {
   static Map<String, TurnoutRecord> turnoutRecordsFromStatus(
     Map<String, dynamic> data,
@@ -86,16 +85,14 @@ abstract final class PoElectionStatusMapper {
     if (male == null && female == null && other == null && savedAt == null) {
       return null;
     }
-    // 0/0/0 with no timestamp = slot never filled on server — omit so we
-    // don't overwrite good local/API counts with empty zeros.
+
     if (savedAt == null &&
         (male ?? 0) == 0 &&
         (female ?? 0) == 0 &&
         (other ?? 0) == 0) {
       return null;
     }
-    // Live poll: backend may return timestamp with empty/null counts.
-    // Treat 0/0/0 as "not submitted" so UI doesn't show a misleading time.
+
     if (slotId == TurnoutSlotIds.livePollInfo &&
         (male ?? 0) == 0 &&
         (female ?? 0) == 0 &&
@@ -118,10 +115,10 @@ abstract final class PoElectionStatusMapper {
       thirdGender: other ?? 0,
       savedAt: savedAt,
       pendingSync: false,
-      // Live poll remains editable during polling; it only locks on explicit
-      // milestone submit (2-2 hourly/live complete), not merely on refresh.
-      isLocked:
-          slotId == TurnoutSlotIds.livePollInfo ? false : (savedAt != null),
+
+      isLocked: slotId == TurnoutSlotIds.livePollInfo
+          ? false
+          : (savedAt != null),
     );
   }
 
@@ -157,10 +154,14 @@ abstract final class PoElectionStatusMapper {
         isCompleted: _bool(data[PoElectionResponseFields.isPollStarted]),
         completedAt: _date(data[PoElectionResponseFields.pollStartedTime]),
       ),
-      PresidingMilestoneIds.twoHourlyInfo =>
-        _twoHourlyStatus(data, current: current),
-      PresidingMilestoneIds.livePollInfo =>
-        _livePollStatus(data, current: current),
+      PresidingMilestoneIds.twoHourlyInfo => _twoHourlyStatus(
+        data,
+        current: current,
+      ),
+      PresidingMilestoneIds.livePollInfo => _livePollStatus(
+        data,
+        current: current,
+      ),
       PresidingMilestoneIds.pollEnd => _MilestoneStatus(
         isCompleted: _bool(data[PoElectionResponseFields.isPollEnded]),
         completedAt: _date(data[PoElectionResponseFields.pollEndedTime]),
@@ -179,8 +180,6 @@ abstract final class PoElectionStatusMapper {
     };
   }
 
-  /// Clears stale local "completed" when server has no slot times.
-  /// Keeps finish-state when local already completed, or when poll has ended.
   static _MilestoneStatus? _twoHourlyStatus(
     Map<String, dynamic> data, {
     required PresidingMilestone current,
@@ -202,18 +201,15 @@ abstract final class PoElectionStatusMapper {
       );
     }
     if (latest == null) {
-      // Keep a local finish; don't wipe just because status omitted slot times.
       if (current.isCompleted) return null;
       return const _MilestoneStatus(isCompleted: false);
     }
     if (!current.isCompleted) {
-      // Slots may exist, but finish button not pressed yet.
       return null;
     }
     return _MilestoneStatus(isCompleted: true, completedAt: latest);
   }
 
-  /// Live uses only PollLive* fields — never copies 2–2 hourly timestamp.
   static _MilestoneStatus? _livePollStatus(
     Map<String, dynamic> data, {
     required PresidingMilestone current,
@@ -245,7 +241,6 @@ abstract final class PoElectionStatusMapper {
       );
     }
     if (!hasLiveEvidence) {
-      // 0/0/0 is valid after finish — do not reopen the live button.
       if (current.isCompleted) return null;
       return const _MilestoneStatus(isCompleted: false);
     }

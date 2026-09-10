@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
 import 'package:evm_management_system/core/utils/json_map.dart';
@@ -15,6 +13,7 @@ import 'package:evm_management_system/features/dashboard/data/dashboard_cards_re
 import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
 import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:evm_management_system/shared/models/activity_event.dart';
@@ -38,18 +37,15 @@ class DashboardState {
   final String designation;
   final String district;
 
-  /// Pending survey syncs / alerts badge count.
   final int pendingCount;
   final List<DashboardStat> stats;
   final List<DashboardService> services;
   final List<ActivityEvent> activity;
 
-  /// Category tab labels from Masters API (empty → locale fallback).
   final String voterServicesLabel;
   final String electionServicesLabel;
 }
 
-/// Builds dashboard view-model from session + local survey submissions.
 class DashboardController extends GetxController {
   DashboardController({DashboardCardsRepository? cardsRepository})
     : _cardsRepository = cardsRepository;
@@ -129,8 +125,6 @@ class DashboardController extends GetxController {
   }
 
   Future<void> _rebuildAsync(int token) async {
-    // EasyLocalization loads JSON async after first frame; wait until keys resolve
-    // so we don't bake raw key strings into dashboard labels.
     for (int i = 0; i < 40; i++) {
       if (token != _rebuildToken || isClosed) return;
       if (LocaleKeys.dashboardGuest.tr() != LocaleKeys.dashboardGuest) break;
@@ -140,8 +134,6 @@ class DashboardController extends GetxController {
 
     final String surveyWebUrl = AppServices.config.surveyWebBaseUrl;
     final String voterRegistrationUrl = AppServices.config.voterRegistrationUrl;
-    final String expenditureUrl = AppServices.config.candidateExpenditureUrl;
-    final String emsUrl = AppServices.config.emsUrl;
     final bool preferHindi =
         AppServices.settings.locale.value.languageCode.toLowerCase() == 'hi';
     final ServiceSession? session = AppServices.serviceAuth.session.value;
@@ -152,8 +144,9 @@ class DashboardController extends GetxController {
         authUser?.isGuest == true &&
         (session == null || session.name.trim().isEmpty);
 
-    final List<WebFormSubmission> submissions =
-        await AppServices.webSubmissionRepository.all();
+    final List<WebFormSubmission> submissions = await AppServices
+        .webSubmissionRepository
+        .all();
     if (token != _rebuildToken || isClosed) return;
 
     final List<DashboardCardModel> apiCards = await _cards.fetchCards();
@@ -170,7 +163,6 @@ class DashboardController extends GetxController {
         preferHindi: preferHindi,
         surveyWebUrl: surveyWebUrl,
         voterRegistrationUrl: voterRegistrationUrl,
-        expenditureUrl: expenditureUrl,
       );
       final ({String? voter, String? election}) labels =
           DashboardCardMapper.categoryLabels(
@@ -183,8 +175,6 @@ class DashboardController extends GetxController {
       services = _buildServices(
         surveyWebUrl: surveyWebUrl,
         voterRegistrationUrl: voterRegistrationUrl,
-        expenditureUrl: expenditureUrl,
-        emsUrl: emsUrl,
       );
     }
 
@@ -249,10 +239,7 @@ class DashboardController extends GetxController {
     );
   }
 
-  static List<DashboardStat> _buildStats(
-    int total,
-    _SubmissionCounts counts,
-  ) {
+  static List<DashboardStat> _buildStats(int total, _SubmissionCounts counts) {
     return <DashboardStat>[
       DashboardStat(
         label: LocaleKeys.dashboardStatSurveysTotal.tr(),
@@ -288,15 +275,12 @@ class DashboardController extends GetxController {
   static List<DashboardService> _buildServices({
     required String surveyWebUrl,
     required String voterRegistrationUrl,
-    required String expenditureUrl,
-    required String emsUrl,
   }) {
     final bool showRegistration = Get.isRegistered<AppFeatureFlagsController>()
         ? AppServices.featureFlags.showRegistration.value
         : true;
 
     return <DashboardService>[
-      // Tab 1 — Voter Services
       if (showRegistration)
         DashboardService(
           title: LocaleKeys.serviceVoterRegistrationTitle.tr(),
@@ -319,43 +303,6 @@ class DashboardController extends GetxController {
         routeName: AppRoute.voterSearch.path,
         requiresServiceLogin: false,
       ),
-      if (!kHideEms)
-        DashboardService(
-          title: LocaleKeys.serviceEmsTitle.tr(),
-          desc: '',
-          icon: Icons.dns_outlined,
-          color: AppColors.primaryBright,
-          url: emsUrl,
-          category: DashboardCategory.voterServices,
-          requiresServiceLogin: false,
-          passSessionContext: false,
-          openAsExternalPortal: true,
-        ),
-      // Tab 2 — About Elections
-      if (!kHideOnlineNomination)
-        DashboardService(
-          title: LocaleKeys.serviceOnlineNominationTitle.tr(),
-          desc: LocaleKeys.serviceOnlineNominationDesc.tr(),
-          icon: Icons.how_to_reg_rounded,
-          color: AppColors.green,
-          url: '',
-          category: DashboardCategory.aboutElections,
-          routeName: AppRoute.onlineNominationHome.path,
-          requiresServiceLogin: false,
-        ),
-      if (!kHideExpenditureAccount)
-        DashboardService(
-          title: LocaleKeys.serviceExpenditureTitle.tr(),
-          desc: '',
-          icon: Icons.account_balance_wallet_outlined,
-          color: AppColors.saffron,
-          url: expenditureUrl,
-          category: DashboardCategory.aboutElections,
-          requiresServiceLogin: true,
-          passSessionContext: false,
-          openAsExternalPortal: true,
-          requiredLoginKind: ServiceLoginKind.survey,
-        ),
       DashboardService(
         title: LocaleKeys.serviceBoothTitle.tr(),
         desc: '',
@@ -425,17 +372,14 @@ class DashboardController extends GetxController {
     return LocaleKeys.dashboardDistrictUnset.tr();
   }
 
-
-  /// Recent activity from locally tracked survey / web form submissions.
   static List<ActivityEvent> _activityFromSubmissions(
     List<WebFormSubmission> submissions,
   ) {
     final List<WebFormSubmission> sorted =
-        List<WebFormSubmission>.from(submissions)
-          ..sort(
-            (WebFormSubmission a, WebFormSubmission b) =>
-                b.createdAt.compareTo(a.createdAt),
-          );
+        List<WebFormSubmission>.from(submissions)..sort(
+          (WebFormSubmission a, WebFormSubmission b) =>
+              b.createdAt.compareTo(a.createdAt),
+        );
 
     return <ActivityEvent>[
       for (final WebFormSubmission s in sorted)

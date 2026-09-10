@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 
 enum AppButtonVariant { primary, secondary, outline, text, danger }
 
-/// The single button used across the app. Encapsulates variants, loading and
-/// disabled states so no screen builds raw [ElevatedButton]s.
 class AppButton extends StatelessWidget {
   const AppButton({
     required this.label,

@@ -3,7 +3,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_radius.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Shared InputDecoration for dropdown fields.
 abstract final class AppFieldDecoration {
   static InputDecoration dropdown({
     required String labelText,
@@ -60,7 +59,6 @@ abstract final class AppFieldDecoration {
   }
 }
 
-/// Reusable Dropdown Widget
 class AppDropdown<T> extends StatelessWidget {
   const AppDropdown({
     super.key,

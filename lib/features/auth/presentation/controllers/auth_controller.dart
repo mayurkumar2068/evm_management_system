@@ -15,8 +15,6 @@ import 'package:evm_management_system/features/auth/presentation/states/auth_sta
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// GetX controller that owns authentication state and exposes the only
-/// methods the UI may call. Business logic lives in use cases.
 class AuthController extends GetxController {
   final Rx<AuthState> authState = const AuthState.unknown().obs;
   final Rxn<bool> biometricEnabled = Rxn<bool>();
@@ -36,7 +34,6 @@ class AuthController extends GetxController {
     }
   }
 
-  /// Restores any persisted session on app start.
   Future<void> restoreSession() async {
     final bool valid = await AuthModule.repository.hasValidSession();
     if (valid) {
@@ -47,7 +44,7 @@ class AuthController extends GetxController {
       );
       if (restored.isAuthenticated) {
         final AuthUser? user = restored.user;
-        // Replace legacy hardcoded guest identity ("राजेश शर्मा").
+
         if (user != null &&
             (user.isGuest ||
                 user.fullName.trim() == 'राजेश शर्मा' ||
@@ -75,7 +72,6 @@ class AuthController extends GetxController {
     designation: LocaleKeys.dashboardRole.tr(),
   );
 
-  /// Enters the app without a login by establishing a local guest session.
   Future<void> continueAsGuest() async {
     final AuthUser guest = _guestUser();
     await AuthModule.repository.establishLocalSession(guest);
@@ -130,7 +126,6 @@ class AuthController extends GetxController {
   }
 
   Future<void> signOut() async {
-    // Clear local session / tokens only. Do not await remote logout.
     try {
       await AppServices.serviceAuth.signOut();
     } catch (_) {}
@@ -138,19 +133,14 @@ class AuthController extends GetxController {
       await Get.find<WebViewCookieService>().clearSessionCookiesFor(
         AppServices.config,
       );
-    } catch (_) {
-      // WebView cookie manager may be unavailable during teardown.
-    }
+    } catch (_) {}
     try {
       await AuthModule.logout(const NoParams());
     } catch (_) {}
 
-    // Single navigation via auth worker → AuthNavigationGuard (avoid double
-    // Get.offAllNamed which disposes routes mid-update and crashes).
     authState.value = const AuthState.unauthenticated();
   }
 
-  /// Invoked when the session is invalidated externally (e.g. 401 / timeout).
   void onSessionExpired() =>
       authState.value = const AuthState.unauthenticated();
 }

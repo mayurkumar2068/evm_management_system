@@ -2,8 +2,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_colors.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter/material.dart';
 
-/// Small rounded-square icon affordance used in light top bars (filter,
-/// download, etc.). Shared so the same chrome isn't re-declared per screen.
 class AppSquareIconButton extends StatelessWidget {
   const AppSquareIconButton({
     required this.icon,

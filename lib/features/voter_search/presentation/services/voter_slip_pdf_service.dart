@@ -12,9 +12,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// Builds / previews the SEC voter slip as a PNG image (same layout as before).
 abstract final class VoterSlipPdfService {
-  /// Opens in-app preview with save / share as image.
   static Future<void> previewSlip({
     required VoterElector elector,
     String? photoBase64,
@@ -37,14 +35,12 @@ abstract final class VoterSlipPdfService {
     );
   }
 
-  /// Alias kept for older call sites.
   static Future<void> shareSlip({
     required VoterElector elector,
     String? photoBase64,
   }) => previewSlip(elector: elector, photoBase64: photoBase64);
 }
 
-/// Full-screen slip preview — same header/back pattern as voter search.
 class VoterSlipPreviewPage extends StatefulWidget {
   const VoterSlipPreviewPage({
     required this.elector,

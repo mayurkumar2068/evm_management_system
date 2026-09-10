@@ -1,12 +1,9 @@
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-/// Structured logger for WebView lifecycle, navigation, cookie, and SSL events.
 class WebViewLogger {
-  /// Creates a WebView logger.
   const WebViewLogger();
 
-  /// Logs the initial request that bootstraps the WebView.
   void logInitialRequest({
     required URLRequest request,
     required Map<String, String> headers,
@@ -18,7 +15,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs a navigation policy decision.
   void logNavigationDecision({
     required Uri uri,
     required String reason,
@@ -34,22 +30,18 @@ class WebViewLogger {
     );
   }
 
-  /// Logs that a new page started loading.
   void logLoadStart(Uri? uri) {
     AppLogger.i('[WebView] load start url=${uri ?? 'unknown'}');
   }
 
-  /// Logs that a page finished loading.
   void logLoadStop(Uri? uri) {
     AppLogger.i('[WebView] load stop url=${uri ?? 'unknown'}');
   }
 
-  /// Logs incremental loading progress.
   void logProgress({required int progress, Uri? uri}) {
     AppLogger.d('[WebView] progress=$progress url=${uri ?? 'unknown'}');
   }
 
-  /// Logs a redirect observation.
   void logRedirect({
     required Uri? from,
     required Uri? to,
@@ -61,7 +53,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs cookies for a given origin without exposing secret values.
   void logCookies({
     required Uri uri,
     required List<Cookie> cookies,
@@ -73,7 +64,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs that cookie writes completed for an origin.
   void logCookieBatchWrite({
     required Uri uri,
     required List<String> names,
@@ -84,7 +74,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs that a cookie write completed.
   void logCookieWrite({
     required Uri uri,
     required String name,
@@ -98,7 +87,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs an SSL trust decision.
   void logSslDecision({
     required String host,
     required String action,
@@ -111,7 +99,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs an HTTP response for the main document.
   void logHttpResponse({
     required Uri? uri,
     required int? statusCode,
@@ -124,7 +111,6 @@ class WebViewLogger {
     );
   }
 
-  /// Logs a WebView error event.
   void logError({
     required Uri? uri,
     required String category,
@@ -140,12 +126,10 @@ class WebViewLogger {
     );
   }
 
-  /// Logs arbitrary console-style diagnostics from the page.
   void logConsole({required String level, required String message}) {
     AppLogger.d('[WebView] console level=$level message=$message');
   }
 
-  /// Returns a copy of headers with secret values redacted.
   Map<String, String> _sanitizeHeaders(Map<String, String>? headers) {
     if (headers == null) {
       return <String, String>{};
@@ -165,7 +149,6 @@ class WebViewLogger {
     return sanitized;
   }
 
-  /// Serializes a cookie without exposing the raw value.
   String _sanitizeCookie(Cookie cookie) {
     return '{name: ${cookie.name}, domain: ${cookie.domain}, '
         'path: ${cookie.path}, secure: ${cookie.isSecure}, '

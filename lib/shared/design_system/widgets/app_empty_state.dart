@@ -5,7 +5,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_text_style
 import 'package:evm_management_system/shared/design_system/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 
-/// Friendly placeholder shown when a list or screen has no data.
 class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
     required this.title,

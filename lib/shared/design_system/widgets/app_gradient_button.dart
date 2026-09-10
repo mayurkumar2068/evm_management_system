@@ -4,9 +4,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_radius.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Primary call-to-action button rendered with the brand gradient and an
-/// optional leading icon / loading state. Used for hero actions like login,
-/// save device, etc.
 class AppGradientButton extends StatelessWidget {
   const AppGradientButton({
     required this.label,

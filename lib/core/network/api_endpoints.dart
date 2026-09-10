@@ -1,66 +1,42 @@
-/// Centralized registry of relative API paths.
-///
-/// Base URLs come from [EnvironmentConfig]; only relative paths live here so
-/// there is a single source of truth and no hardcoded hosts in this file.
 abstract final class ApiEndpoints {
-  // Auth
   static const String login = '/auth/login';
   static const String refresh = '/auth/refresh';
   static const String logout = '/auth/logout';
   static const String profile = '/auth/profile';
 
-  // Survey service auth + masters
-  // Base URL is expected to include `/api` (e.g. http://host/api)
   static const String surveyLoginPass = '/Account/login-survey-pass';
 
-  /// OTP login (Booth/PS Survey) — `POST /api/Account/is-ps-user-exists-otp`.
   static const String surveyIsPsUserExistsOtp =
       '/Account/is-ps-user-exists-otp';
 
-  /// OTP login (Booth/PS Survey) — `POST /api/Account/ps-login-with-otp`.
   static const String surveyPsLoginWithOtp = '/Account/ps-login-with-otp';
 
-  /// Self-registration (Booth/PS Survey) — `POST /api/Account/register-ps-user`.
   static const String surveyRegisterPsUser = '/Account/register-ps-user';
 
-  // Logout — see `PoElectionEndpoints.poLogout` / `PoElectionEndpoints.psLogout`
-  // via `PoPartyRemoteDatasource.logout`, which picks the endpoint by login kind.
   static String surveyDistrictById(String id) => '/Masters/districts/$id';
 }
 
-/// PO Election API paths (OpenAPI: POElectionAPI v1).
-///
-/// Base URL: [EnvironmentConfig.poElectionApiBaseUrl] (`PO_ELECTION_API_BASE_URL`).
 abstract final class PoElectionEndpoints {
-  // Account / Auth
   static const String loginPoPass = '/api/Account/login-po-pass';
-  /// Self-registration (Presiding Officer) — `POST /api/Account/register-po-user`.
+
   static const String registerPoUser = '/api/Account/register-po-user';
   static const String poLogout = '/api/Account/po-logout';
 
-  /// Logout for Booth/PS Survey users (password or OTP login) — the
-  /// counterpart of [poLogout] for `ServiceLoginKind.survey` sessions.
   static const String psLogout = '/api/Account/ps-logout';
-  /// POST `/api/POElection/po-status`
+
   static const String poStatus = '/api/POElection/po-status';
 
-  /// POST `/api/POElection/po-party-details`
   static const String poPartyDetails = '/api/POElection/po-party-details';
 
-  /// POST `/api/POElection/save-po-party`
   static const String savePoParty = '/api/POElection/save-po-party';
 
-  /// POST `/api/POElection/po-details` — PO name/mobile profile.
   static const String poDetails = '/api/POElection/po-details';
 
-  /// POST `/api/POElection/po-send-otp`
   static const String poSendOtp = '/api/POElection/po-send-otp';
 
-  /// POST `/api/POElection/po-detail-save-with-otp`
   static const String poDetailSaveWithOtp =
       '/api/POElection/po-detail-save-with-otp';
 
-  // Milestones
   static const String savePollLive = '/api/POElection/save-poll-live';
   static const String insertDepartFromHome =
       '/api/POElection/insert-depart-from-home';
@@ -84,25 +60,7 @@ abstract final class PoElectionEndpoints {
   static const String insertMaterialSubmitted =
       '/api/POElection/insert-material-submitted';
 
-  /// Public (no-auth) app feature flags for guest dashboard tiles.
-  /// Expected JSON includes `showRegistration` / `ShowRegistration`.
   static const String appFeatureFlags = '/api/App/feature-flags';
 
-  /// Guest dashboard service cards — `GET /api/Masters/card-list`.
   static const String mastersCardList = '/api/Masters/card-list';
-}
-
-/// Online Nomination (OLINAPI) urban master lookup paths.
-///
-/// Base URL: [EnvironmentConfig.olinApiBaseUrl] (`OLIN_API_BASE_URL`).
-abstract final class OlinEndpoints {
-  static const String getElectionUrban = '/Master/GetElectionUrban';
-  static const String getPostUrban = '/Master/GetPostUrban';
-  static const String getDistrictUrban = '/Master/GetDistrictUrban';
-
-  /// Spelling matches backend route (`GetUtbanBody`).
-  static const String getUtbanBody = '/Master/GetUtbanBody';
-  static const String getUrbanWard = '/Master/GetUrbanWard';
-  static const String getUbPresident = '/Master/Get_UB_President';
-  static const String insertUrbanReg = '/Master/Insert_Urban_Reg';
 }

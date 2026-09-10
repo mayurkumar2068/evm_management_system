@@ -3,10 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 
-/// Always-on console logs for PO Election API (GET/POST): URL, body, response.
-///
-/// Uses [AppLogger.w] so logs appear even when `ENABLE_LOGGING=false` (prod.env),
-/// where [AppLogger.i] is filtered out.
 final class PoApiLoggingInterceptor extends Interceptor {
   PoApiLoggingInterceptor({this.maxBodyChars = 8000});
 
@@ -69,9 +65,6 @@ final class PoApiLoggingInterceptor extends Interceptor {
     handler.next(err);
   }
 
-  /// [uri] with any sensitive query values (token, etc.) masked — the request
-  /// line is logged separately from the already-redacted `query:`/`body:`
-  /// maps below, so the raw URL must not carry the token in the clear.
   String _redactedUri(Uri uri) {
     if (uri.queryParameters.isEmpty) return uri.toString();
     final Map<String, String> redacted = <String, String>{
@@ -87,8 +80,7 @@ final class PoApiLoggingInterceptor extends Interceptor {
     if (data == null) return '<empty>';
     try {
       final Object? redacted = _redact(data);
-      final String text =
-          redacted is String ? redacted : jsonEncode(redacted);
+      final String text = redacted is String ? redacted : jsonEncode(redacted);
       if (text.length <= maxBodyChars) return text;
       return '${text.substring(0, maxBodyChars)}… [truncated ${text.length} chars]';
     } catch (_) {

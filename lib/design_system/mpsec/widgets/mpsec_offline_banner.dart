@@ -1,7 +1,6 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Orange warning strip shown when offline mode is active.
 class MpSecOfflineBanner extends StatelessWidget {
   const MpSecOfflineBanner({required this.message, super.key});
 

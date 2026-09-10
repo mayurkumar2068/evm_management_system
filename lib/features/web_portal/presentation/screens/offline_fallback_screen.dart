@@ -2,7 +2,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// A formal and attractive fallback screen for offline data collection.
 class OfflineFallbackScreen extends StatefulWidget {
   const OfflineFallbackScreen({required this.title, super.key});
 
@@ -20,7 +19,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
 
   bool _isVerified = false;
 
-  // Formal questions for the inspection/survey
   final Map<String, bool?> _checklist = {
     'Is the EVM warehouse physically secured?': null,
     'Are CCTV cameras operational in the area?': null,
@@ -28,7 +26,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
     'Are authorized personnel logs maintained?': null,
   };
 
-  // Professional District Suggestions
   final List<String> _districts = [
     'BHOPAL',
     'INDORE',
@@ -99,7 +96,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    // --- Location Section ---
                     _buildSectionHeader(
                       Icons.location_on_rounded,
                       'Location Details',
@@ -122,7 +118,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // --- Checklist Section ---
                     _buildSectionHeader(
                       Icons.fact_check_rounded,
                       'Safety & Security Checklist',
@@ -131,7 +126,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
                     _buildChecklistCard(),
                     const SizedBox(height: 32),
 
-                    // --- Remarks Section ---
                     _buildSectionHeader(
                       Icons.rate_review_rounded,
                       'Additional Observations',
@@ -147,7 +141,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // --- Verification ---
                     _buildVerificationToggle(),
                     const SizedBox(height: 40),
 
@@ -334,7 +327,6 @@ class _OfflineFallbackScreenState extends State<OfflineFallbackScreen> {
   void _submitForm() {
     if (!_formKey.currentState!.validate()) return;
 
-    // Logic to persist entry in Local Database
     AppSnackbar.success(context, 'Report Saved Offline Successfully');
     Get.back<dynamic>();
   }

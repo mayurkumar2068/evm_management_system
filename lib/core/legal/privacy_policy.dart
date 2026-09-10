@@ -28,10 +28,7 @@ abstract final class PrivacyPolicy {
   }) async {
     final bool ok = await launcher.launch(resolveUri());
     if (!ok && context.mounted) {
-      AppSnackbar.error(
-        context,
-        LocaleKeys.legalPrivacyPolicyOpenFailed.tr(),
-      );
+      AppSnackbar.error(context, LocaleKeys.legalPrivacyPolicyOpenFailed.tr());
     }
   }
 }

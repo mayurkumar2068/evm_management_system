@@ -1,14 +1,7 @@
 import 'dart:convert';
 
-/// Theme preference forwarded to the embedded web app.
 enum WebThemeMode { light, dark, system }
 
-/// The complete, pre-authenticated context handed to a web page BEFORE it
-/// loads — via HTTP headers, cookies and an injected `window.__APP_CONTEXT__`.
-///
-/// Tokens are delivered through headers/cookies (never logged, never appended
-/// to the URL by the engine). The legacy `?token=&lang=` query params are still
-/// added at the call site for backward compatibility with the survey web app.
 class WebSessionContext {
   const WebSessionContext({
     this.accessToken,
@@ -35,7 +28,7 @@ class WebSessionContext {
 
   final String? accessToken;
   final String? refreshToken;
-  final String language; // 'hi' | 'en'
+  final String language;
   final WebThemeMode theme;
   final String deviceId;
   final String? officerId;
@@ -46,12 +39,12 @@ class WebSessionContext {
   final String? urbanRural;
   final double? boothLat;
   final double? boothLong;
-  /// POElectionAPI root for survey_web (`PO_ELECTION_API_BASE_URL`).
+
   final String? apiBaseUrl;
   final String appVersion;
   final String buildNumber;
-  final String platform; // 'android' | 'ios'
-  final String environment; // 'dev' | 'uat' | 'prod'
+  final String platform;
+  final String environment;
   final String timezone;
   final String correlationId;
 
@@ -61,8 +54,6 @@ class WebSessionContext {
     WebThemeMode.system => 'system',
   };
 
-  /// Request headers attached to every navigation + sub-resource of the page.
-  /// Authorization is included here (header) rather than in the URL.
   Map<String, String> toHeaders() {
     return <String, String>{
       if (accessToken != null && accessToken!.isNotEmpty)
@@ -81,8 +72,6 @@ class WebSessionContext {
     };
   }
 
-  /// Non-secret context exposed to JS as `window.__APP_CONTEXT__`.
-  /// The access token is intentionally omitted from the JS surface.
   Map<String, dynamic> toJsContext() {
     return <String, dynamic>{
       'language': language,
@@ -96,7 +85,8 @@ class WebSessionContext {
       'urbanRural': urbanRural,
       if (boothLat != null) 'boothLat': boothLat,
       if (boothLong != null) 'boothLong': boothLong,
-      if (apiBaseUrl != null && apiBaseUrl!.isNotEmpty) 'apiBaseUrl': apiBaseUrl,
+      if (apiBaseUrl != null && apiBaseUrl!.isNotEmpty)
+        'apiBaseUrl': apiBaseUrl,
       'appVersion': appVersion,
       'buildNumber': buildNumber,
       'platform': platform,

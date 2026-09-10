@@ -21,7 +21,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:get/get.dart' hide Trans, Response;
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// Thrown when a service login fails; carries a user-facing message.
 class ServiceAuthException implements Exception {
   const ServiceAuthException(this.message);
   final String message;
@@ -30,7 +29,6 @@ class ServiceAuthException implements Exception {
   String toString() => message;
 }
 
-/// Holds the current service session (token) in memory and persists it to secure storage.
 class ServiceAuthController extends GetxController {
   final Rxn<ServiceSession> session = Rxn<ServiceSession>();
 
@@ -52,13 +50,12 @@ class ServiceAuthController extends GetxController {
         await AppServices.secureStorage.read(
           SecureStorageKeys.serviceSession,
         ) ??
-        // Legacy: older builds stored service login under userSession.
         await AppServices.secureStorage.read(SecureStorageKeys.userSession);
     if (raw != null) {
       try {
         final Map<String, dynamic> json =
             jsonDecode(raw) as Map<String, dynamic>;
-        // Ignore app-auth UserModel payloads (no service token).
+
         if (json['token'] is! String || (json['token'] as String).isEmpty) {
           return;
         }
@@ -68,7 +65,7 @@ class ServiceAuthController extends GetxController {
           accessToken: restored.token,
           ttlHours: restored.ttlHours ?? 24,
         );
-        // Migrate legacy key → dedicated service session key.
+
         await AppServices.secureStorage.write(
           SecureStorageKeys.serviceSession,
           jsonEncode(restored.toJson()),
@@ -77,14 +74,10 @@ class ServiceAuthController extends GetxController {
         if (restored.kind == ServiceLoginKind.presiding) {
           PresidingElectionContextStore.warmFromServiceSession(restored);
           unawaited(
-            PresidingElectionContextStore(
-              AppServices.secureStorage,
-            ).read(),
+            PresidingElectionContextStore(AppServices.secureStorage).read(),
           );
         }
-      } catch (_) {
-        // Corrupt payload — do not wipe other auth keys here.
-      }
+      } catch (_) {}
     }
   }
 
@@ -98,7 +91,6 @@ class ServiceAuthController extends GetxController {
 
   Dio _poElectionDio() => PoElectionApiClient.instance(AppServices.config);
 
-  /// Logs in a Presiding Officer using the specialized PO Election API.
   Future<ServiceSession> signInPresidingOfficer({
     required String userId,
     required String password,
@@ -193,13 +185,14 @@ class ServiceAuthController extends GetxController {
       ]),
     );
 
-    // Feature flags — PO-only screens (e.g. Live Voting) stay hidden unless
-    // the login API explicitly returns `true`.
     final bool isIpbms = _parseBool(
       mapValueByKeys(data, <String>[PoLoginResponseFields.isIpbms, 'isIPBMS']),
     );
     final bool isLivePoll = _parseBool(
-      mapValueByKeys(data, <String>[PoLoginResponseFields.isLivePoll, 'isLivePoll']),
+      mapValueByKeys(data, <String>[
+        PoLoginResponseFields.isLivePoll,
+        'isLivePoll',
+      ]),
     );
 
     final ServiceSession next = ServiceSession(
@@ -259,8 +252,7 @@ class ServiceAuthController extends GetxController {
 
     await _saveSession(next);
     PresidingElectionContextStore.warmFromServiceSession(next);
-    // Keep offline milestone/turnout data across re-login of the same booth.
-    // Only wipe when election / PS identity changes.
+
     final bool identityChanged =
         previous == null ||
         previous.electionId != context.electionId ||
@@ -273,7 +265,7 @@ class ServiceAuthController extends GetxController {
     try {
       await PresidingConcernModule.repository.applyElectionContext(context);
     } catch (_) {}
-    // Status pull happens once via watchSession warm-sync (sync + po-status fetch).
+
     return next;
   }
 
@@ -322,7 +314,6 @@ class ServiceAuthController extends GetxController {
     );
   }
 
-  /// Registers a Booth/PS Survey officer (`POST /api/Account/register-ps-user`).
   Future<String> registerPsUser({
     required String mobileNo,
     required String name,
@@ -348,7 +339,6 @@ class ServiceAuthController extends GetxController {
     return _requireRegistrationSuccess(res);
   }
 
-  /// Registers a Presiding Officer (`POST /api/Account/register-po-user`).
   Future<String> registerPoUser({
     required String userName,
     required String password,
@@ -372,7 +362,6 @@ class ServiceAuthController extends GetxController {
     return _requireRegistrationSuccess(res);
   }
 
-  /// Parses `{ Status, Message }` registration envelopes.
   String _requireRegistrationSuccess(Response<dynamic> res) {
     final dynamic body = res.data;
     final Map<String, dynamic> envelope = body is Map<String, dynamic>
@@ -386,13 +375,9 @@ class ServiceAuthController extends GetxController {
         message.isNotEmpty ? message : LocaleKeys.serviceAuthGenericError,
       );
     }
-    return message.isNotEmpty
-        ? message
-        : LocaleKeys.serviceAuthRegisterSuccess;
+    return message.isNotEmpty ? message : LocaleKeys.serviceAuthRegisterSuccess;
   }
 
-  /// Sends a login OTP to [mobileNo] for the Booth/PS Survey OTP login.
-  /// Throws [ServiceAuthException] on failure.
   Future<void> sendSurveyLoginOtp({required String mobileNo}) async {
     final Response<dynamic> res;
     try {
@@ -421,7 +406,6 @@ class ServiceAuthController extends GetxController {
     }
   }
 
-  /// Logs in a Booth/PS Survey user via mobile number + OTP.
   Future<ServiceSession> signInSurveyUserWithOtp({
     required String mobileNo,
     required String otp,
@@ -463,17 +447,6 @@ class ServiceAuthController extends GetxController {
     );
   }
 
-  /// Best-effort remote logout of whatever session is currently active
-  /// *before* it gets overwritten by [newToken].
-  ///
-  /// [session] holds exactly one [ServiceSession] at a time. If an officer
-  /// logs in as PO and then, without signing out, logs into Survey (or vice
-  /// versa) — or simply re-logs in as a different user — the previous
-  /// session is silently replaced in local storage. The server is never
-  /// told, so its `SessionId` is never released and stays "active" in the
-  /// DB until it naturally expires. Call this right before saving a new
-  /// session so the old one is properly closed first — mirrors the same
-  /// logout call [signOut] uses.
   Future<void> _logoutStaleSessionIfSwitching(String newToken) async {
     final ServiceSession? existing = session.value;
     if (existing == null ||
@@ -482,8 +455,6 @@ class ServiceAuthController extends GetxController {
       return;
     }
     try {
-      // `session.value` is still `existing` here, so the resolved token
-      // (and its SessionId claim) is the OLD session's, not the new one.
       await PoPartyRemoteDatasource(AppServices.config).logout(
         poUserId: existing.userId,
         sessionId: null,
@@ -494,7 +465,6 @@ class ServiceAuthController extends GetxController {
     }
   }
 
-  /// Shared session assembly for both password and OTP survey logins.
   Future<ServiceSession> _buildSurveySession({
     required Map<String, dynamic> data,
     required String token,
@@ -602,8 +572,6 @@ class ServiceAuthController extends GetxController {
     );
   }
 
-  /// Parses PO login boolean feature flags; missing/unknown → `false`
-  /// (feature hidden by default). Intentionally stricter than [parseLooseBool].
   bool _parseBool(Object? value) {
     if (value is bool) return value;
     if (value == null) return false;
@@ -635,17 +603,10 @@ class ServiceAuthController extends GetxController {
     return LocaleKeys.errorNetwork;
   }
 
-  /// Clears local PO/service session. Returns `true` when remote logout succeeded.
-  ///
-  /// Authenticates with whatever token is in the active [ServiceSession]
-  /// (survey or PO; see [PoElectionAuth.accessToken]) and calls the endpoint
-  /// matching its [ServiceSession.kind] — `ps-logout` for Booth/PS Survey,
-  /// `po-logout` for Presiding Officer.
   Future<bool> signOut() async {
     bool remoteOk = false;
     final ServiceSession? current = session.value;
     if (current != null && current.userId.trim().isNotEmpty) {
-      // Best-effort remote logout; local clear always continues either way.
       remoteOk = await PoPartyRemoteDatasource(AppServices.config).logout(
         poUserId: current.userId,
         sessionId: null,
@@ -658,13 +619,12 @@ class ServiceAuthController extends GetxController {
     PoElectionApiClient.reset();
     await AppServices.tokenVault.clear();
     await AppServices.secureStorage.delete(SecureStorageKeys.serviceSession);
-    // Legacy key cleanup (older builds stored service login here).
+
     await AppServices.secureStorage.delete(SecureStorageKeys.userSession);
     final PresidingElectionContextStore store = PresidingElectionContextStore(
       AppServices.secureStorage,
     );
-    // Clear election context before PO DB wipe so watchSession re-seed does
-    // not rewrite an empty session during logout.
+
     await store.clear();
     await PresidingConcernModule.clearLocalCache();
     await AppStartupCache.clearDisposableCaches();

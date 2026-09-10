@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Native voter search screen (SECSearchAPI) — replaces WebView portal.
 class VoterSearchScreen extends StatefulWidget {
   const VoterSearchScreen({super.key});
 
@@ -449,9 +448,7 @@ class _ResultsView extends StatelessWidget {
                     ),
                   ),
                   Material(
-                    color: filtered
-                        ? AppColors.primary
-                        : AppColors.surface,
+                    color: filtered ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       onTap: () => showVoterResultsFilterSheet(

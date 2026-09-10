@@ -8,43 +8,38 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('DashboardCardModel', () {
     test('parses card-list envelope row with HI/EN fields', () {
-      final DashboardCardModel card = DashboardCardModel.fromJson(
-        <String, dynamic>{
-          'ID': 5,
-          'CategoryName': 'निर्वाचन संबंधी सेवाऍं',
-          'CategoryNameEn': 'Election Services',
-          'CardName': 'पीठासीन अधिकारी',
-          'CardNameEn': 'Presiding Officer',
-          'IsRegistrationAllowed': true,
-          'IsLogin': true,
-          'IsWebView': false,
-          'Url': null,
-          'IsActive': true,
-        },
-      );
+      final DashboardCardModel card =
+          DashboardCardModel.fromJson(<String, dynamic>{
+            'ID': 5,
+            'CategoryName': 'निर्वाचन संबंधी सेवाऍं',
+            'CategoryNameEn': 'Election Services',
+            'CardName': 'पीठासीन अधिकारी',
+            'CardNameEn': 'Presiding Officer',
+            'IsRegistrationAllowed': true,
+            'IsLogin': true,
+            'IsWebView': false,
+            'Url': null,
+            'IsActive': true,
+          });
 
       expect(card.id, 5);
       expect(card.isLogin, isTrue);
       expect(card.isRegistrationAllowed, isTrue);
       expect(card.displayName(preferHindi: true), 'पीठासीन अधिकारी');
       expect(card.displayName(preferHindi: false), 'Presiding Officer');
-      expect(
-        card.displayCategory(preferHindi: false),
-        'Election Services',
-      );
+      expect(card.displayCategory(preferHindi: false), 'Election Services');
     });
 
     test('filters inactive via isActive flag', () {
-      final DashboardCardModel inactive = DashboardCardModel.fromJson(
-        <String, dynamic>{
-          'ID': 3,
-          'CategoryNameEn': 'Election Services',
-          'CardNameEn': 'Election Expenditure',
-          'IsActive': false,
-          'IsWebView': true,
-          'Url': 'https://example.com',
-        },
-      );
+      final DashboardCardModel inactive =
+          DashboardCardModel.fromJson(<String, dynamic>{
+            'ID': 3,
+            'CategoryNameEn': 'Election Services',
+            'CardNameEn': 'Election Expenditure',
+            'IsActive': false,
+            'IsWebView': true,
+            'Url': 'https://example.com',
+          });
       expect(inactive.isActive, isFalse);
     });
   });
@@ -73,6 +68,18 @@ void main() {
         isLogin: false,
         isWebView: false,
         url: null,
+        isActive: true,
+      ),
+      DashboardCardModel(
+        id: 3,
+        categoryName: 'निर्वाचन संबंधी सेवाऍं',
+        categoryNameEn: 'Election Services',
+        cardName: 'चुनाव व्यय',
+        cardNameEn: 'Election Expenditure',
+        isRegistrationAllowed: false,
+        isLogin: false,
+        isWebView: true,
+        url: 'https://exp.example/',
         isActive: true,
       ),
       DashboardCardModel(
@@ -107,10 +114,15 @@ void main() {
         preferHindi: false,
         surveyWebUrl: 'https://survey.example/',
         voterRegistrationUrl: 'https://reg.example/',
-        expenditureUrl: 'https://exp.example/',
       );
 
       expect(services, hasLength(4));
+      expect(
+        services.any(
+          (DashboardService s) => s.title.contains('Expenditure'),
+        ),
+        isFalse,
+      );
 
       final DashboardService claims = services.firstWhere(
         (DashboardService s) => s.title.contains('Claims'),
@@ -141,15 +153,29 @@ void main() {
       expect(po.registrationAllowed, isTrue);
     });
 
+    test('skips expenditure cards', () {
+      final List<DashboardService> services = DashboardCardMapper.mapServices(
+        cards: sample
+            .where((DashboardCardModel c) => c.id == 3)
+            .toList(growable: false),
+        preferHindi: false,
+        surveyWebUrl: 'https://survey.example/',
+        voterRegistrationUrl: 'https://reg.example/',
+      );
+      expect(services, isEmpty);
+    });
+
     test('uses Hindi titles when preferHindi is true', () {
       final List<DashboardService> services = DashboardCardMapper.mapServices(
         cards: sample,
         preferHindi: true,
         surveyWebUrl: 'https://survey.example/',
         voterRegistrationUrl: 'https://reg.example/',
-        expenditureUrl: 'https://exp.example/',
       );
-      expect(services.any((DashboardService s) => s.title == 'मतदाता खोजें'), isTrue);
+      expect(
+        services.any((DashboardService s) => s.title == 'मतदाता खोजें'),
+        isTrue,
+      );
       expect(
         services.any((DashboardService s) => s.title == 'पीठासीन अधिकारी'),
         isTrue,

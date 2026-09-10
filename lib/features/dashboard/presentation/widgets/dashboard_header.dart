@@ -179,7 +179,9 @@ class _RoundIcon extends StatelessWidget {
                   color: DashboardBrand.saffron,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: context.isAppDark ? context.appSurface : Colors.white,
+                    color: context.isAppDark
+                        ? context.appSurface
+                        : Colors.white,
                     width: 2,
                   ),
                 ),

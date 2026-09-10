@@ -6,7 +6,6 @@ import 'package:evm_management_system/shared/design_system/widgets/app_gradient_
 import 'package:evm_management_system/shared/design_system/widgets/tricolor_wave.dart';
 import 'package:flutter/material.dart';
 
-/// A single selectable row rendered by [AppSelectionSheet].
 @immutable
 class AppSelectionOption<T> {
   const AppSelectionOption({
@@ -19,47 +18,21 @@ class AppSelectionOption<T> {
     this.badge,
   });
 
-  /// The value returned when this option is confirmed.
   final T value;
 
-  /// Primary label (e.g. native language name).
   final String title;
 
-  /// Secondary label (e.g. English language name).
   final String? subtitle;
 
-  /// Short text rendered inside the leading avatar (e.g. "अ", "A"). Ignored
-  /// when [leading] is supplied.
   final String? leadingText;
 
-  /// Custom leading widget; overrides [leadingText] when set.
   final Widget? leading;
 
-  /// Disabled rows are dimmed and not tappable (e.g. "coming soon").
   final bool enabled;
 
-  /// Optional trailing badge text (e.g. "Coming soon"). Replaces the
-  /// selection indicator when present.
   final String? badge;
 }
 
-/// A clean, theme-matched single-select modal bottom sheet.
-///
-/// Reusable for any "pick one" data collection (language, role, region, …):
-/// pass a [title], the [options] and an optional [initialValue]; the future
-/// completes with the chosen value, or `null` if dismissed.
-///
-/// ```dart
-/// final lang = await AppSelectionSheet.show<String>(
-///   context,
-///   title: 'भाषा चुनें',
-///   subtitle: 'कृपया अपनी पसंदीदा भाषा चुनें',
-///   headerIcon: Icons.language_rounded,
-///   confirmLabel: 'जारी रखें',
-///   initialValue: 'hi',
-///   options: const <AppSelectionOption<String>>[ ... ],
-/// );
-/// ```
 abstract final class AppSelectionSheet {
   static Future<T?> show<T>(
     BuildContext context, {

@@ -10,8 +10,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../config/webview_config.dart';
 
-/// Native side of the reusable JS bridge. Registered once per controller; every
-/// page calls `window.AppBridge.*` and the same Flutter handlers respond.
 class WebViewBridge {
   WebViewBridge({
     this.onClose,
@@ -24,10 +22,6 @@ class WebViewBridge {
 
   static const String handlerName = 'app_bridge';
 
-  /// Native image picker. Routing camera/gallery capture through this (instead
-  /// of the WebView's built-in `<input capture>` chooser) writes the photo to
-  /// the app cache via image_picker's own FileProvider and never inserts into
-  /// MediaStore — sidestepping OEM camera crashes (e.g. Vivo VCameraMode NPE).
   final AppImagePickerService _imagePickerService = AppImagePickerService();
 
   final VoidCallback? onClose;
@@ -36,7 +30,6 @@ class WebViewBridge {
   final VoidCallback? onScanner;
   final ValueChanged<WebBridgeMessage>? onMessage;
 
-  /// Offline-first form submit from any Angular page.
   final Future<Map<String, dynamic>> Function(Map<String, dynamic> payload)?
   onSubmitForm;
 
@@ -114,13 +107,9 @@ class WebViewBridge {
     }
   }
 
-  /// Captures (camera) or picks (gallery) a single image natively and returns
-  /// it to the web as a base64 JPEG data URL:
-  ///   { ok: true, dataUrl: 'data:image/jpeg;base64,...' }
-  /// On cancel: { ok: false, cancelled: true }. On error: { ok: false, error }.
-  /// Proxies cross-origin API calls from embedded pages (e.g. GitHub Pages UI
-  /// → mpsec API) through native Dio — bypasses browser CORS in WebView.
-  Future<Map<String, dynamic>> _openExternal(Map<String, dynamic> payload) async {
+  Future<Map<String, dynamic>> _openExternal(
+    Map<String, dynamic> payload,
+  ) async {
     final String url = payload['url']?.toString().trim() ?? '';
     if (url.isEmpty) {
       return <String, dynamic>{'ok': false, 'error': 'missing_url'};

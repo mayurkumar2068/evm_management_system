@@ -1,8 +1,6 @@
 import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 
-/// Theme-aware color helpers so screens pick light/dark surfaces from context
-/// instead of hardcoding light-only [AppColors] neutrals.
 extension AppThemeColors on BuildContext {
   bool get isAppDark => Theme.of(this).brightness == Brightness.dark;
 
@@ -12,8 +10,7 @@ extension AppThemeColors on BuildContext {
 
   Color get appOnSurface => Theme.of(this).colorScheme.onSurface;
 
-  Color get appOutline =>
-      isAppDark ? AppColors.darkOutline : AppColors.outline;
+  Color get appOutline => isAppDark ? AppColors.darkOutline : AppColors.outline;
 
   Color get appMuted =>
       isAppDark ? AppColors.darkTextSecondary : AppColors.slate500;

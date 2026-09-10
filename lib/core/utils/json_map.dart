@@ -1,10 +1,7 @@
-/// Shared JSON / scalar coercion for API payloads.
 Map<String, dynamic>? asStringKeyedMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) {
-    return value.map(
-      (Object? k, Object? v) => MapEntry(k.toString(), v),
-    );
+    return value.map((Object? k, Object? v) => MapEntry(k.toString(), v));
   }
   return null;
 }
@@ -22,7 +19,6 @@ double? parseOptionalDouble(Object? value) {
   return double.tryParse(value.toString().trim());
 }
 
-/// Case-insensitive key lookup; returns the first non-null match.
 Object? mapValueByKeys(Map<String, dynamic> data, List<String> keys) {
   for (final String key in keys) {
     if (data.containsKey(key) && data[key] != null) return data[key];
@@ -38,8 +34,6 @@ Object? mapValueByKeys(Map<String, dynamic> data, List<String> keys) {
   return null;
 }
 
-/// Parses common bool tokens (`true`/`1`/`yes`, `false`/`0`/`no`).
-/// Unknown / empty → `null`.
 bool? parseLooseBool(Object? value) {
   if (value == null) return null;
   if (value is bool) return value;

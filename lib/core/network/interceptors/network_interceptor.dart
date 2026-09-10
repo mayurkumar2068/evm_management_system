@@ -1,13 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
-/// Attaches standard headers (content negotiation, correlation id, locale)
-/// to every outgoing request for consistent server-side tracing.
 class NetworkInterceptor extends Interceptor {
   NetworkInterceptor({required this.localeCode, Uuid? uuid})
     : _uuid = uuid ?? const Uuid();
 
-  /// Active locale code (e.g. `en`, `hi`) sent as `Accept-Language`.
   final String Function() localeCode;
   final Uuid _uuid;
 

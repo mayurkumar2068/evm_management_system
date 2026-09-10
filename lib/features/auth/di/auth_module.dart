@@ -11,7 +11,6 @@ import 'package:evm_management_system/features/auth/domain/usecases/logout_useca
 import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:get/get.dart';
 
-/// Lazily wires auth data sources, repository and use cases via GetX.
 abstract final class AuthModule {
   static AuthRepository? _repository;
   static LoginUseCase? _login;

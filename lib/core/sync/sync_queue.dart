@@ -1,10 +1,6 @@
 import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/sync/sync_models.dart';
 
-/// Durable FIFO queue of [SyncTask]s persisted in the local database.
-///
-/// Survives app restarts so no offline mutation is ever lost. The queue is the
-/// single source of truth for "what still needs to reach the server".
 class SyncQueue {
   SyncQueue(this._db);
 

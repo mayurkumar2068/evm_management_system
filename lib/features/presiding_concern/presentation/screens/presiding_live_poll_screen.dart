@@ -31,8 +31,6 @@ class PresidingLivePollScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PresidingSessionScaffold(
       builder: (BuildContext context, PresidingSession session) {
-        // Live Voting is opt-in per booth/officer (PO login `IsLivePoll`
-        // flag) — guard the route itself, not just the dashboard tile.
         if (!session.isLivePoll) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (Get.currentRoute == AppRoute.presidingLivePoll.path) {
@@ -56,7 +54,6 @@ class _LivePollBody extends StatefulWidget {
 }
 
 class _LivePollBodyState extends State<_LivePollBody> {
-  /// Quiet period after last +/- before syncing final counts to server.
   static const Duration _syncDebounce = Duration(milliseconds: 1500);
 
   bool _syncing = false;
@@ -88,8 +85,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
   void dispose() {
     _debounceTimer?.cancel();
     _connectivitySub?.cancel();
-    // Flush pending counts without setState — the element is already defunct
-    // here, so `mounted` is still true but markNeedsBuild asserts.
+
     if (_localDirty && !_isReadOnly) {
       unawaited(_flushToServerOnDispose());
     }
@@ -125,7 +121,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
   @override
   void didUpdateWidget(covariant _LivePollBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Don't overwrite optimistic local counts while user is tapping / syncing.
+
     if (oldWidget.session != widget.session &&
         !_localDirty &&
         !_syncing &&
@@ -197,17 +193,17 @@ class _LivePollBodyState extends State<_LivePollBody> {
 
     final TurnoutCountValidationResult validation =
         TurnoutCountValidator.validate(
-      male: nextMale,
-      female: nextFemale,
-      other: nextOther,
-      bounds: TurnoutCountValidator.boundsFor(
-        session: widget.session,
-        slotId: TurnoutSlotIds.livePollInfo,
-        maxMale: _maleElectors,
-        maxFemale: _femaleElectors,
-        maxOther: _otherElectors,
-      ),
-    );
+          male: nextMale,
+          female: nextFemale,
+          other: nextOther,
+          bounds: TurnoutCountValidator.boundsFor(
+            session: widget.session,
+            slotId: TurnoutSlotIds.livePollInfo,
+            maxMale: _maleElectors,
+            maxFemale: _femaleElectors,
+            maxOther: _otherElectors,
+          ),
+        );
     if (!validation.isOk) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -249,7 +245,6 @@ class _LivePollBodyState extends State<_LivePollBody> {
     if (_isReadOnly) return;
     if (!_localDirty && !force) return;
     if (_syncing) {
-      // In-flight request — retry after current call with latest counts.
       _scheduleServerSync();
       return;
     }
@@ -270,11 +265,11 @@ class _LivePollBodyState extends State<_LivePollBody> {
     try {
       final PresidingSession saved =
           await Get.find<PresidingTurnoutController>().saveTurnout(
-        slotId: TurnoutSlotIds.livePollInfo,
-        male: male,
-        female: female,
-        thirdGender: other,
-      );
+            slotId: TurnoutSlotIds.livePollInfo,
+            male: male,
+            female: female,
+            thirdGender: other,
+          );
       sw.stop();
       final TurnoutRecord? record =
           saved.turnoutRecords[TurnoutSlotIds.livePollInfo];
@@ -337,9 +332,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
           _pendingSync = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(LocaleKeys.commonSomethingWentWrong.tr()),
-          ),
+          SnackBar(content: Text(LocaleKeys.commonSomethingWentWrong.tr())),
         );
       }
     }
@@ -367,10 +360,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingLivePollTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
-            args: <String>[
-              widget.session.pollingStationCode,
-              stationLabel,
-            ],
+            args: <String>[widget.session.pollingStationCode, stationLabel],
           ),
           electionContext: _electionContext,
         ),
@@ -400,10 +390,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
                     child: _LivePollStatCard(
                       genderType: PresidingGenderType.male,
                       count: _liveMale,
-                      percent: _formatTurnoutPercent(
-                        _liveMale,
-                        _maleElectors,
-                      ),
+                      percent: _formatTurnoutPercent(_liveMale, _maleElectors),
                       busy: false,
                       onAdd: readOnly
                           ? null
@@ -472,10 +459,7 @@ class _LivePollBodyState extends State<_LivePollBody> {
               const SizedBox(height: 18),
               _LivePollSummaryCard(total: total, totalPercent: totalPercent),
               const SizedBox(height: 18),
-              _InfoNoteCard(
-                lastUpdate: _lastUpdate,
-                isOnline: showOnline,
-              ),
+              _InfoNoteCard(lastUpdate: _lastUpdate, isOnline: showOnline),
             ],
           ),
         ),
@@ -579,10 +563,7 @@ class _LivePollStatCard extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          PresidingGenderStatColumn(
-            genderType: genderType,
-            avatarSize: 56,
-          ),
+          PresidingGenderStatColumn(genderType: genderType, avatarSize: 56),
           const SizedBox(height: 8),
           Text(
             '$count',
@@ -628,10 +609,7 @@ class _LivePollStatCard extends StatelessWidget {
 }
 
 class _LivePollSummaryCard extends StatelessWidget {
-  const _LivePollSummaryCard({
-    required this.total,
-    required this.totalPercent,
-  });
+  const _LivePollSummaryCard({required this.total, required this.totalPercent});
   final int total;
   final String totalPercent;
 
@@ -683,11 +661,7 @@ class _SummaryMetricTile extends StatelessWidget {
               color: PresidingUiTokens.actionGreen.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: PresidingUiTokens.actionGreen,
-              size: 22,
-            ),
+            child: Icon(icon, color: PresidingUiTokens.actionGreen, size: 22),
           ),
           const SizedBox(height: 12),
           Text(
@@ -713,10 +687,7 @@ class _SummaryMetricTile extends StatelessWidget {
 }
 
 class _InfoNoteCard extends StatelessWidget {
-  const _InfoNoteCard({
-    required this.lastUpdate,
-    required this.isOnline,
-  });
+  const _InfoNoteCard({required this.lastUpdate, required this.isOnline});
 
   final DateTime? lastUpdate;
   final bool isOnline;

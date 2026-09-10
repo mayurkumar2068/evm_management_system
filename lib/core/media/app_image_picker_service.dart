@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Result of a native image pick with compression applied by [image_picker].
 class AppPickedImage {
   const AppPickedImage({
     required this.path,
@@ -22,18 +21,12 @@ class AppPickedImage {
   String get dataUrl => 'data:$mimeType;base64,${base64Encode(bytes)}';
 }
 
-/// Shared camera/gallery picker with JPEG compression — same pipeline as
-/// [WebViewBridge] `pickImage`, reusable from Flutter screens.
-///
-/// Gallery on Android uses the system Photo Picker (no storage/media permission).
-/// Camera still needs `CAMERA` / `NSCameraUsageDescription`.
 class AppImagePickerService {
   AppImagePickerService({ImagePicker? picker})
     : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 
-  /// Opens the native picker and returns a compressed image, or `null` if cancelled.
   Future<AppPickedImage?> pickCompressedImage({
     required ImageSource source,
     double maxSide = 1280,
@@ -45,7 +38,7 @@ class AppImagePickerService {
       maxHeight: maxSide,
       imageQuality: quality.clamp(1, 100),
       preferredCameraDevice: CameraDevice.rear,
-      // PHPicker / system picker: do not request full EXIF (can include GPS).
+
       requestFullMetadata: false,
     );
     if (file == null) {
@@ -62,7 +55,6 @@ class AppImagePickerService {
     );
   }
 
-  /// Persists compressed bytes to app temp storage for later upload.
   Future<String> persistToTemp({
     required Uint8List bytes,
     required String prefix,

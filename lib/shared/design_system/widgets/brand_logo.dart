@@ -17,7 +17,6 @@ class BrandLogo extends StatelessWidget {
   final bool cropCaption;
   final double height;
 
-  // New customizable parameters
   final double padding;
   final double borderRadius;
   final Color backgroundColor;

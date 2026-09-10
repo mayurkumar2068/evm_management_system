@@ -28,9 +28,7 @@ import '../service/webview_navigation_policy.dart';
 import '../service/webview_security.dart';
 import 'app_webview_header.dart';
 
-/// The single, reusable WebView engine for the entire app.
 class AppWebView extends StatefulWidget {
-  /// Creates the app-wide reusable WebView widget.
   const AppWebView({required this.config, this.onCreated, super.key});
 
   final WebViewConfig config;
@@ -64,7 +62,6 @@ class _AppWebViewState extends State<AppWebView> {
   URLRequest? _initialRequest;
   UnmodifiableListView<UserScript>? _initialUserScripts;
 
-  /// Returns the current widget configuration.
   WebViewConfig get _config => widget.config;
 
   @override
@@ -93,7 +90,6 @@ class _AppWebViewState extends State<AppWebView> {
     super.dispose();
   }
 
-  /// Builds the session context and synchronizes cookies before first paint.
   Future<void> _prepare() async {
     unawaited(Get.find<WebViewWarmer>().warm());
 
@@ -150,13 +146,10 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Returns the normalized initial URI.
   Uri get _normalizedUri => Uri.parse(_normalizeUrl(_config.url));
 
-  /// Normalizes and safely encodes user-provided URLs.
   String _normalizeUrl(String rawUrl) => normalizeWebViewLaunchUrl(rawUrl);
 
-  /// Reloads the current page and resets transient error state.
   Future<void> _reload() async {
     _loadSettleTimer?.cancel();
     if (mounted) {
@@ -177,15 +170,12 @@ class _AppWebViewState extends State<AppWebView> {
   }
 
   Future<void> _goBackOrClose() async {
-    // Always leave the WebView screen — do not walk in-page history.
     final NavigatorState navigator = Navigator.of(context);
     if (navigator.canPop()) {
       navigator.pop();
     }
   }
 
-  /// Header logout action — same [ServiceAuthController.signOut] call used
-  /// by the Presiding Officer flow, then leaves the WebView.
   Future<void> _confirmLogout() async {
     final bool confirmed = await AppDialog.confirmSignOut(context);
     if (!confirmed || !mounted) return;
@@ -198,7 +188,6 @@ class _AppWebViewState extends State<AppWebView> {
     await _goBackOrClose();
   }
 
-  /// Returns the app-managed headers for the initial request.
   Map<String, String> _buildHeaders() {
     return switch (_config.headerPolicy) {
       WebViewHeaderPolicy.none => <String, String>{},
@@ -212,7 +201,6 @@ class _AppWebViewState extends State<AppWebView> {
     };
   }
 
-  /// Builds the initial GET or POST request.
   URLRequest _buildRequest() {
     final Uri uri = _normalizedUri;
     final Map<String, String> headers = _buildHeaders();
@@ -231,7 +219,6 @@ class _AppWebViewState extends State<AppWebView> {
     return request;
   }
 
-  /// Builds cross-platform WebView settings for resilient page loading.
   InAppWebViewSettings _buildSettings() {
     return InAppWebViewSettings(
       useShouldOverrideUrlLoading: true,
@@ -267,7 +254,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Builds the user scripts injected into the page before content loads.
   List<UserScript> _buildUserScripts() {
     final List<UserScript> scripts = <UserScript>[];
     final WebSessionContext? session = _session;
@@ -289,7 +275,6 @@ class _AppWebViewState extends State<AppWebView> {
     return scripts;
   }
 
-  /// Applies the navigation policy to every outgoing navigation.
   Future<NavigationActionPolicy> _onNavigation(
     InAppWebViewController _,
     NavigationAction action,
@@ -319,7 +304,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Handles `window.open()` — external map/browser targets leave the WebView.
   Future<bool> _onCreateWindow(
     InAppWebViewController controller,
     CreateWindowAction createWindowAction,
@@ -338,7 +322,6 @@ class _AppWebViewState extends State<AppWebView> {
     return false;
   }
 
-  /// Observes main-frame responses for status logging and download routing.
   Future<NavigationResponseAction> _onNavigationResponse(
     InAppWebViewController _,
     NavigationResponse navigationResponse,
@@ -362,7 +345,6 @@ class _AppWebViewState extends State<AppWebView> {
     return NavigationResponseAction.ALLOW;
   }
 
-  /// Opens download URLs with the host platform.
   Future<void> _onDownloadStart(
     InAppWebViewController _,
     DownloadStartRequest request,
@@ -373,7 +355,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Logs provisional redirect callbacks emitted by `WKWebView`.
   void _onRedirect(InAppWebViewController _) {
     _logger.logRedirect(
       from: _lastVisitedUri,
@@ -382,7 +363,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Tracks history changes so the final URL is preserved.
   void _onUpdateVisitedHistory(
     InAppWebViewController _,
     WebUri? url,
@@ -402,7 +382,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Launches supported external-app schemes.
   Future<void> _launchExternal(Uri uri) async {
     final bool launched = await _externalLauncher.launch(uri);
     if (!launched) {
@@ -414,7 +393,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Wraps the raw controller and registers the JS bridge.
   void _onCreated(InAppWebViewController raw) {
     final AppWebViewController controller = AppWebViewController(raw);
     _controller = controller;
@@ -431,8 +409,6 @@ class _AppWebViewState extends State<AppWebView> {
     widget.onCreated?.call(controller);
   }
 
-  /// Routes Angular `AppBridge.submitForm()` calls through the offline sync
-  /// engine so web flows remain offline-capable.
   Future<Map<String, dynamic>> _handleSubmitForm(Map<String, dynamic> payload) {
     final Map<String, dynamic> data =
         (payload['data'] as Map?)?.cast<String, dynamic>() ??
@@ -450,7 +426,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Handles page-start events and resets transient load state.
   void _onLoadStart(InAppWebViewController _, WebUri? url) {
     _loadSettleTimer?.cancel();
     _lastStartedUri = url == null ? null : Uri.tryParse(url.toString());
@@ -463,8 +438,7 @@ class _AppWebViewState extends State<AppWebView> {
       _progress = 0;
     });
     _config.onPageStarted?.call();
-    // iOS often stalls near 50% when SPA redirects or CDN assets hang.
-    // Force the chrome to settle so the user is not stuck on the bar.
+
     _scheduleLoadSettlement(
       uri: _lastStartedUri,
       reason: 'load_start_timeout',
@@ -472,7 +446,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Handles page-stop events and finalizes the loading lifecycle.
   Future<void> _onLoadStop(InAppWebViewController _, WebUri? url) async {
     final Uri? uri = url == null
         ? _lastVisitedUri
@@ -483,7 +456,6 @@ class _AppWebViewState extends State<AppWebView> {
     await _settleLoad(uri: uri, reason: 'load_stop');
   }
 
-  /// Handles progress updates and uses 100% as a fallback completion signal.
   void _onProgressChanged(InAppWebViewController _, int progress) {
     if (progress >= 100) {
       _pullToRefresh?.endRefreshing();
@@ -500,7 +472,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Handles transport and SSL errors while ignoring expected cancellations.
   Future<void> _onReceivedError(
     InAppWebViewController _,
     WebResourceRequest request,
@@ -534,7 +505,6 @@ class _AppWebViewState extends State<AppWebView> {
     _config.onError?.call(error.description);
   }
 
-  /// Handles HTTP errors separately from transport-level failures.
   Future<void> _onReceivedHttpError(
     InAppWebViewController _,
     WebResourceRequest request,
@@ -551,8 +521,6 @@ class _AppWebViewState extends State<AppWebView> {
       headers: response.headers?.cast<String, String>(),
     );
 
-    // GitHub Pages SPA fallback serves index.html with HTTP 404 for deep links
-    // like /location. Treat HTML 404 as a soft failure so load can settle.
     final String mime = (response.contentType ?? '').toLowerCase();
     final bool spaFallback404 =
         statusCode == 404 && (mime.contains('text/html') || mime.isEmpty);
@@ -576,8 +544,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Schedules a short delayed load settlement when native stop callbacks are
-  /// skipped during redirects.
   void _scheduleLoadSettlement({
     required Uri? uri,
     required String reason,
@@ -589,7 +555,6 @@ class _AppWebViewState extends State<AppWebView> {
     });
   }
 
-  /// Completes loading once the URL has stabilized.
   Future<void> _settleLoad({required Uri? uri, required String reason}) async {
     if (!mounted) return;
     final Uri finalUri =
@@ -617,7 +582,6 @@ class _AppWebViewState extends State<AppWebView> {
     }
   }
 
-  /// Returns whether an error should be ignored as an expected cancellation.
   bool _shouldIgnoreResourceError({
     required WebResourceRequest request,
     required WebResourceError error,
@@ -634,12 +598,10 @@ class _AppWebViewState extends State<AppWebView> {
     return request.isRedirect == true;
   }
 
-  /// Returns whether a request targets the main frame.
   bool _isMainFrameRequest(WebResourceRequest request) {
     return request.isForMainFrame ?? true;
   }
 
-  /// Maps native resource errors to higher-level log categories.
   String _classifyResourceError(WebResourceError error) {
     final String description = error.description.toLowerCase();
     if (description.contains('ssl') || description.contains('certificate')) {
@@ -692,7 +654,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// OS location prompt only when the page asks — never auto-allow.
   Future<GeolocationPermissionShowPromptResponse> _onGeolocationPermission(
     InAppWebViewController _,
     String origin,
@@ -709,7 +670,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Camera/mic in the WebView are denied. Survey photos use native pickImage.
   Future<PermissionResponse> _onWebViewPermissionRequest(
     InAppWebViewController _,
     PermissionRequest _,
@@ -720,7 +680,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Builds the platform WebView widget with all lifecycle hooks attached.
   Widget _webView() {
     return InAppWebView(
       initialUrlRequest: _initialRequest,
@@ -758,7 +717,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Builds the top loading progress indicator.
   Widget _loadingBar(BuildContext context) {
     return LinearProgressIndicator(
       value: _progress == 0 ? null : _progress,
@@ -768,7 +726,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Builds the initial loading placeholder shown before WebView creation.
   Widget _initialLoading() {
     if (_config.loadingBuilder != null) {
       return _config.loadingBuilder!(context);
@@ -783,7 +740,6 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  /// Builds the retryable error UI for unrecoverable main-frame failures.
   Widget _errorView() {
     if (_config.errorBuilder != null) {
       return _config.errorBuilder!(context, _reload);
@@ -912,9 +868,7 @@ class _AppWebViewState extends State<AppWebView> {
       'http' => (
         title: LocaleKeys.webviewErrorHttpTitle.tr(),
         subtitle: LocaleKeys.webviewErrorHttpSub.tr(
-          args: <String>[
-            _errorMessage.replaceFirst(RegExp(r'^HTTP\s*'), ''),
-          ],
+          args: <String>[_errorMessage.replaceFirst(RegExp(r'^HTTP\s*'), '')],
         ),
         icon: Icons.http_rounded,
       ),

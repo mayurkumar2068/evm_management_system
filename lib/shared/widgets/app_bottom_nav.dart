@@ -1,10 +1,8 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Soft blue→mint accent used by the floating bottom navigation.
 const Color _navAccent = AppColors.primary;
 
-/// A single bottom-navigation entry.
 class BottomNavItem {
   const BottomNavItem({
     required this.icon,
@@ -19,8 +17,6 @@ class BottomNavItem {
   final bool isCenter;
 }
 
-/// Floating glass-style bottom navigation bar with a raised central scan
-/// action, mirroring the EVM design system shell.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     required this.items,
@@ -30,7 +26,6 @@ class AppBottomNav extends StatelessWidget {
 
   final List<BottomNavItem> items;
 
-  /// Index of the active tab, or -1 when no tab is highlighted.
   final int activeIndex;
 
   @override
@@ -43,7 +38,6 @@ class AppBottomNav extends StatelessWidget {
         12 + MediaQuery.of(context).padding.bottom * 0.4,
       ),
       child: Container(
-
         decoration: BoxDecoration(
           color: context.appNavBar,
           borderRadius: BorderRadius.circular(26),

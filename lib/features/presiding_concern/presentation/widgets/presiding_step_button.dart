@@ -1,7 +1,6 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Unified +/- step button used across presiding turnout UIs.
 class PresidingStepButton extends StatelessWidget {
   const PresidingStepButton({
     required this.icon,

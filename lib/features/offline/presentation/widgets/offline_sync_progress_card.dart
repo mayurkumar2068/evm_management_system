@@ -4,7 +4,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Pending sync queue breakdown by media type.
 class OfflineSyncProgressCard extends StatelessWidget {
   const OfflineSyncProgressCard({
     required this.pendingSurveys,

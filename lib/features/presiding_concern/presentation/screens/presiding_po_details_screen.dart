@@ -16,7 +16,6 @@ import 'package:get/get.dart' hide Trans;
 
 const int kMobileNumberLength = 10;
 
-/// Post-PO-login gate: load/save officer name + mobile (OTP when new / mobile changed).
 class PresidingPoDetailsScreen extends StatefulWidget {
   const PresidingPoDetailsScreen({super.key});
 
@@ -35,11 +34,15 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
 
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _mobileCtrl = TextEditingController();
-  final List<TextEditingController> _otpCtrls = List<TextEditingController>.generate(
+  final List<TextEditingController> _otpCtrls =
+      List<TextEditingController>.generate(
+        6,
+        (_) => TextEditingController(text: _otpEmptyMark),
+      );
+  final List<FocusNode> _otpFocus = List<FocusNode>.generate(
     6,
-    (_) => TextEditingController(text: _otpEmptyMark),
+    (_) => FocusNode(),
   );
-  final List<FocusNode> _otpFocus = List<FocusNode>.generate(6, (_) => FocusNode());
   final List<String> _otpPrev = List<String>.filled(6, '');
 
   bool _loading = true;
@@ -61,9 +64,7 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   bool get _nameChanged =>
       _existingProfile && _nameCtrl.text.trim() != _savedName;
 
-  /// Skip OTP only when saved profile exists and nothing was edited.
-  bool get _canSkipOtp =>
-      _existingProfile && !_mobileChanged && !_nameChanged;
+  bool get _canSkipOtp => _existingProfile && !_mobileChanged && !_nameChanged;
 
   String get _otpValue => _otpCtrls
       .map(
@@ -209,12 +210,8 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       final String mobile = _mobileCtrl.text.trim();
       final String masked = mobile.masked;
       final String msg = isResend
-          ? LocaleKeys.presidingPoDetailsOtpResent.tr(
-              args: <String>[masked],
-            )
-          : LocaleKeys.presidingPoDetailsOtpSent.tr(
-              args: <String>[masked],
-            );
+          ? LocaleKeys.presidingPoDetailsOtpResent.tr(args: <String>[masked])
+          : LocaleKeys.presidingPoDetailsOtpSent.tr(args: <String>[masked]);
       setState(() {
         _busy = false;
         _step = _PoDetailsStep.otp;
@@ -227,7 +224,10 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       });
     } on PoApiException catch (e) {
       if (!mounted) return;
-      final String msg = _poDetailsError(e, LocaleKeys.presidingPoDetailsOtpSendFailed.tr());
+      final String msg = _poDetailsError(
+        e,
+        LocaleKeys.presidingPoDetailsOtpSendFailed.tr(),
+      );
       setState(() {
         _busy = false;
         _error = msg;
@@ -288,7 +288,10 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = _poDetailsError(e, LocaleKeys.presidingPoDetailsSaveFailed.tr());
+        _error = _poDetailsError(
+          e,
+          LocaleKeys.presidingPoDetailsSaveFailed.tr(),
+        );
       });
     } catch (_) {
       if (!mounted) return;
@@ -323,8 +326,9 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
   }
 
   void _onOtpChanged(int index, String value) {
-    final String digits =
-        value.replaceAll(_otpEmptyMark, '').replaceAll(RegExp(r'\D'), '');
+    final String digits = value
+        .replaceAll(_otpEmptyMark, '')
+        .replaceAll(RegExp(r'\D'), '');
     if (digits.length > 1) {
       for (int i = 0; i < 6; i++) {
         _otpCtrls[i].text = i < digits.length ? digits[i] : _otpEmptyMark;
@@ -437,8 +441,9 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
                               ),
                             ],
                           ),
-                          child:
-                              otpStep ? _buildOtpFields() : _buildFormFields(),
+                          child: otpStep
+                              ? _buildOtpFields()
+                              : _buildFormFields(),
                         ),
                         if (_info != null) ...<Widget>[
                           const SizedBox(height: 12),
@@ -563,8 +568,10 @@ class _PresidingPoDetailsScreenState extends State<PresidingPoDetailsScreen> {
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             const double gap = 8;
-            final double boxW =
-                ((constraints.maxWidth - (gap * 5)) / 6).clamp(40.0, 48.0);
+            final double boxW = ((constraints.maxWidth - (gap * 5)) / 6).clamp(
+              40.0,
+              48.0,
+            );
             final double boxH = boxW + 6;
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,

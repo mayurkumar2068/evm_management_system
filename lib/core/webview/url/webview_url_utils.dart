@@ -1,7 +1,3 @@
-/// Normalizes launch URLs so the WebView performs a single navigation.
-///
-/// iOS `WKWebView` and many dev servers rewrite `http://host?x=1` to
-/// `http://host/?x=1`, which looks like a second load in logs.
 String normalizeWebViewLaunchUrl(String rawUrl) {
   final String trimmed = rawUrl.trim();
   final Uri? parsed = Uri.tryParse(trimmed);
@@ -17,7 +13,6 @@ String normalizeWebViewLaunchUrl(String rawUrl) {
     return parsed.replace(path: '/').toString();
   }
 
-  // IIS apps under /SECSearchEngine expect a trailing slash on first load.
   if (parsed.path.endsWith('/SECSearchEngine')) {
     return parsed.replace(path: '${parsed.path}/').toString();
   }
@@ -25,7 +20,6 @@ String normalizeWebViewLaunchUrl(String rawUrl) {
   return parsed.toString();
 }
 
-/// Appends or updates a query parameter in a WebView launch URL.
 String appendWebViewQueryParam(
   String url, {
   required String key,
@@ -38,14 +32,12 @@ String appendWebViewQueryParam(
   return uri.replace(queryParameters: params).toString();
 }
 
-/// Appends the service-auth token so web pages can restore session context.
 String appendWebViewToken(String url, {required String token}) {
   final String clean = token.trim();
   if (clean.isEmpty) return normalizeWebViewLaunchUrl(url);
   return appendWebViewQueryParam(url, key: 'token', value: clean);
 }
 
-/// Forwards login survey context (DistID, BodyID, UrbanRural) to Angular.
 String appendWebViewSurveyContext(
   String url, {
   required String token,
@@ -116,7 +108,6 @@ String appendWebViewSurveyContext(
   return result;
 }
 
-/// Prevents stale IIS bundles from being served by iOS/Android WebView cache.
 String appendWebViewCacheBust(String url) {
   return appendWebViewQueryParam(
     url,

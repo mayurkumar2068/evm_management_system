@@ -11,7 +11,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Numbered section card with milestone rows for the presiding dashboard.
 class PresidingMilestoneSectionCard extends StatelessWidget {
   const PresidingMilestoneSectionCard({
     required this.index,
@@ -27,11 +26,9 @@ class PresidingMilestoneSectionCard extends StatelessWidget {
   final String title;
   final List<PresidingMilestone> milestones;
   final Future<void> Function(PresidingMilestone milestone) onMilestoneTap;
-  /// When false, the incomplete action chip is shown disabled (non-tappable).
+
   final bool Function(PresidingMilestone milestone)? isMilestoneEnabled;
 
-  /// When set (and IPBMS is on), shows booth name + map chip above
-  /// "मतदान केंद्र पहुँचे".
   final String? boothMapStationName;
 
   @override
@@ -63,7 +60,6 @@ class PresidingMilestoneSectionCard extends StatelessWidget {
       );
     }
 
-    // Fallback if "reached" milestone missing — keep map at end.
     if (boothMapStationName != null &&
         milestones.every(
           (PresidingMilestone m) =>
@@ -82,7 +78,6 @@ class PresidingMilestoneSectionCard extends StatelessWidget {
   }
 }
 
-/// Milestone-style row: booth name + action chip that opens Maps.
 class _BoothNameMapRow extends StatefulWidget {
   const _BoothNameMapRow({required this.stationName});
 
@@ -194,9 +189,7 @@ class _BoothNameMapRowState extends State<_BoothNameMapRow> {
         ),
         const SizedBox(width: 12),
         MpSecStatusChip(
-          label: _opening
-              ? '...'
-              : LocaleKeys.presidingBoothOpenMap.tr(),
+          label: _opening ? '...' : LocaleKeys.presidingBoothOpenMap.tr(),
           variant: _opening
               ? MpSecChipVariant.disabled
               : MpSecChipVariant.action,
@@ -207,7 +200,6 @@ class _BoothNameMapRowState extends State<_BoothNameMapRow> {
   }
 }
 
-/// Single milestone row with label and status chip.
 class PresidingMilestoneRow extends StatelessWidget {
   const PresidingMilestoneRow({
     required this.milestone,
@@ -269,8 +261,9 @@ class PresidingMilestoneRow extends StatelessWidget {
       );
     }
 
-    final MpSecChipVariant variant =
-        !enabled ? MpSecChipVariant.disabled : MpSecChipVariant.action;
+    final MpSecChipVariant variant = !enabled
+        ? MpSecChipVariant.disabled
+        : MpSecChipVariant.action;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,

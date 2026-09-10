@@ -1,11 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 
-/// Thin, typed wrapper over a fully-configured [Dio] instance.
-///
-/// UI and repositories use this client; they never instantiate Dio directly.
-/// Interceptors (auth, retry, logging, connectivity, pinning) are attached by
-/// the composition root before the client is exposed.
 class ApiClient {
   ApiClient({required this.dio, required EnvironmentConfig config}) {
     dio.options
@@ -73,7 +68,5 @@ class ApiClient {
   );
 }
 
-/// Marks a request so the [AuthInterceptor] skips attaching a bearer token
-/// (used by login / refresh calls).
 Options get unauthenticatedOptions =>
     Options(extra: <String, dynamic>{'skipAuth': true});

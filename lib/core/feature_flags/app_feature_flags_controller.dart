@@ -46,7 +46,8 @@ class AppFeatureFlagsController extends GetxController {
           receiveTimeout: _config.receiveTimeout,
           sendTimeout: _config.sendTimeout,
           validateStatus: (int? status) =>
-              status != null && (status < 300 || status == 404 || status == 501),
+              status != null &&
+              (status < 300 || status == 404 || status == 501),
         ),
       );
 

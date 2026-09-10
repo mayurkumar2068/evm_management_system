@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/cache/app_startup_cache.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/database/json_local_database.dart';
 import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
@@ -21,8 +20,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../core/notifications/notification_service.dart';
 
-/// Single composition root. Loads the flavor `.env`, initializes cross-cutting
-/// services, wires GetX dependencies and starts the app inside a guarded zone.
 Future<void> bootstrap(Flavor flavor) async {
   await runZonedGuarded<Future<void>>(
     () async {
@@ -36,7 +33,6 @@ Future<void> bootstrap(Flavor flavor) async {
       await dotenv.load(fileName: flavor.envFile);
       final EnvironmentConfig config = EnvironmentConfig.load(flavor);
 
-      // Bundled fonts only — never download/cache from fonts.google.com.
       GoogleFonts.config.allowRuntimeFetching = false;
 
       AppLogger.configure(
@@ -44,7 +40,6 @@ Future<void> bootstrap(Flavor flavor) async {
         verbose: !config.isProduction,
       );
 
-      // Fresh runtime caches every cold start (images + WebView). Auth/session kept.
       await AppStartupCache.clearOnLaunch();
       if (!config.isProduction) {
         // ignore: avoid_print
@@ -67,20 +62,10 @@ Future<void> bootstrap(Flavor flavor) async {
       await database.init();
 
       final SecureStorageService secureStorage = SecureStorageService();
-      bool onboardingSeen = kSkipOnboarding;
-      if (!onboardingSeen) {
-        try {
-          onboardingSeen =
-              (await secureStorage.read(SecureStorageKeys.onboardingSeen)) ==
-              'true';
-        } catch (_) {
-          onboardingSeen = false;
-        }
-      } else {
-        try {
-          await secureStorage.write(SecureStorageKeys.onboardingSeen, 'true');
-        } catch (_) {}
-      }
+      const bool onboardingSeen = true;
+      try {
+        await secureStorage.write(SecureStorageKeys.onboardingSeen, 'true');
+      } catch (_) {}
 
       FlutterError.onError = (FlutterErrorDetails details) {
         AppLogger.e(

@@ -1,6 +1,5 @@
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// PO party / polling-party details from POElection API.
 class PoPartyDetails {
   const PoPartyDetails({
     this.id,
@@ -47,7 +46,6 @@ class PoPartyDetails {
 
   bool get existsOnServer => isPartyGuid(id);
 
-  /// Local cache / pending-sync payload (no OTP — party save does not use it).
   Map<String, dynamic> toCacheJson() => <String, dynamic>{
     'id': id,
     'poUserId': poUserId,
@@ -62,9 +60,7 @@ class PoPartyDetails {
     'p4MobileNo': p4MobileNo,
   };
 
-  /// `save-po-party` body. OTP is not used for दल की जानकारी.
   Map<String, dynamic> toSaveJson() => <String, dynamic>{
-    // Server expects Nullable<Guid>; never send action-status ints like "1".
     'id': existsOnServer ? id : null,
     'poUserId': poUserId,
     'partyNo': partyNo.trim(),
@@ -78,7 +74,6 @@ class PoPartyDetails {
     'p4MobileNo': _nullIfEmpty(p4MobileNo),
   };
 
-  /// True when [value] is a Guid string (party record id), not an int status id.
   static bool isPartyGuid(String? value) {
     if (value == null) return false;
     final String t = value.trim();
@@ -117,7 +112,6 @@ class PoPartyDetails {
       p4MobileNo: p4MobileNo ?? this.p4MobileNo,
     );
   }
-
 
   static Object? _nullIfEmpty(String value) {
     final String t = value.trim();

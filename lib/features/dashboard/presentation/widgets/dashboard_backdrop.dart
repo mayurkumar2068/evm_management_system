@@ -1,7 +1,6 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Soft multicolor wash on the light dashboard canvas.
 class DashboardBackdrop extends StatelessWidget {
   const DashboardBackdrop({super.key});
 
@@ -47,7 +46,9 @@ class DashboardBackdrop extends StatelessWidget {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.16),
+                color: AppColors.primary.withValues(
+                  alpha: isDark ? 0.08 : 0.16,
+                ),
               ),
             ),
           ),
@@ -71,7 +72,9 @@ class DashboardBackdrop extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.saffron.withValues(alpha: isDark ? 0.05 : 0.10),
+                color: AppColors.saffron.withValues(
+                  alpha: isDark ? 0.05 : 0.10,
+                ),
               ),
             ),
           ),

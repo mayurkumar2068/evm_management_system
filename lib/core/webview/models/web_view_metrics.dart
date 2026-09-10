@@ -1,7 +1,3 @@
-/// Page-load performance metrics collected from the WebView (milliseconds).
-///
-/// Populated from the page's `PerformanceNavigationTiming` + paint entries and
-/// surfaced via [WebViewConfig.onMetrics] / analytics.
 class WebViewMetrics {
   const WebViewMetrics({
     this.ttfb,

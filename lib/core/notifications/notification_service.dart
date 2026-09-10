@@ -6,10 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-enum PollingAreaType {
-  urban,
-  rural,
-}
+enum PollingAreaType { urban, rural }
 
 class NotificationUtils {
   NotificationUtils._();
@@ -26,7 +23,6 @@ class NotificationUtils {
     );
   }
 
-  /// One-shot test — fires after [minutes] (default 10). Debug / QA only.
   static Future<void> scheduleTestInMinutes({int minutes = 10}) async {
     await LocalNotificationService.instance.scheduleInMinutes(
       id: 998,
@@ -49,11 +45,10 @@ class NotificationUtils {
 class LocalNotificationService {
   LocalNotificationService._();
 
-  static final LocalNotificationService instance =
-  LocalNotificationService._();
+  static final LocalNotificationService instance = LocalNotificationService._();
 
   final FlutterLocalNotificationsPlugin _plugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   static const String _channelId = 'voter_turnout_reporting';
   static const String _channelName = 'मतदान अपडेट रिमाइंडर';
@@ -65,8 +60,7 @@ class LocalNotificationService {
 
     await AppTimeZone.ensureInitialized();
 
-    const DarwinInitializationSettings darwin =
-    DarwinInitializationSettings(
+    const DarwinInitializationSettings darwin = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
@@ -85,17 +79,15 @@ class LocalNotificationService {
 
     await _plugin.initialize(
       settings: settings,
-      onDidReceiveNotificationResponse:
-          (NotificationResponse response) {
-        AppLogger.d(
-          'Notification tapped: ${response.payload}',
-        );
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        AppLogger.d('Notification tapped: ${response.payload}');
       },
     );
 
-    final android =
-    _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     await android?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -107,9 +99,6 @@ class LocalNotificationService {
     );
 
     _initialized = true;
-
-    // Production-like behavior: no automatic debug test notification on init.
-    // Trigger test manually via NotificationUtils.scheduleTestInMinutes().
   }
 
   Future<void> _ensureRuntimePermissions() async {
@@ -119,7 +108,8 @@ class LocalNotificationService {
     if (Platform.isAndroid) {
       final AndroidFlutterLocalNotificationsPlugin? android = _plugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       await android?.requestNotificationsPermission();
       await android?.requestExactAlarmsPermission();
       return;
@@ -127,11 +117,11 @@ class LocalNotificationService {
 
     await _plugin
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
+          IOSFlutterLocalNotificationsPlugin
+        >()
         ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
-  /// One-shot notification after [minutes] from now (does not repeat).
   Future<void> scheduleInMinutes({
     required int id,
     required int minutes,
@@ -141,8 +131,9 @@ class LocalNotificationService {
     await initialize();
     await _ensureRuntimePermissions();
 
-    final tz.TZDateTime when =
-        tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
+    final tz.TZDateTime when = tz.TZDateTime.now(
+      tz.local,
+    ).add(Duration(minutes: minutes));
 
     await _plugin.cancel(id: id);
     await _plugin.zonedSchedule(
@@ -159,8 +150,8 @@ class LocalNotificationService {
       '(in ${minutes}m, tz=${tz.local.name})',
     );
 
-    final List<PendingNotificationRequest> pending =
-        await _plugin.pendingNotificationRequests();
+    final List<PendingNotificationRequest> pending = await _plugin
+        .pendingNotificationRequests();
     AppLogger.d('[Notification] pending count=${pending.length}');
     for (final PendingNotificationRequest item in pending) {
       AppLogger.d('[Notification] pending ID:${item.id} Title:${item.title}');
@@ -193,14 +184,10 @@ class LocalNotificationService {
 
     final pending = await _plugin.pendingNotificationRequests();
 
-    AppLogger.d(
-      'Scheduled ${hours.length} ${areaType.name} reminders',
-    );
+    AppLogger.d('Scheduled ${hours.length} ${areaType.name} reminders');
 
     for (final item in pending) {
-      AppLogger.d(
-        'ID:${item.id}  Title:${item.title}',
-      );
+      AppLogger.d('ID:${item.id}  Title:${item.title}');
     }
   }
 
@@ -235,6 +222,7 @@ class LocalNotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
+
   String _reminderTitle({
     required PollingAreaType areaType,
     required int hour,
@@ -251,13 +239,13 @@ class LocalNotificationService {
     required int minute,
   }) {
     final String slot = _formatTime(hour, minute);
-    final bool isUrbanFinalSlot = areaType == PollingAreaType.urban && hour == 17;
+    final bool isUrbanFinalSlot =
+        areaType == PollingAreaType.urban && hour == 17;
     if (isUrbanFinalSlot) {
       return 'कृपया $slot तक का मतदान प्रतिशत अभी दर्ज करें। यह नगरीय क्षेत्र की अंतिम 2-2 घंटे की प्रविष्टि है।';
     }
     return 'कृपया $slot तक की 2-2 घंटे की मतदान जानकारी अभी भरें। यह रीयल-टाइम मॉनिटरिंग के लिए आवश्यक है।';
   }
-
 
   Future<void> _cancelReminderNotifications() async {
     for (int id = 100; id <= 104; id++) {
@@ -269,8 +257,7 @@ class LocalNotificationService {
     await _plugin.cancelAll();
   }
 
-  String _formatTime(int hour,
-      int minute,) {
+  String _formatTime(int hour, int minute) {
     final period = hour >= 12 ? 'PM' : 'AM';
 
     final displayHour = switch (hour) {
@@ -281,7 +268,6 @@ class LocalNotificationService {
 
     return '$displayHour:${minute.toString().padLeft(2, '0')} $period';
   }
-
 
   Future<void> showNotification({
     required int id,

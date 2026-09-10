@@ -2,7 +2,6 @@ import 'package:evm_management_system/features/auth/data/models/user_model.dart'
 import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
 import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
 
-/// Translates between [UserModel] (data) and [AuthUser] (domain).
 abstract final class UserMapper {
   static AuthUser toEntity(UserModel model) => AuthUser(
     id: model.id,

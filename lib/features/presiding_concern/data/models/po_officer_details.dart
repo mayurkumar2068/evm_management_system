@@ -1,6 +1,5 @@
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// Presiding officer profile details from `po-details` / save-with-otp APIs.
 class PoOfficerDetails {
   const PoOfficerDetails({
     this.id,
@@ -50,7 +49,6 @@ class PoOfficerDetails {
 
   Map<String, dynamic> toSaveWithOtpJson({required String otp}) =>
       <String, dynamic>{
-        // Create → null; update (mobile change) → existing Guid from po-details.
         'id': hasServerId ? id!.trim() : null,
         'poUserId': poUserId,
         'poName': poName.trim(),
@@ -75,5 +73,4 @@ class PoOfficerDetails {
       poMobileNo: poMobileNo ?? this.poMobileNo,
     );
   }
-
 }

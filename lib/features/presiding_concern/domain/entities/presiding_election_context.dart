@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
 
-/// Authenticated election context required by PO Election APIs.
 final class PresidingElectionContext {
   const PresidingElectionContext({
     required this.electionId,
@@ -24,26 +23,20 @@ final class PresidingElectionContext {
   final String psId;
   final String? userId;
 
-  /// PO login username (`UserName`), used for test-account rule bypasses.
   final String? loginUserName;
 
-  /// Urban (`U`) or rural (`R`) as returned by the auth API.
   final String areaType;
   final String? pollingStationCode;
   final String? pollingStationName;
 
-  /// Polling booth coordinates from login API (`Lat` / `Long`).
   final double? boothLat;
   final double? boothLong;
 
-  /// Elector counts from PO login (`MaleElectors` / `FemaleElectors` / …).
   final int? maleElectors;
   final int? femaleElectors;
   final int? otherElectors;
   final int? totalElectors;
 
-  /// PO login feature flags (`IsIPBMS` / `IsLivePoll`). Both default `false`
-  /// (feature hidden) unless the login API explicitly returns `true`.
   final bool isIpbms;
   final bool isLivePoll;
 
@@ -53,14 +46,11 @@ final class PresidingElectionContext {
       boothLat!.abs() > 0 &&
       boothLong!.abs() > 0;
 
-  PresidingAreaType get resolvedAreaType => PresidingAreaType.parse(
-    areaType,
-    fallback: PresidingAreaType.rural,
-  );
+  PresidingAreaType get resolvedAreaType =>
+      PresidingAreaType.parse(areaType, fallback: PresidingAreaType.rural);
 
   bool get hasElectors => (totalElectors ?? 0) > 0;
 
-  /// True when login supplied at least one elector count field.
   bool get hasElectorCounts =>
       (maleElectors ?? 0) > 0 ||
       (femaleElectors ?? 0) > 0 ||
@@ -80,14 +70,10 @@ final class PresidingElectionContext {
         normalized == PresidingAreaType.rural.code;
   }
 
-  /// Normalises backend area-type codes to `U` or `R`.
-  ///
-  /// Returns empty string when [raw] is missing/unknown (does not invent urban).
   static String normalizeAreaType(String? raw) {
     return PresidingAreaType.tryParse(raw)?.code ?? '';
   }
 
-  /// Turnout % for [votes] against [electors] (clamped, 2 decimals).
   static String formatTurnoutPercent(int votes, int? electors) {
     final int base = electors ?? 0;
     if (base <= 0 || votes <= 0) return '0%';

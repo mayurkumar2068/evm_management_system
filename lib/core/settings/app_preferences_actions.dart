@@ -4,7 +4,6 @@ import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Applies a locale immediately across EasyLocalization and persisted settings.
 Future<void> applyAppLocale({
   required BuildContext context,
   required Locale locale,
@@ -17,11 +16,10 @@ Future<void> applyAppLocale({
     await context.setLocale(locale);
   }
   await AppServices.settings.setLocale(locale);
-  // Force GetX material app + cached `.tr()` labels to rebuild immediately.
+
   await Get.updateLocale(locale);
 }
 
-/// Toggles between light and dark theme and persists the choice.
 Future<void> toggleAppTheme() async {
   final bool isDark = AppServices.settings.themeMode.value == ThemeMode.dark;
   await AppServices.settings.setThemeMode(

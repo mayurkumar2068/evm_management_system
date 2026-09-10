@@ -1,8 +1,6 @@
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:uuid/uuid.dart';
 
-/// Issues and persists a stable, app-scoped device identifier in secure
-/// storage. Used as `X-Device-Id` for the embedded web apps.
 class DeviceIdService {
   DeviceIdService(this._storage);
 
@@ -18,15 +16,11 @@ class DeviceIdService {
       if (existing != null && existing.isNotEmpty) {
         return _cached = existing;
       }
-    } catch (_) {
-      // fall through and mint a fresh one
-    }
+    } catch (_) {}
     final String id = const Uuid().v4();
     try {
       await _storage.write(_key, id);
-    } catch (_) {
-      // best-effort: still return the id for this session
-    }
+    } catch (_) {}
     return _cached = id;
   }
 }

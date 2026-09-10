@@ -3,29 +3,24 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 
-/// English → Hindi transliteration via Google Input Tools (same as SEC portal).
-///
-/// Converts Latin words to Devanagari. Failures are silent — original text kept.
 class HindiTransliterationService {
   HindiTransliterationService({Dio? dio})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 4),
-                receiveTimeout: const Duration(seconds: 4),
-                sendTimeout: const Duration(seconds: 4),
-                responseType: ResponseType.plain,
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 4),
+              receiveTimeout: const Duration(seconds: 4),
+              sendTimeout: const Duration(seconds: 4),
+              responseType: ResponseType.plain,
+            ),
+          );
 
   final Dio _dio;
   final Map<String, String> _cache = <String, String>{};
 
   static final RegExp _latinWord = RegExp(r'[A-Za-z]');
 
-  /// Transliterates Latin tokens in [text]; Devanagari/other stays unchanged.
-  ///
-  /// Multi-word input keeps spaces: `mayur bobade` → `मयूर बोबाडे`.
   Future<String> transliterateText(String text) async {
     if (text.trim().isEmpty) return text;
 

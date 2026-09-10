@@ -3,8 +3,6 @@ import 'package:evm_management_system/features/presiding_concern/presentation/wi
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Reusable column showing a gender avatar, localised label, and an
-/// integer count — used across live-poll stat cards and turnout entry fields.
 class PresidingGenderStatColumn extends StatelessWidget {
   const PresidingGenderStatColumn({
     required this.genderType,
@@ -16,11 +14,8 @@ class PresidingGenderStatColumn extends StatelessWidget {
 
   final PresidingGenderType genderType;
 
-  /// Diameter passed to [PresidingGenderAvatar]. Defaults to 36 (turnout card).
   final double avatarSize;
 
-  /// Override for the label font size. When null the widget uses
-  /// [AppTextStyles.caption] at its default size.
   final double? labelFontSize;
 
   final int labelMaxLines;

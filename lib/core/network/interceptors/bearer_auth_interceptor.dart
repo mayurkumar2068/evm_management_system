@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-/// Attaches `Authorization: Bearer <token>` when a token is available.
 class BearerAuthInterceptor extends Interceptor {
   BearerAuthInterceptor({required Future<String?> Function() getAccessToken})
     : _getAccessToken = getAccessToken;

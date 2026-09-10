@@ -1,12 +1,11 @@
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Result of male/female/other turnout validation.
 final class TurnoutCountValidationResult {
   const TurnoutCountValidationResult.ok()
-      : messageKey = null,
-        categoryKey = null,
-        limit = null;
+    : messageKey = null,
+      categoryKey = null,
+      limit = null;
 
   const TurnoutCountValidationResult.fail(
     this.messageKey, {
@@ -21,18 +20,15 @@ final class TurnoutCountValidationResult {
   bool get isOk => messageKey == null;
 }
 
-/// Thrown when turnout counts violate elector or progressive-slot rules.
 final class TurnoutCountValidationException implements Exception {
   const TurnoutCountValidationException(this.result);
 
   final TurnoutCountValidationResult result;
 
   @override
-  String toString() =>
-      result.messageKey ?? 'TurnoutCountValidationException';
+  String toString() => result.messageKey ?? 'TurnoutCountValidationException';
 }
 
-/// Caps from login electors + floor from earlier time slots.
 final class TurnoutCountBounds {
   const TurnoutCountBounds({
     this.maxMale,
@@ -51,15 +47,11 @@ final class TurnoutCountBounds {
   final int minOther;
 }
 
-/// Shared rules for 2–2 hourly, final, and live poll counts.
 abstract final class TurnoutCountValidator {
-  /// Max digits allowed when entering turnout / queue counts.
   static const int maxInputDigits = 4;
 
-  /// Max integer value for a single count field (4 digits).
   static const int maxEnterableCount = 9999;
 
-  /// Ordered cumulative slots (time + final status). Live uses these as floor.
   static List<String> cumulativeSlotOrder(String? areaType) {
     return TurnoutSlots.forAreaType(areaType)
         .where(
@@ -70,7 +62,6 @@ abstract final class TurnoutCountValidator {
         .toList(growable: false);
   }
 
-  /// Hourly time slots only (9AM → 3PM rural / 5PM urban). No queue/final/live.
   static List<String> hourlySlotOrder(String? areaType) {
     return TurnoutSlots.forAreaType(areaType)
         .where(
@@ -83,14 +74,12 @@ abstract final class TurnoutCountValidator {
         .toList(growable: false);
   }
 
-  /// Urban last = 5PM, rural last = 3PM (last non-queue time slot).
   static String? lastTimeSlotId(String? areaType) {
     final List<String> timeSlots = hourlySlotOrder(areaType);
     if (timeSlots.isEmpty) return null;
     return timeSlots.last;
   }
 
-  /// True when a later hourly slot is already saved — earlier hours cannot be edited.
   static bool isEarlierHourlyLockedByLaterSave({
     required PresidingSession session,
     required String slotId,
@@ -106,7 +95,6 @@ abstract final class TurnoutCountValidator {
     return false;
   }
 
-  /// Saved, locked, or closed because a later hourly slot was saved.
   static bool isHourlySlotClosed({
     required PresidingSession session,
     required String slotId,
@@ -116,7 +104,6 @@ abstract final class TurnoutCountValidator {
     return isEarlierHourlyLockedByLaterSave(session: session, slotId: slotId);
   }
 
-  /// Skipped earlier hours (locked by a later save) count as done for finish.
   static bool isHourlySlotSatisfied({
     required PresidingSession session,
     required String slotId,
@@ -126,7 +113,6 @@ abstract final class TurnoutCountValidator {
     return isEarlierHourlyLockedByLaterSave(session: session, slotId: slotId);
   }
 
-  /// Rejects saving an earlier hourly slot after a later hour is already saved.
   static TurnoutCountValidationResult validateEarlierSlotNotClosed({
     required PresidingSession session,
     required String slotId,
@@ -257,21 +243,18 @@ abstract final class TurnoutCountValidator {
     return const TurnoutCountValidationResult.ok();
   }
 
-  /// Whether the mandatory last hourly slot is saved.
-  ///
-  /// Urban = 5PM, rural = 3PM. Queue / final cards stay locked until this is true.
   static bool isLastTimeSlotSaved(PresidingSession session) {
     final String? lastId = lastTimeSlotId(session.areaType);
     if (lastId == null) return false;
     return session.turnoutRecords[lastId]?.savedAt != null;
   }
 
-  /// Queue and मतदान जानकारी require the last hourly slot to be saved first.
   static TurnoutCountValidationResult validateLastSlotBeforeNextCards({
     required PresidingSession session,
     required String slotId,
   }) {
-    final bool isNextCard = slotId == TurnoutSlotIds.queueCount ||
+    final bool isNextCard =
+        slotId == TurnoutSlotIds.queueCount ||
         slotId == TurnoutSlotIds.pollCompletion;
     if (!isNextCard) {
       return const TurnoutCountValidationResult.ok();
@@ -288,9 +271,6 @@ abstract final class TurnoutCountValidator {
     );
   }
 
-  /// Final turnout must be ≥ last hourly total and ≤ last hourly + queue.
-  ///
-  /// Urban last slot = 5PM, rural = 3PM.
   static TurnoutCountValidationResult validateLastPlusQueueVsCompletion({
     required PresidingSession session,
     required String slotId,
@@ -304,7 +284,8 @@ abstract final class TurnoutCountValidator {
       return const TurnoutCountValidationResult.ok();
     }
 
-    final bool touchesRule = slotId == lastId ||
+    final bool touchesRule =
+        slotId == lastId ||
         slotId == TurnoutSlotIds.queueCount ||
         slotId == TurnoutSlotIds.pollCompletion;
     if (!touchesRule) {
@@ -339,7 +320,6 @@ abstract final class TurnoutCountValidator {
       );
     }
 
-    // Editing last slot / queue after completion is already saved.
     final bool completionSaved = completionRecord?.savedAt != null;
     if (!completionSaved) {
       return const TurnoutCountValidationResult.ok();
@@ -357,7 +337,6 @@ abstract final class TurnoutCountValidator {
     required int lastTotal,
     required int completionTotal,
   }) {
-    // final ≥ lastSlot total AND final ≤ lastSlot + queue.
     if (completionTotal < lastTotal) {
       return TurnoutCountValidationResult.fail(
         'presiding.count_completion_below_last_plus_queue',

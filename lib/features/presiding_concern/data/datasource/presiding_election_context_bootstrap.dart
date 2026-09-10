@@ -7,7 +7,6 @@ import 'package:evm_management_system/features/presiding_concern/data/datasource
 import 'package:evm_management_system/features/presiding_concern/data/models/presiding_election_context_factory.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 
-/// Ensures [PresidingElectionContext] exists before PO Election API calls.
 final class PresidingElectionContextBootstrap {
   const PresidingElectionContextBootstrap({
     required AuthLocalDataSource authLocal,
@@ -21,7 +20,6 @@ final class PresidingElectionContextBootstrap {
   final PresidingElectionContextStore _contextStore;
   final EnvironmentConfig _config;
 
-  /// Loads context from secure storage, cached user, or DEV env (in that order).
   Future<PresidingElectionContext?> ensureContext() async {
     final PresidingElectionContext? existing = await _contextStore.read();
     if (existing != null) return existing;

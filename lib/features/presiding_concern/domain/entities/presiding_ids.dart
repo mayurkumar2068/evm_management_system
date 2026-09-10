@@ -1,4 +1,3 @@
-/// Identifiers for presiding-officer workflow milestones.
 abstract final class PresidingMilestoneIds {
   static const String leftMaterialCenter = 'left_material_center';
   static const String reachedPollingStation = 'reached_polling_station';
@@ -12,7 +11,6 @@ abstract final class PresidingMilestoneIds {
   static const String materialHandedOver = 'material_handed_over';
 }
 
-/// Section groupings for the presiding-officer dashboard.
 abstract final class PresidingSectionIds {
   static const String arrival = 'arrival';
   static const String prePoll = 'pre_poll';
@@ -20,7 +18,6 @@ abstract final class PresidingSectionIds {
   static const String postPoll = 'post_poll';
 }
 
-/// Turnout slot identifiers for interval reporting.
 abstract final class TurnoutSlotIds {
   static const String slot9Am = 'slot_9am';
   static const String slot11Am = 'slot_11am';
@@ -32,7 +29,6 @@ abstract final class TurnoutSlotIds {
   static const String livePollInfo = 'live_poll_info';
 }
 
-/// Localization keys for turnout slot labels (resolved via `.tr()` in UI).
 abstract final class TurnoutSlotLabelKeys {
   static const String slot9Am = 'presiding.slot_9am';
   static const String slot11Am = 'presiding.slot_11am';
@@ -44,12 +40,10 @@ abstract final class TurnoutSlotLabelKeys {
   static const String livePollInfo = 'presiding.milestones.live_poll_info';
 }
 
-/// Default presiding session seed values stored as localization keys.
 abstract final class PresidingDefaults {
   static const String stationNameKey = 'presiding.default_station';
 }
 
-/// i18n keys for milestone labels persisted in session JSON.
 abstract final class PresidingMilestoneLabelKeys {
   static const String leftMaterialCenter =
       'presiding.milestones.left_material_center';

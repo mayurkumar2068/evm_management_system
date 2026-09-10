@@ -2,8 +2,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_colors.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// A section title row with an optional trailing action (text or widget),
-/// used to head content groups on dashboards and lists.
 class AppSectionHeader extends StatelessWidget {
   const AppSectionHeader({
     required this.title,

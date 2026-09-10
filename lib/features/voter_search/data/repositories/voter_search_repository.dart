@@ -1,7 +1,6 @@
 import 'package:evm_management_system/features/voter_search/data/datasources/voter_search_remote_datasource.dart';
 import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
 
-/// Repository facade over [VoterSearchRemoteDatasource].
 class VoterSearchRepository {
   VoterSearchRepository(this._remote);
 

@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
 
-/// Immutable domain representation of the authenticated officer.
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -35,7 +34,6 @@ class AuthUser {
   bool get isPresidingOfficer =>
       role == UserRole.presidingOfficer || (psId?.isNotEmpty ?? false);
 
-  /// Local guest session (no real officer login).
   bool get isGuest => id.startsWith('guest-');
 
   bool hasAnyRole(Set<UserRole> roles) => roles.isEmpty || roles.contains(role);

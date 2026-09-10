@@ -1,24 +1,16 @@
-/// Roles that gate access to features and routes (used by route role guards).
 enum UserRole {
-  /// Full administrative access nationwide.
   superAdmin,
 
-  /// State-level election officer.
   stateOfficer,
 
-  /// District-level election officer.
   districtOfficer,
 
-  /// Warehouse / store-room officer managing physical EVM stock.
   warehouseOfficer,
 
-  /// Read-only auditor.
   auditor,
 
-  /// Presiding officer at a polling station on election day.
   presidingOfficer,
 
-  /// Unknown / unmapped role.
   unknown;
 
   static UserRole fromString(String? value) {

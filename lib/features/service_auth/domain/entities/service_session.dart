@@ -1,13 +1,7 @@
-/// Which officer login produced the current [ServiceSession].
 import 'package:evm_management_system/core/utils/json_map.dart';
-enum ServiceLoginKind {
-  survey,
-  presiding,
-}
 
-/// Session granted by the survey API (`/api/Account/login-survey-pass`) when an officer logs in
-/// to open a government web service. The [token] is forwarded to the WebView as
-/// `?token=` and attached to every Angular API call.
+enum ServiceLoginKind { survey, presiding }
+
 class ServiceSession {
   const ServiceSession({
     required this.token,
@@ -58,24 +52,19 @@ class ServiceSession {
   final String? section;
   final int? ttlHours;
 
-  /// District context returned by the survey login response. Forwarded to
-  /// the WebView session context as `X-District-Id`.
   final String? districtId;
   final String? districtName;
   final String? bodyId;
   final String? bodyName;
 
-  /// Coordinates from login-survey-pass response (`Lat` / `Long`).
   final double? lat;
   final double? long;
 
-  /// PO login elector totals — Android fallback when election-context key fails.
   final int? maleElectors;
   final int? femaleElectors;
   final int? otherElectors;
   final int? totalElectors;
 
-  /// When the session was created. Used to check expiry locally.
   final DateTime? createdAt;
 
   bool get hasElectorCounts =>
@@ -115,5 +104,4 @@ class ServiceSession {
     }
     return ServiceLoginKind.survey;
   }
-
 }

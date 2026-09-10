@@ -5,9 +5,6 @@ import 'package:evm_management_system/features/voter_search/data/models/voter_se
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Official SEC voter-slip layout (Flutter — correct Devanagari shaping).
-///
-/// Logical size matches a compact printed slip (~105×148 mm / A6 aspect).
 class VoterSlipView extends StatelessWidget {
   const VoterSlipView({
     required this.elector,
@@ -16,10 +13,8 @@ class VoterSlipView extends StatelessWidget {
     super.key,
   });
 
-  /// Design width used for preview + image capture.
   static const double slipWidth = 340;
 
-  /// Design height (≈ A6 / printed slip proportions).
   static const double slipHeight = 480;
 
   static const Locale _hi = Locale('hi', 'IN');
@@ -29,8 +24,6 @@ class VoterSlipView extends StatelessWidget {
   final String? photoBase64;
   final double width;
 
-  /// Devanagari primary + Latin fallback so English names stay "Himanshu"
-  /// (not mangled) and Hindi stays "वोटर स्लिप" (not broken conjuncts).
   static TextStyle _textStyle(
     double fontSize, {
     FontWeight fontWeight = FontWeight.w400,
@@ -92,10 +85,12 @@ class VoterSlipView extends StatelessWidget {
     final String name = elector.name.isEmpty ? '—' : elector.name;
     final String relative = elector.rlnName.isEmpty ? '—' : elector.rlnName;
     final String gender = elector.gender.isEmpty ? '—' : elector.gender;
-    final String bodyName =
-        elector.slipBodyName.isEmpty ? '—' : elector.slipBodyName;
-    final String address =
-        elector.slipAddressLine.isEmpty ? '—' : elector.slipAddressLine;
+    final String bodyName = elector.slipBodyName.isEmpty
+        ? '—'
+        : elector.slipBodyName;
+    final String address = elector.slipAddressLine.isEmpty
+        ? '—'
+        : elector.slipAddressLine;
 
     return SizedBox(
       width: width,
@@ -123,10 +118,8 @@ class VoterSlipView extends StatelessWidget {
                     width: 46 * scale,
                     height: 38 * scale,
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => SizedBox(
-                      width: 46 * scale,
-                      height: 38 * scale,
-                    ),
+                    errorBuilder: (_, __, ___) =>
+                        SizedBox(width: 46 * scale, height: 38 * scale),
                   ),
                   Expanded(
                     child: Column(
@@ -187,12 +180,7 @@ class VoterSlipView extends StatelessWidget {
                           ],
                         ),
                         SizedBox(height: 6 * scale),
-                        _line(
-                          'मतदाता का नाम : ',
-                          name,
-                          scale,
-                          valueBold: true,
-                        ),
+                        _line('मतदाता का नाम : ', name, scale, valueBold: true),
                         SizedBox(height: 6 * scale),
                         _line(
                           '${elector.relativeLabel} : ',
@@ -310,11 +298,7 @@ class VoterSlipView extends StatelessWidget {
     return Text.rich(
       TextSpan(
         children: <InlineSpan>[
-          TextSpan(
-            text: label,
-            locale: _hi,
-            style: _textStyle(11 * scale),
-          ),
+          TextSpan(text: label, locale: _hi, style: _textStyle(11 * scale)),
           TextSpan(
             text: value,
             locale: _hi,

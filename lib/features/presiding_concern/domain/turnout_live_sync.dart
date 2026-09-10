@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Mirrors hourly / final turnout counts into live poll (लाइव जानकारी).
 abstract final class TurnoutLiveSync {
   static const Set<String> _mirrorSlotIds = <String>{
     TurnoutSlotIds.slot9Am,
@@ -11,14 +10,12 @@ abstract final class TurnoutLiveSync {
     TurnoutSlotIds.pollCompletion,
   };
 
-  /// Hourly slots + मतदान जानकारी push latest counts to live poll — not queue.
-  static bool mirrorsToLivePoll(String slotId) => _mirrorSlotIds.contains(slotId);
+  static bool mirrorsToLivePoll(String slotId) =>
+      _mirrorSlotIds.contains(slotId);
 
-  /// अंतिम मतदान की जानकारी is authoritative — live must match exactly.
   static bool forcesExactLiveCounts(String slotId) =>
       slotId == TurnoutSlotIds.pollCompletion;
 
-  /// Live stays if it is already higher; otherwise hourly/final becomes the floor.
   static ({int male, int female, int other}) mergePreferringHigherLive({
     required TurnoutRecord? live,
     required int male,

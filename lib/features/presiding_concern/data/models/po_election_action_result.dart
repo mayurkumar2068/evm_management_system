@@ -1,4 +1,3 @@
-/// Parsed outcome of a PO Election API write call.
 class PoElectionActionResult {
   const PoElectionActionResult({
     required this.success,
@@ -12,6 +11,5 @@ class PoElectionActionResult {
   final bool alreadyRegistered;
   final String? message;
 
-  /// Whether the server accepted the action (including already-registered).
   bool get accepted => success || alreadyRegistered;
 }

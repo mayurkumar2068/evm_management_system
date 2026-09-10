@@ -17,15 +17,8 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum PresidingTurnoutCardMode {
-  /// Scheduled turnout slots: text fields + Save button.
-  entry,
+enum PresidingTurnoutCardMode { entry, live }
 
-  /// Live poll: +/- triggers immediate API call.
-  live,
-}
-
-/// Specialized UI for presiding-officer turnout entry.
 class PresidingTurnoutCard extends StatefulWidget {
   const PresidingTurnoutCard({
     required this.title,
@@ -53,7 +46,7 @@ class PresidingTurnoutCard extends StatefulWidget {
   final bool queueOnly;
   final bool embedded;
   final bool forceReadOnly;
-  /// When false, collapsed card is shown locked and ignores taps.
+
   final bool interactionEnabled;
 
   final Future<void> Function({
@@ -325,7 +318,8 @@ class _PresidingTurnoutCardState extends State<PresidingTurnoutCard> {
                   isReadOnly: _isReadOnly,
                   busy: _busy,
                   onPressed:
-                      widget.mode == PresidingTurnoutCardMode.live || _isReadOnly
+                      widget.mode == PresidingTurnoutCardMode.live ||
+                          _isReadOnly
                       ? null
                       : _handleSave,
                 ),

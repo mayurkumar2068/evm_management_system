@@ -12,7 +12,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Full-screen turnout entry for all presiding-officer reporting slots.
 class PresidingTurnoutScreen extends StatelessWidget {
   const PresidingTurnoutScreen({super.key});
 
@@ -79,12 +78,11 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     if (_isTurnoutSubmitted) return false;
     final bool lockedByLater =
         TurnoutCountValidator.isEarlierHourlyLockedByLaterSave(
-      session: widget.session,
-      slotId: slotId,
-    );
-    final bool saved =
-        widget.session.turnoutRecords[slotId]?.savedAt != null;
-    // Skipped earlier hour (never saved) cannot be opened after a later save.
+          session: widget.session,
+          slotId: slotId,
+        );
+    final bool saved = widget.session.turnoutRecords[slotId]?.savedAt != null;
+
     if (lockedByLater && !saved) return false;
     return true;
   }
@@ -118,14 +116,15 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     if (_isTurnoutSubmitted) return;
     if (expanded &&
         !TurnoutCountValidator.isLastTimeSlotSaved(widget.session)) {
-      final String? lastId =
-          TurnoutCountValidator.lastTimeSlotId(widget.session.areaType);
+      final String? lastId = TurnoutCountValidator.lastTimeSlotId(
+        widget.session.areaType,
+      );
       final String messageKey = lastId == TurnoutSlotIds.slot5Pm
           ? LocaleKeys.presidingFill5PmBeforeNext
           : LocaleKeys.presidingFill3PmBeforeNext;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(messageKey.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(messageKey.tr())));
       return;
     }
     setState(() => _otherSlotExpanded[slotId] = expanded);
@@ -153,10 +152,10 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
         }
         return;
       }
-      // Lock live जानकारी too — same submit boundary as 2–2 hourly.
+
       await dashboard.completeMilestone(PresidingMilestoneIds.livePollInfo);
       if (!mounted) return;
-      // Auto-complete मतदान समाप्त (API) so machine seal can unlock next.
+
       await dashboard.completeMilestone(PresidingMilestoneIds.pollEnd);
       if (!mounted) return;
       Get.back<void>();
@@ -220,8 +219,9 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
     );
     final TurnoutSlotDefinition? activeSlot = _selectedSlot(timeSlots);
     final bool turnoutSubmitted = _isTurnoutSubmitted;
-    final bool lastHourlySaved =
-        TurnoutCountValidator.isLastTimeSlotSaved(widget.session);
+    final bool lastHourlySaved = TurnoutCountValidator.isLastTimeSlotSaved(
+      widget.session,
+    );
     final bool allSlotsSaved = allSlots.every((TurnoutSlotDefinition slot) {
       if (slot.queueOnly || slot.slotId == TurnoutSlotIds.pollCompletion) {
         return widget.session.turnoutRecords[slot.slotId]?.savedAt != null;
@@ -243,13 +243,10 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
-            args: <String>[
-              widget.session.pollingStationCode,
-              stationLabel,
-            ],
+            args: <String>[widget.session.pollingStationCode, stationLabel],
           ),
         ),
-        // Last label kept outside the gradient header.
+
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
           child: Text(
@@ -332,7 +329,8 @@ class _TurnoutBodyState extends State<_TurnoutBody> {
                               initialRecord: widget
                                   .session
                                   .turnoutRecords[activeSlot.slotId],
-                              forceReadOnly: turnoutSubmitted ||
+                              forceReadOnly:
+                                  turnoutSubmitted ||
                                   _isHourlyClosed(activeSlot.slotId),
                               mode: PresidingTurnoutCardMode.entry,
                               onSave:

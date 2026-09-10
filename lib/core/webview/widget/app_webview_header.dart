@@ -2,7 +2,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Soft blue→mint WebView chrome — follows app light / dark theme.
 class AppWebViewHeader extends StatelessWidget {
   const AppWebViewHeader({
     required this.title,
@@ -18,7 +17,6 @@ class AppWebViewHeader extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onReload;
 
-  /// When set, shows a logout action — for service-login-gated WebViews.
   final VoidCallback? onLogout;
 
   @override
@@ -37,7 +35,9 @@ class AppWebViewHeader extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isDark ? null : AppGradients.header,
           color: isDark ? context.appSurface : null,
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(22)),
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(22),
+          ),
           border: isDark
               ? Border(bottom: BorderSide(color: context.appOutline))
               : null,

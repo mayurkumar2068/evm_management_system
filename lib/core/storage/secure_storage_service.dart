@@ -1,11 +1,6 @@
 import 'package:evm_management_system/core/error/app_exception.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Hardware-backed secure key/value storage.
-///
-/// The ONLY place tokens and sensitive material may live on-device. Backed by
-/// the iOS Keychain and Android EncryptedSharedPreferences/Keystore. Plain
-/// `SharedPreferences` is never used for secrets.
 class SecureStorageService {
   SecureStorageService([FlutterSecureStorage? storage])
     : _storage =
@@ -67,13 +62,12 @@ class SecureStorageService {
   }
 }
 
-/// Stable key namespace for [SecureStorageService] entries.
 abstract final class SecureStorageKeys {
   static const String accessToken = 'evm.access_token';
   static const String refreshToken = 'evm.refresh_token';
   static const String tokenExpiry = 'evm.token_expiry';
   static const String userSession = 'evm.user_session';
-  /// Presiding / survey officer service login (separate from app guest auth).
+
   static const String serviceSession = 'evm.service_session';
   static const String biometricEnabled = 'evm.biometric_enabled';
   static const String encryptionKey = 'evm.db_encryption_key';
@@ -81,19 +75,14 @@ abstract final class SecureStorageKeys {
   static const String presidingElectionContext =
       'evm.presiding_election_context';
 
-  /// PO party details completed for a presiding officer session.
   static String poPartyComplete(String poUserId) =>
       'evm.po_party_complete.$poUserId';
 
-  /// Cached party form (online save or offline draft).
-  static String poPartyDraft(String poUserId) =>
-      'evm.po_party_draft.$poUserId';
+  static String poPartyDraft(String poUserId) => 'evm.po_party_draft.$poUserId';
 
-  /// Pending `save-po-party` payload when saved offline / sync failed.
   static String poPartyPending(String poUserId) =>
       'evm.po_party_pending.$poUserId';
 
-  /// Saved PO officer profile (name/mobile) for report + offline display.
   static String poOfficerProfile(String poUserId) =>
       'evm.po_officer_profile.$poUserId';
 }

@@ -4,7 +4,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_spacing.da
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Standardized modal bottom sheet with a drag handle and consistent styling.
 abstract final class AppBottomSheet {
   static Future<T?> show<T>(
     BuildContext context, {

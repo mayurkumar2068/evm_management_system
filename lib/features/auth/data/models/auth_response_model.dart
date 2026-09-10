@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/auth/data/models/user_model.dart';
 
-/// The login / refresh response envelope from the auth API.
 class AuthResponseModel {
   const AuthResponseModel({
     required this.user,
@@ -36,7 +35,6 @@ class AuthResponseModel {
   final String refreshToken;
   final int expiresInSeconds;
 
-  /// Copies election / polling-station fields from the response envelope into [userJson].
   static void _mergeElectionContext(
     Map<String, dynamic> userJson,
     Map<String, dynamic> data,

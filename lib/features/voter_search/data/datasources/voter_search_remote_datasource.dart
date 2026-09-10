@@ -7,11 +7,6 @@ import 'package:evm_management_system/features/voter_search/data/voter_search_en
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 
-/// Remote datasource for SECSearchAPI voter search.
-///
-/// - [PassKey] is AES-GCM encrypted short passkey (refreshed per request).
-/// - [ReqData] stays plaintext (empty / district GUID / JSON) as required by API.
-/// - Response [Data] is AES-GCM encrypted JSON (decrypted here).
 class VoterSearchRemoteDatasource {
   VoterSearchRemoteDatasource({
     required Dio dio,
@@ -95,9 +90,6 @@ class VoterSearchRemoteDatasource {
     return 'other';
   }
 
-  /// Fetches voter photo. Response shape (Postman / API doc):
-  /// `{ "Status": true, "Data": "{\"photo\":\"/9j/...\"}" }`
-  /// [Data] may be plaintext JSON or AES-encrypted; photo is JPEG base64.
   Future<String?> fetchPhoto({
     required String distNo,
     required String electorId,
@@ -114,7 +106,6 @@ class VoterSearchRemoteDatasource {
         'distNo=$distNo id=$electorId reqLen=${reqData.length}',
       );
 
-      // Plain avoids Dio JSON transformer failing on large photo payloads.
       final Response<dynamic> response = await _dio.post<dynamic>(
         VoterSearchEndpoints.photo,
         data: VoterSearchRequest(
@@ -126,16 +117,17 @@ class VoterSearchRemoteDatasource {
           responseType: ResponseType.plain,
           sendTimeout: const Duration(seconds: _kConnectTimeoutSeconds),
           receiveTimeout: const Duration(seconds: _kReceiveTimeoutSeconds),
-          // Photo must be JSON 2xx — Dio's default validateStatus (<500)
-          // treats 403 HTML gateway pages as success and breaks jsonDecode.
-          validateStatus: (int? code) => code != null && code >= 200 && code < 300,
+
+          validateStatus: (int? code) =>
+              code != null && code >= 200 && code < 300,
         ),
       );
 
       final Object? rawBody = response.data;
       if (rawBody is String) {
         final String trimmed = rawBody.trimLeft();
-        if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
+        if (trimmed.startsWith('<') ||
+            trimmed.toLowerCase().startsWith('<!doctype')) {
           AppLogger.d(
             '[VoterSearchAPI] ✕ photo html_body http=${response.statusCode} '
             'ms=${sw.elapsedMilliseconds}',
@@ -185,12 +177,10 @@ class VoterSearchRemoteDatasource {
     }
   }
 
-  /// Resolves photo [Data]: plaintext JSON, AES JSON, or AES raw JPEG bytes.
   Future<String?> _resolvePhotoBase64(String data) async {
     final String trimmed = data.trim();
     if (trimmed.isEmpty) return null;
 
-    // 1) Plaintext JSON / already-decrypted string field.
     try {
       final String plain = await _crypto.decryptDataField(trimmed);
       final String? fromPlain = _extractPhotoBase64FromPlain(plain);
@@ -205,7 +195,6 @@ class VoterSearchRemoteDatasource {
       AppLogger.d('[VoterSearchAPI] photo decryptDataField failed: $e');
     }
 
-    // 2) AES → bytes (JSON UTF-8 or raw image).
     try {
       final Uint8List bytes = await _crypto.decryptToBytes(trimmed);
       if (_looksLikeImageBytes(bytes)) {
@@ -226,24 +215,23 @@ class VoterSearchRemoteDatasource {
       AppLogger.d('[VoterSearchAPI] photo decryptToBytes failed: $e');
     }
 
-    // 3) Data itself may be raw base64 JPEG.
     return _normalizeBase64(trimmed);
   }
 
   static bool _looksLikeImageBytes(Uint8List bytes) {
     if (bytes.length < 4) return false;
-    // JPEG
+
     if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
-    // PNG
+
     if (bytes[0] == 0x89 &&
         bytes[1] == 0x50 &&
         bytes[2] == 0x4E &&
         bytes[3] == 0x47) {
       return true;
     }
-    // GIF
+
     if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) return true;
-    // WEBP (RIFF....WEBP)
+
     if (bytes.length >= 12 &&
         bytes[0] == 0x52 &&
         bytes[1] == 0x49 &&
@@ -258,7 +246,6 @@ class VoterSearchRemoteDatasource {
     return false;
   }
 
-  /// Normalizes Dio [ResponseType.plain] / json body into a map.
   static Map<String, dynamic> _asJsonMap(Object? raw) {
     if (raw is Map) {
       return Map<String, dynamic>.from(raw);
@@ -276,21 +263,16 @@ class VoterSearchRemoteDatasource {
     throw const VoterSearchApiException('Invalid response from server');
   }
 
-  /// Photo API [Data] may be JSON object OR a raw base64 image string.
   static String? _extractPhotoBase64FromPlain(String plain) {
     if (plain.isEmpty) return null;
 
-    // JSON object / array — doc shape: {"photo":"..."}
     if (plain.startsWith('{') || plain.startsWith('[')) {
       try {
         final dynamic decoded = jsonDecode(plain);
         return _extractPhotoBase64(decoded);
-      } catch (_) {
-        // Fall through — treat as raw payload.
-      }
+      } catch (_) {}
     }
 
-    // JSON-encoded string: "iVBORw0KGgo..."
     if (plain.startsWith('"') && plain.endsWith('"')) {
       try {
         final dynamic decoded = jsonDecode(plain);
@@ -301,7 +283,6 @@ class VoterSearchRemoteDatasource {
     return _normalizeBase64(plain);
   }
 
-  /// Accepts map payloads (`photo` / `Photo` / …) or a raw base64 string.
   static String? _extractPhotoBase64(dynamic decoded) {
     if (decoded == null) return null;
 
@@ -339,7 +320,7 @@ class VoterSearchRemoteDatasource {
           if (normalized != null) return normalized;
         }
       }
-      // Case-insensitive key scan.
+
       for (final MapEntry<String, dynamic> e in map.entries) {
         if (e.key.toLowerCase().contains('photo') ||
             e.key.toLowerCase().contains('image') ||

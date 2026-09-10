@@ -6,22 +6,18 @@ import 'package:evm_management_system/core/network/po_election_api_client.dart';
 import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_election_action_result.dart';
 
-/// Network calls for PO Election APIs (`POElectionAPI v1` OpenAPI).
 abstract interface class PresidingConcernRemoteDatasource {
-  /// POSTs [body] to [endpoint] and returns the parsed server outcome.
   Future<PoElectionActionResult> postAction({
     required String endpoint,
     required Map<String, dynamic> body,
   });
 
-  /// POST `/api/POElection/po-status` with `{electionId, psId}`
   Future<Map<String, dynamic>?> fetchPoStatus({
     required int electionId,
     required String psId,
   });
 }
 
-/// Dio-backed PO Election API client using the PO login access token.
 final class PresidingConcernRemoteDatasourceImpl
     implements PresidingConcernRemoteDatasource {
   PresidingConcernRemoteDatasourceImpl({
@@ -108,9 +104,7 @@ final class PresidingConcernRemoteDatasourceImpl
       }
       return body;
     }
-    AppLogger.w(
-      '[PO API] po-status unexpected body type=${data.runtimeType}',
-    );
+    AppLogger.w('[PO API] po-status unexpected body type=${data.runtimeType}');
     return null;
   }
 

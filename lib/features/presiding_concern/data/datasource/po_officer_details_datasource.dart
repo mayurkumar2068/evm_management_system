@@ -6,11 +6,9 @@ import 'package:evm_management_system/features/presiding_concern/data/datasource
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_election_base_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
 
-/// Remote calls for PO officer profile (name/mobile + OTP).
 class PoOfficerDetailsDatasource extends PoElectionBaseDatasource {
   PoOfficerDetailsDatasource(super.config);
 
-  /// Returns details when Status=true; `null` when not found / empty.
   Future<PoOfficerDetails?> fetchDetails(String poUserId) async {
     final String id = poUserId.trim();
     if (id.isEmpty) return null;
@@ -89,9 +87,7 @@ class PoOfficerDetailsDatasource extends PoElectionBaseDatasource {
         throw PoApiException('Save failed (HTTP $code)', statusCode: code);
       }
       if (!ApiEnvelope.isSuccess(res.data)) {
-        throw PoApiException(
-          ApiEnvelope.message(res.data) ?? 'Save failed',
-        );
+        throw PoApiException(ApiEnvelope.message(res.data) ?? 'Save failed');
       }
     } on PoApiException {
       rethrow;

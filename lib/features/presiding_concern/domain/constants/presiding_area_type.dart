@@ -1,4 +1,3 @@
-/// Urban / rural body type returned by the PO Election login API.
 enum PresidingAreaType {
   urban('U'),
   rural('R');
@@ -10,7 +9,6 @@ enum PresidingAreaType {
   bool get isUrban => this == PresidingAreaType.urban;
   bool get isRural => this == PresidingAreaType.rural;
 
-  /// Returns null when [raw] is empty or not a known urban/rural code.
   static PresidingAreaType? tryParse(String? raw) {
     if (raw == null || raw.trim().isEmpty) return null;
     final String normalized = raw.trim().toUpperCase();

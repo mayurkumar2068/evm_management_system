@@ -8,11 +8,9 @@ import 'package:evm_management_system/features/presiding_concern/data/datasource
 import 'package:evm_management_system/features/presiding_concern/data/datasource/po_election_base_datasource.dart';
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 
-/// Remote calls for PO party details, and PO/PS Survey logout.
 class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
   PoPartyRemoteDatasource(super.config);
 
-  /// Fetches existing party details. Returns `null` when not filled yet.
   Future<PoPartyDetails?> fetchPartyDetails(String poUserId) async {
     final String id = poUserId.trim();
     if (id.isEmpty) return null;
@@ -44,8 +42,7 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
       }
       if (code == 404) return null;
       if (code == 400) {
-        final String msg =
-            (ApiEnvelope.message(res.data) ?? '').toLowerCase();
+        final String msg = (ApiEnvelope.message(res.data) ?? '').toLowerCase();
         if (msg.contains('not found')) return null;
         return null;
       }
@@ -74,7 +71,6 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
     }
   }
 
-  /// Sends SMS OTP to [mobileNo] via `po-send-otp` (same store as PO details).
   Future<void> sendOtp(String mobileNo) async {
     final String mobile = mobileNo.trim();
     if (mobile.isEmpty) {
@@ -110,8 +106,6 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
     }
   }
 
-  /// Saves or updates party details via `save-po-party` (no OTP).
-  /// Returns server id when available.
   Future<String?> savePartyDetails(PoPartyDetails details) async {
     try {
       final Response<dynamic> res = await authedPost(
@@ -127,10 +121,7 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
         );
       }
       if (code == 404) {
-        throw const PoApiException(
-          'Save endpoint not found',
-          statusCode: 404,
-        );
+        throw const PoApiException('Save endpoint not found', statusCode: 404);
       }
       if (code == null || code < 200 || code >= 300) {
         throw PoApiException('Save failed (HTTP $code)', statusCode: code);
@@ -143,13 +134,11 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
       final Map<String, dynamic> map = Map<String, dynamic>.from(body);
       final bool ok = map['Success'] == true || map['Status'] == true;
       if (!ok) {
-        final String msg =
-            (map['Message'] ?? map['message'] ?? 'Save failed').toString();
+        final String msg = (map['Message'] ?? map['message'] ?? 'Save failed')
+            .toString();
         throw PoApiException(msg);
       }
 
-      // `Status.Id` from save is an action status int (e.g. 1), NOT the party Guid.
-      // Prefer Guid from Data, else re-fetch by poUserId.
       final Object? data = map['Data'] ?? map['data'];
       if (data is Map) {
         final Object? id = data['Id'] ?? data['id'];
@@ -160,8 +149,9 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
       if (PoPartyDetails.isPartyGuid(details.id)) {
         return details.id;
       }
-      final PoPartyDetails? refreshed =
-          await fetchPartyDetails(details.poUserId);
+      final PoPartyDetails? refreshed = await fetchPartyDetails(
+        details.poUserId,
+      );
       if (refreshed != null && refreshed.existsOnServer) {
         return refreshed.id;
       }
@@ -177,20 +167,6 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
     }
   }
 
-  /// Best-effort remote logout. Returns `true` when server confirms success.
-  ///
-  /// The API's "already logged in from another device" guard on
-  /// `login-po-pass` / `login-survey-pass` is keyed by the `SessionId` claim
-  /// embedded in the access token (not just the user id) — so logout must
-  /// echo that same `sessionId` back for the server to release the correct
-  /// lock. Without it, `po-logout`/`ps-logout` still reports `Status: true`
-  /// but the concurrent-session lock stays held, and the very next login
-  /// 400s. Pass [sessionId] explicitly only to override; otherwise it's read
-  /// from the current access token's claims.
-  ///
-  /// [isSurveyUser] selects the endpoint: `ps-logout` for Booth/PS Survey
-  /// sessions (`ServiceLoginKind.survey`), `po-logout` for Presiding Officer
-  /// sessions (`ServiceLoginKind.presiding`, the default).
   Future<bool> logout({
     required String poUserId,
     String? sessionId,
@@ -207,10 +183,7 @@ class PoPartyRemoteDatasource extends PoElectionBaseDatasource {
     try {
       final Response<dynamic> res = await dio.post<dynamic>(
         endpoint,
-        data: <String, dynamic>{
-          'id': id,
-          'sessionId': resolvedSessionId,
-        },
+        data: <String, dynamic>{'id': id, 'sessionId': resolvedSessionId},
         queryParameters: token.isEmpty
             ? null
             : <String, dynamic>{'token': token},

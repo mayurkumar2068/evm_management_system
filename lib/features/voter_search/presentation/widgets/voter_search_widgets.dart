@@ -3,7 +3,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Instruction banner matching the SEC search webpage card.
 class VoterSearchInstructionCard extends StatelessWidget {
   const VoterSearchInstructionCard({super.key});
 
@@ -57,7 +56,6 @@ class VoterSearchInstructionCard extends StatelessWidget {
   }
 }
 
-/// Horizontal Material chips for Urban / Rural.
 class VoterAreaTypeRadioRow extends StatelessWidget {
   const VoterAreaTypeRadioRow({
     required this.isUrban,

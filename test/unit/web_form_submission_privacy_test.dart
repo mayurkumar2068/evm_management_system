@@ -16,10 +16,7 @@ void main() {
     expect(json.containsKey('authToken'), isFalse);
 
     final WebFormSubmission restored = WebFormSubmission.fromJson(
-      <String, dynamic>{
-        ...json,
-        'authToken': 'should-be-ignored',
-      },
+      <String, dynamic>{...json, 'authToken': 'should-be-ignored'},
     );
     expect(restored.authToken, isEmpty);
   });

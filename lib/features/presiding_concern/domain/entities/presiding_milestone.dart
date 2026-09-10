@@ -1,10 +1,8 @@
 import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_ids.dart';
 
-/// Lifecycle state of a presiding-officer milestone.
 enum PresidingMilestoneState { pending, completed }
 
-/// A single presiding-officer checkpoint with optional completion timestamp.
 final class PresidingMilestone {
   const PresidingMilestone({
     required this.id,
@@ -44,7 +42,6 @@ final class PresidingMilestone {
   }
 }
 
-/// Turnout slot metadata for presiding-officer reporting UI.
 final class TurnoutSlotDefinition {
   const TurnoutSlotDefinition({
     required this.slotId,
@@ -57,7 +54,6 @@ final class TurnoutSlotDefinition {
   final bool queueOnly;
 }
 
-/// Ordered turnout slots shown on the presiding turnout screen.
 abstract final class TurnoutSlots {
   static const List<TurnoutSlotDefinition> _baseSlots = <TurnoutSlotDefinition>[
     TurnoutSlotDefinition(
@@ -94,8 +90,6 @@ abstract final class TurnoutSlots {
     labelKey: TurnoutSlotLabelKeys.pollCompletion,
   );
 
-  /// Rural: up to 3 PM. Urban: up to 5 PM. Both end with queue + final count.
-  /// Missing/unknown area type is treated as rural (no 5PM).
   static List<TurnoutSlotDefinition> forAreaType(String? areaType) {
     final PresidingAreaType resolved = PresidingAreaType.parse(
       areaType,

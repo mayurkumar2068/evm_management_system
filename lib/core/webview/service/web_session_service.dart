@@ -11,7 +11,6 @@ import 'package:uuid/uuid.dart';
 import '../models/web_session_context.dart';
 import 'device_id_service.dart';
 
-/// Builds the [WebSessionContext] that pre-authenticates every WebView.
 class WebSessionService {
   WebSessionService({DeviceIdService? deviceId})
     : _deviceId = deviceId ?? DeviceIdService(SecureStorageService());

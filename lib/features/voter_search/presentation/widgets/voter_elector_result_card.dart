@@ -10,7 +10,6 @@ import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Elector result card — polished urban/rural layout; photo only on slip.
 class VoterElectorResultCard extends StatefulWidget {
   const VoterElectorResultCard({required this.elector, super.key});
 
@@ -273,11 +272,7 @@ class _CardHeader extends StatelessWidget {
 }
 
 class _Chip extends StatelessWidget {
-  const _Chip({
-    required this.label,
-    required this.color,
-    required this.bg,
-  });
+  const _Chip({required this.label, required this.color, required this.bg});
 
   final String label;
   final Color color;

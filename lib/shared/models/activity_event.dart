@@ -1,5 +1,3 @@
-/// Type of audited activity. Drives the icon/colour used in the audit trail
-/// and the dashboard's recent-activity feed.
 enum ActivityType {
   registered,
   scanned,
@@ -14,7 +12,6 @@ enum ActivityType {
   );
 }
 
-/// A single, immutable entry in the activity/audit log.
 class ActivityEvent {
   const ActivityEvent({
     required this.id,

@@ -4,8 +4,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_spacing.da
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Builds the light and dark [ThemeData] entirely from design tokens so the
-/// whole app stays visually consistent and themeable from one place.
 abstract final class AppTheme {
   static ThemeData get light {
     const ColorScheme scheme = ColorScheme.light(
@@ -111,8 +109,12 @@ abstract final class AppTheme {
         ),
         errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
         errorMaxLines: 2,
-        prefixIconColor: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
-        suffixIconColor: isLight ? AppColors.slate500 : AppColors.darkTextSecondary,
+        prefixIconColor: isLight
+            ? AppColors.slate500
+            : AppColors.darkTextSecondary,
+        suffixIconColor: isLight
+            ? AppColors.slate500
+            : AppColors.darkTextSecondary,
         border: OutlineInputBorder(
           borderRadius: AppRadius.brMd,
           borderSide: BorderSide(

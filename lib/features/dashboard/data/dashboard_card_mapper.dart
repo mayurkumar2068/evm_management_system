@@ -6,14 +6,12 @@ import 'package:evm_management_system/features/service_auth/domain/entities/serv
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Maps Masters `card-list` rows onto existing [DashboardService] behaviour.
 abstract final class DashboardCardMapper {
   static List<DashboardService> mapServices({
     required List<DashboardCardModel> cards,
     required bool preferHindi,
     required String surveyWebUrl,
     required String voterRegistrationUrl,
-    required String expenditureUrl,
   }) {
     final List<DashboardService> out = <DashboardService>[];
     for (final DashboardCardModel card in cards) {
@@ -22,7 +20,6 @@ abstract final class DashboardCardMapper {
         preferHindi: preferHindi,
         surveyWebUrl: surveyWebUrl,
         voterRegistrationUrl: voterRegistrationUrl,
-        expenditureUrl: expenditureUrl,
       );
       if (service != null) out.add(service);
     }
@@ -76,7 +73,6 @@ abstract final class DashboardCardMapper {
     required bool preferHindi,
     required String surveyWebUrl,
     required String voterRegistrationUrl,
-    required String expenditureUrl,
   }) {
     final String title = card.displayName(preferHindi: preferHindi);
     if (title.isEmpty) return null;
@@ -143,31 +139,19 @@ abstract final class DashboardCardMapper {
           openAsExternalPortal: true,
           registrationAllowed: card.isRegistrationAllowed,
         );
-      case _NativeKind.expenditure:
-        final String url = (card.url != null && card.url!.isNotEmpty)
-            ? card.url!
-            : expenditureUrl;
-        return DashboardService(
-          title: title,
-          desc: '',
-          icon: Icons.account_balance_wallet_outlined,
-          color: AppColors.saffron,
-          url: url,
-          category: category,
-          requiresServiceLogin: card.isLogin,
-          passSessionContext: false,
-          openAsExternalPortal: true,
-          requiredLoginKind: card.isLogin ? ServiceLoginKind.survey : null,
-          registrationAllowed: card.isRegistrationAllowed,
-        );
       case null:
         break;
     }
 
-    // Generic WebView / portal card from API.
     if (card.isWebView) {
       final String? url = card.url;
       if (url == null || url.isEmpty) return null;
+      final String key = card.matchKey;
+      if (key.contains('expenditure') ||
+          key.contains('ems') ||
+          key.contains('nomination')) {
+        return null;
+      }
       return DashboardService(
         title: title,
         desc: '',
@@ -193,7 +177,7 @@ abstract final class DashboardCardMapper {
       case 2:
         return _NativeKind.voterSearch;
       case 3:
-        return _NativeKind.expenditure;
+        return null;
       case 4:
         return _NativeKind.boothSurvey;
       case 5:
@@ -207,8 +191,10 @@ abstract final class DashboardCardMapper {
     if (key.contains('voter search')) {
       return _NativeKind.voterSearch;
     }
-    if (key.contains('expenditure')) {
-      return _NativeKind.expenditure;
+    if (key.contains('expenditure') ||
+        key.contains('ems') ||
+        key.contains('nomination')) {
+      return null;
     }
     if (key.contains('survey') || key.contains('polling station')) {
       return _NativeKind.boothSurvey;
@@ -223,7 +209,6 @@ abstract final class DashboardCardMapper {
 enum _NativeKind {
   claimsObjections,
   voterSearch,
-  expenditure,
   boothSurvey,
   presiding,
 }

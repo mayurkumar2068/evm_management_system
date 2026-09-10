@@ -60,7 +60,6 @@ class PresidingCountBox extends StatelessWidget {
   }
 }
 
-/// When field shows only `0`, first typed digit replaces it (e.g. type `5` → `5`, not `05`).
 class ReplaceInitialZeroFormatter extends TextInputFormatter {
   const ReplaceInitialZeroFormatter();
 

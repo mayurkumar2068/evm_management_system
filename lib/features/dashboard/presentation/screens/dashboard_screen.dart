@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_widgets.dart';
@@ -9,7 +8,6 @@ import 'package:get/get.dart' hide Trans;
 
 import '../../../../shared/design_system/tokens/app_theme_colors.dart';
 
-/// Premium MP State Election Management dashboard.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -53,10 +51,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     name: state.userName,
                     pending: state.pendingCount,
                   ),
-                  if (!kHideDashboardStats) ...<Widget>[
-                    const SizedBox(height: DashboardGap.section),
-                    DashboardStatStrip(stats: state.stats),
-                  ],
                   const SizedBox(height: 16),
                   DashboardSectionHeader(
                     title: LocaleKeys.dashboardMainServices.tr(),

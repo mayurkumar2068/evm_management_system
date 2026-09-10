@@ -24,8 +24,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// Captures the PO report as a Flutter widget image (app header/theme),
-/// then wraps it in a PDF for save / print.
 abstract final class PresidingTurnoutReportPdfService {
   static const double reportWidth = 595;
   static const double _capturePixelRatio = 3;
@@ -197,10 +195,9 @@ class _PresidingReportPreviewPageState
           });
         }
 
-        final PoOfficerDetails? details =
-            await PoOfficerDetailsDatasource(AppServices.config).fetchDetails(
-          userId,
-        );
+        final PoOfficerDetails? details = await PoOfficerDetailsDatasource(
+          AppServices.config,
+        ).fetchDetails(userId);
         final String name = details?.poName.trim() ?? '';
         final String mobile = details?.poMobileNo.trim() ?? '';
         if (details != null && (name.isNotEmpty || mobile.isNotEmpty)) {

@@ -6,11 +6,6 @@ import 'package:dio/io.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 
-/// Configures certificate / public-key pinning on a Dio [IOHttpClientAdapter].
-///
-/// When pinning is enabled for the environment, only servers presenting a
-/// certificate whose SHA-256 public-key hash matches [EnvironmentConfig.sslPinSha256]
-/// are trusted. Disabled automatically on the web platform.
 class SslPinningService {
   const SslPinningService(this._config);
 

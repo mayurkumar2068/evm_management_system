@@ -2,7 +2,6 @@ import 'package:evm_management_system/design_system/mpsec/tokens/mpsec_tokens.da
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Material 3 enterprise card with 24px radius and soft elevation.
 class MpSecEnterpriseCard extends StatelessWidget {
   const MpSecEnterpriseCard({
     required this.child,

@@ -7,16 +7,14 @@ import 'package:evm_management_system/core/utils/json_map.dart';
 import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
 
 class DashboardCardsRepository {
-  DashboardCardsRepository({
-    required EnvironmentConfig config,
-    Dio? dio,
-  }) : _config = config,
-       _dio =
-           dio ??
-           DioFactory.create(
-             config: config,
-             baseUrl: config.poElectionApiBaseUrl,
-           );
+  DashboardCardsRepository({required EnvironmentConfig config, Dio? dio})
+    : _config = config,
+      _dio =
+          dio ??
+          DioFactory.create(
+            config: config,
+            baseUrl: config.poElectionApiBaseUrl,
+          );
 
   final EnvironmentConfig _config;
   final Dio _dio;
@@ -42,7 +40,8 @@ class DashboardCardsRepository {
           receiveTimeout: _config.receiveTimeout,
           sendTimeout: _config.sendTimeout,
           validateStatus: (int? status) =>
-              status != null && (status < 300 || status == 404 || status == 501),
+              status != null &&
+              (status < 300 || status == 404 || status == 501),
         ),
       );
 
@@ -82,11 +81,7 @@ class DashboardCardsRepository {
       );
       return _cache ?? const <DashboardCardModel>[];
     } catch (e, s) {
-      AppLogger.w(
-        'Dashboard card-list fetch failed',
-        error: e,
-        stackTrace: s,
-      );
+      AppLogger.w('Dashboard card-list fetch failed', error: e, stackTrace: s);
       return _cache ?? const <DashboardCardModel>[];
     }
   }

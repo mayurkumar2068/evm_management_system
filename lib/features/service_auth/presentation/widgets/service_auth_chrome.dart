@@ -2,12 +2,8 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Soft decorative orbs behind PO / PS auth screens.
 class ServiceAuthBackdrop extends StatelessWidget {
-  const ServiceAuthBackdrop({
-    super.key,
-    this.leftOrbTop = 120,
-  });
+  const ServiceAuthBackdrop({super.key, this.leftOrbTop = 120});
 
   final double leftOrbTop;
 
@@ -46,7 +42,6 @@ class ServiceAuthBackdrop extends StatelessWidget {
   }
 }
 
-/// Soft survey-style hero: logo + title row, decorative orbs.
 class ServiceAuthHero extends StatelessWidget {
   const ServiceAuthHero({
     required this.title,
@@ -64,8 +59,7 @@ class ServiceAuthHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? subtitleText = subtitle?.trim();
-    final bool hasSubtitle =
-        subtitleText != null && subtitleText.isNotEmpty;
+    final bool hasSubtitle = subtitleText != null && subtitleText.isNotEmpty;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -129,22 +123,21 @@ class ServiceAuthHero extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const ClipOval(
-                        child: BrandLogo(width: 40),
-                      ),
+                      child: const ClipOval(child: BrandLogo(width: 40)),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
                         title,
-                        style: (compactTitle
-                                ? AppTextStyles.titleMedium
-                                : AppTextStyles.titleLarge)
-                            .copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          height: compactTitle ? 1.25 : 1.15,
-                        ),
+                        style:
+                            (compactTitle
+                                    ? AppTextStyles.titleMedium
+                                    : AppTextStyles.titleLarge)
+                                .copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  height: compactTitle ? 1.25 : 1.15,
+                                ),
                       ),
                     ),
                   ],
@@ -273,7 +266,6 @@ class ServiceAuthSubmitButton extends StatelessWidget {
   }
 }
 
-/// Label-above soft field — same chrome for focused / unfocused.
 class ServiceAuthSoftField extends StatelessWidget {
   const ServiceAuthSoftField({
     required this.controller,
@@ -346,7 +338,8 @@ class ServiceAuthSoftField extends StatelessWidget {
             textInputAction: textInputAction,
             keyboardType: keyboardType,
             onSubmitted: onSubmitted,
-            inputFormatters: inputFormatters ??
+            inputFormatters:
+                inputFormatters ??
                 (obscure
                     ? null
                     : <TextInputFormatter>[
@@ -384,7 +377,6 @@ class ServiceAuthSoftField extends StatelessWidget {
   }
 }
 
-/// White elevated card wrapping auth form content.
 class ServiceAuthFormCard extends StatelessWidget {
   const ServiceAuthFormCard({required this.child, super.key});
 

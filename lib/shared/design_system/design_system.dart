@@ -1,4 +1,3 @@
-/// Single import surface for the design system.
 library;
 
 export 'responsive/app_responsive.dart';

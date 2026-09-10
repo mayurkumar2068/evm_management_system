@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 
 enum AppSnackbarType { success, error, info, warning }
 
-/// Consistent, themed snackbars. Screens call these helpers instead of building
-/// raw [SnackBar]s, so every toast looks and behaves the same.
 abstract final class AppSnackbar {
   static void success(BuildContext context, String message) =>
       _show(context, message, AppSnackbarType.success);

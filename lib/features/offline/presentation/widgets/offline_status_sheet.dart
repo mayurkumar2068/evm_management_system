@@ -8,7 +8,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Opens offline connection / pending-sync status in a theme-aware bottom sheet.
 Future<void> showOfflineStatusSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,

@@ -40,7 +40,6 @@ class EnvironmentConfig {
     required this.psSelfRegisterUrl,
   });
 
-  /// Reads values from the already-loaded [dotenv] for the given [flavor].
   factory EnvironmentConfig.load(Flavor flavor) {
     String require(String key) {
       final String? value = dotenv.env[key];
@@ -78,17 +77,19 @@ class EnvironmentConfig {
     final String? olinApiRaw = dotenv.env['OLIN_API_BASE_URL']?.trim();
     final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
     final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
-    final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']?.trim();
-    final String? voterSearchApiRaw =
-        dotenv.env['VOTER_SEARCH_API_BASE_URL']?.trim();
-    final String? voterSearchPassKeyRaw =
-        dotenv.env['VOTER_SEARCH_PASS_KEY']?.trim();
-    final String? voterSearchAesKeyRaw =
-        dotenv.env['VOTER_SEARCH_AES_KEY']?.trim();
-    final String? voterRegistrationRaw =
-        dotenv.env['VOTER_REGISTRATION_URL']?.trim();
-    final String? candidateExpenditureRaw =
-        dotenv.env['CANDIDATE_EXPENDITURE_URL']?.trim();
+    final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']
+        ?.trim();
+    final String? voterSearchApiRaw = dotenv.env['VOTER_SEARCH_API_BASE_URL']
+        ?.trim();
+    final String? voterSearchPassKeyRaw = dotenv.env['VOTER_SEARCH_PASS_KEY']
+        ?.trim();
+    final String? voterSearchAesKeyRaw = dotenv.env['VOTER_SEARCH_AES_KEY']
+        ?.trim();
+    final String? voterRegistrationRaw = dotenv.env['VOTER_REGISTRATION_URL']
+        ?.trim();
+    final String? candidateExpenditureRaw = dotenv
+        .env['CANDIDATE_EXPENDITURE_URL']
+        ?.trim();
     final String? emsRaw = dotenv.env['EMS_URL']?.trim();
     final String? privacyPolicyRaw = dotenv.env['PRIVACY_POLICY_URL']?.trim();
 
@@ -116,7 +117,8 @@ class EnvironmentConfig {
               'SURVEY_WEB_BASE_URL',
               'http://localhost:4200/',
             ),
-      voterSearchEngineUrl: (voterSearchRaw != null && voterSearchRaw.isNotEmpty)
+      voterSearchEngineUrl:
+          (voterSearchRaw != null && voterSearchRaw.isNotEmpty)
           ? voterSearchRaw
           : _defaultVoterSearchUrl(
               (poElectionRaw != null && poElectionRaw.isNotEmpty)
@@ -169,7 +171,7 @@ class EnvironmentConfig {
       sessionTimeout: Duration(minutes: requireInt('SESSION_TIMEOUT_MINUTES')),
       syncInterval: Duration(seconds: requireInt('SYNC_INTERVAL_SECONDS')),
       syncMaxRetry: requireInt('SYNC_MAX_RETRY'),
-      // App Store / public tile: default SHOW. API can force-hide later.
+
       showRegistrationDefault: optionalBool(
         'SHOW_REGISTRATION',
         defaultValue: true,
@@ -185,46 +187,32 @@ class EnvironmentConfig {
   final Flavor flavor;
   final String apiBaseUrl;
 
-  /// Base URL for PO Election APIs (`POElectionAPI v1` OpenAPI).
   final String poElectionApiBaseUrl;
 
-  /// Base URL for Online Nomination (OLINAPI) master lookups.
   final String olinApiBaseUrl;
 
-  /// Base URL for survey / PSSurvey APIs (`POElectionAPI/api`).
   final String surveyApiBaseUrl;
 
-  /// Base URL for the embedded Angular survey micro-app (`survey_web/`).
   final String surveyWebBaseUrl;
 
-  /// Legacy voter search portal URL (WebView; retained for reference).
   final String voterSearchEngineUrl;
 
-  /// SECSearchAPI base for native voter search.
   final String voterSearchApiBaseUrl;
 
-  /// Short PassKey (AES-GCM encrypted before each SECSearchAPI request).
   final String voterSearchPassKey;
 
-  /// AES-256-GCM private key (32 UTF-8 chars) for SECSearchAPI.
   final String voterSearchAesKey;
 
-  /// Voter registration portal opened from the dashboard grid.
   final String voterRegistrationUrl;
 
-  /// Candidate expenditure portal opened from the dashboard grid.
   final String candidateExpenditureUrl;
 
-  /// EMS (IEMS) portal opened from the dashboard grid.
   final String emsUrl;
 
-  /// Official MPSEC privacy statement (in-app + App Store Connect).
   final String privacyPolicyUrl;
 
-  /// Active election cycle ID sent with officer login (deployment config).
   final int? electionId;
 
-  /// DEV-only PO test identifiers (see `assets/env/dev.env`).
   final String? devPoPsId;
   final String? devPoAreaType;
   final String? devPoPollingStationCode;
@@ -239,19 +227,12 @@ class EnvironmentConfig {
   final Duration syncInterval;
   final int syncMaxRetry;
 
-  /// Baseline for guest Claim–Objection / voter registration tile.
-  /// Overridden at runtime by [AppFeatureFlagsController] when the API
-  /// returns `showRegistration`.
   final bool showRegistrationDefault;
 
-  /// Relative path or absolute URL for public feature flags.
-  /// Empty disables remote refresh (env baseline only).
   final String featureFlagsPath;
 
-  /// Optional portal for Presiding Officer self-registration (login screen).
   final String poSelfRegisterUrl;
 
-  /// Optional portal for Booth/PS Survey self-registration (login screen).
   final String psSelfRegisterUrl;
 
   bool get isProduction => flavor.isProduction;
@@ -272,9 +253,6 @@ class EnvironmentConfig {
     return '$origin/SECSearchEngine';
   }
 
-  /// DEV may omit survey URLs (localhost defaults).
-  /// UAT/PROD should set env keys; if survey API is blank, reuse [nonDevFallback]
-  /// (typically [apiBaseUrl]) so boot does not crash.
   static String _localServiceDefault(
     Flavor flavor,
     String key,

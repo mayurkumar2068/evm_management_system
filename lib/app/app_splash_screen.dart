@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Soft blue→mint launch splash — respects light / dark theme.
 class AppSplashScreen extends StatefulWidget {
   const AppSplashScreen({super.key});
 
@@ -83,7 +82,7 @@ class _AppSplashScreenState extends State<AppSplashScreen>
                       ),
                     ),
                   ),
-                  // Soft corner accents — kept small so they never cover the loader.
+
                   Positioned(
                     top: -40,
                     right: -36,
@@ -146,7 +145,7 @@ class _AppSplashScreenState extends State<AppSplashScreen>
                             child: _divider(isDark: isDark),
                           ),
                           const Spacer(flex: 4),
-                          // Compact bottom loader — never stretches full screen.
+
                           FadeTransition(
                             opacity: _fade,
                             child: _SplashLoader(
@@ -221,7 +220,6 @@ class _GlowBlob extends StatelessWidget {
   }
 }
 
-/// Three bouncing dots + label — sized to content, not the viewport.
 class _SplashLoader extends StatelessWidget {
   const _SplashLoader({
     required this.controller,

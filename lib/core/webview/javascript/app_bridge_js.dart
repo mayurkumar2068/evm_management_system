@@ -1,18 +1,7 @@
-/// JavaScript injected into every page managed by the engine.
-///
-/// Exposes a single, reusable bridge surface:
-///   window.__APP_CONTEXT__         -> non-secret session context (object)
-///   window.AppBridge.invoke(a, p)  -> Promise, Web → Flutter calls
-///   window.AppBridge.on(evt, cb)   -> subscribe to Flutter → Web events
-///   window.AppBridge.collectMetrics() -> performance metrics object
-///
-/// Flutter → Web pushes (language/theme) are delivered as DOM CustomEvents
-/// ('app:language', 'app:theme') so pages update WITHOUT a reload.
 library;
 
 const String _handlerName = 'app_bridge';
 
-/// Document-start script: installs the context + bridge before app code runs.
 String appBridgeBootstrapJs(String contextJson) {
   return '''
 (function () {
@@ -51,7 +40,6 @@ String appBridgeBootstrapJs(String contextJson) {
     }
   };
 
-  // Apply initial language/theme to the document.
   try {
     var c = window.__APP_CONTEXT__ || {};
     if (c.language) { document.documentElement.lang = c.language; }
@@ -61,7 +49,6 @@ String appBridgeBootstrapJs(String contextJson) {
 ''';
 }
 
-/// Push a language change to the page at runtime (no reload).
 String applyLanguageJs(String lang) {
   return '''
 (function () {
@@ -74,7 +61,6 @@ String applyLanguageJs(String lang) {
 ''';
 }
 
-/// Push a theme change to the page at runtime (no reload).
 String applyThemeJs(String theme) {
   return '''
 (function () {
@@ -87,7 +73,6 @@ String applyThemeJs(String theme) {
 ''';
 }
 
-/// Reads page-load performance metrics. Returns a JSON-serializable object.
 const String collectMetricsJs = r'''
 (function () {
   try {
@@ -115,7 +100,6 @@ const String collectMetricsJs = r'''
 })();
 ''';
 
-/// Installed at document-start to capture LCP as it streams in.
 const String lcpObserverJs = r'''
 (function () {
   try {

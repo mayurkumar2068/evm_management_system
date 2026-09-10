@@ -15,12 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Which credential type the Booth/PS Survey login form is using.
-/// Presiding Officer login always stays on [password] — OTP is Survey-only.
 enum _LoginMode { password, otp }
 
-/// Officer login gate shown before opening any service tile.
-/// Soft Booth-Survey look: hero strip + label-above fields + pill CTA.
 class ServiceLoginScreen extends StatefulWidget {
   const ServiceLoginScreen({
     super.key,
@@ -29,13 +25,10 @@ class ServiceLoginScreen extends StatefulWidget {
     this.registrationAllowed,
   });
 
-  /// Name of the tile the user tapped — shown as context in the header.
   final String? serviceTitle;
 
-  /// Prefer this over title matching so API-localized titles still work.
   final ServiceLoginKind? loginKind;
 
-  /// From Masters `IsRegistrationAllowed`. Register UI shows only when `true`.
   final bool? registrationAllowed;
 
   @override
@@ -50,7 +43,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
   final FocusNode _userFocus = FocusNode();
   final FocusNode _passFocus = FocusNode();
 
-  // Booth/PS Survey OTP login — unused (and never rendered) for PO login.
   final TextEditingController _mobileCtrl = TextEditingController();
   final TextEditingController _otpCtrl = TextEditingController();
   final FocusNode _mobileFocus = FocusNode();
@@ -88,7 +80,6 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     return LocaleKeys.serviceAuthSignInButton.tr();
   }
 
-  /// Masters `IsRegistrationAllowed == true` only — otherwise hide register.
   bool get _showRegisterOption => widget.registrationAllowed == true;
 
   Future<void> _openRegister() async {
@@ -114,17 +105,16 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     );
   }
 
-
   @override
   void initState() {
     super.initState();
-    // Survey/Booth: OTP-only UI. PO keeps username/password.
+
     _loginMode = _isPoLogin ? _LoginMode.password : _LoginMode.otp;
     _userFocus.addListener(() => setState(() {}));
     _passFocus.addListener(() => setState(() {}));
     _mobileFocus.addListener(() => setState(() {}));
     _otpFocus.addListener(() => setState(() {}));
-    // Editing the number after OTP was sent invalidates it — start over.
+
     _mobileCtrl.addListener(() {
       if (_otpSent) {
         _resendTimer?.cancel();
@@ -288,9 +278,7 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
       return;
     }
     if (password.isEmpty) {
-      setState(
-        () => _error = LocaleKeys.serviceAuthPasswordRequired.tr(),
-      );
+      setState(() => _error = LocaleKeys.serviceAuthPasswordRequired.tr());
       return;
     }
 
@@ -363,7 +351,8 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                   ),
                   const SizedBox(height: 10),
                   ServiceAuthHero(
-                    title: widget.serviceTitle ??
+                    title:
+                        widget.serviceTitle ??
                         LocaleKeys.serviceAuthSignInButton.tr(),
                     subtitle: LocaleKeys.serviceAuthSubtitleDefault.tr(),
                   ),
@@ -388,9 +377,8 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                             textInputAction: _otpSent
                                 ? TextInputAction.next
                                 : TextInputAction.done,
-                            onSubmitted: (_) => _otpSent
-                                ? _otpFocus.requestFocus()
-                                : _submit(),
+                            onSubmitted: (_) =>
+                                _otpSent ? _otpFocus.requestFocus() : _submit(),
                           ),
                           if (_otpSent) ...<Widget>[
                             const SizedBox(height: 8),
@@ -481,7 +469,11 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
                         ],
                         if (_error != null) ...<Widget>[
                           const SizedBox(height: 14),
-                          AppStatusBanner(message: _error!, tone: StatusTone.error, icon: Icons.error_outline_rounded),
+                          AppStatusBanner(
+                            message: _error!,
+                            tone: StatusTone.error,
+                            icon: Icons.error_outline_rounded,
+                          ),
                         ],
                         const SizedBox(height: 16),
                         ServiceAuthHintStrip(

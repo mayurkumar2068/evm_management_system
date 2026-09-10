@@ -3,7 +3,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_text_style
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Standard labelled text input with validation and optional obscuring.
 class AppTextField extends StatelessWidget {
   const AppTextField({
     required this.label,

@@ -3,7 +3,6 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_milestone.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/turnout_record.dart';
 
-/// Active presiding-officer session context for a polling station.
 final class PresidingSession {
   const PresidingSession({
     required this.electionId,
@@ -26,20 +25,12 @@ final class PresidingSession {
   final List<PresidingMilestone> milestones;
   final Map<String, TurnoutRecord> turnoutRecords;
 
-  /// PO login username (`UserName`). Used for test-account bypasses.
   final String? loginUserName;
 
-  /// PO login flag (`IsLivePoll`). Live Voting stays hidden and its
-  /// milestone is treated as satisfied unless this is `true`.
   final bool isLivePoll;
 
-  /// PO login flag (`IsIPBMS`). When `true`: material-tracking milestones and
-  /// the booth map row are shown. When `false`: those milestones stay hidden
-  /// (treated as satisfied) and the map is hidden — flow starts at
-  /// मतदान केंद्र पहुंचे without map.
   final bool isIpbms;
 
-  /// Mock-poll next-day / 7 AM gates are skipped for every PO.
   bool get bypassesMockPollRules => true;
 
   bool get hasElectionContext =>
@@ -47,17 +38,13 @@ final class PresidingSession {
       (psId?.isNotEmpty ?? false) &&
       (areaType?.isNotEmpty ?? false);
 
-  /// Earliest allowed clock hour (IST) for मॉक पोल and मतदान प्रारम्भ.
   static const int pollStartEarliestHour = 7;
 
-  /// True once "मतदान केंद्र पहुंचे" has been marked complete.
   bool get hasReachedPollingStation => milestones.any(
-        (PresidingMilestone m) =>
-            m.id == PresidingMilestoneIds.reachedPollingStation &&
-            m.isCompleted,
-      );
+    (PresidingMilestone m) =>
+        m.id == PresidingMilestoneIds.reachedPollingStation && m.isCompleted,
+  );
 
-  /// Timestamp when "मतदान केंद्र पहुंचे" was marked, if known.
   DateTime? get reachedPollingStationAt {
     for (final PresidingMilestone milestone in milestones) {
       if (milestone.id == PresidingMilestoneIds.reachedPollingStation) {
@@ -67,15 +54,11 @@ final class PresidingSession {
     return null;
   }
 
-  /// IST wall-clock check: मॉक पोल / मतदान cannot run before 7:00 AM.
   static bool isPollStartTimeAllowed([DateTime? now]) {
     final DateTime ist = now ?? AppTimeZone.now();
     return ist.hour >= pollStartEarliestHour;
   }
 
-  /// Mock poll is allowed only from the calendar day AFTER reaching the station.
-  ///
-  /// Same IST day as "मतदान केंद्र पहुंचे" stays blocked.
   bool isMockPollDayAllowed([DateTime? now]) {
     if (!hasReachedPollingStation) return false;
     final DateTime? reachedAt = reachedPollingStationAt;
@@ -85,8 +68,6 @@ final class PresidingSession {
     return today.isAfter(reachedDay);
   }
 
-  /// Milestones that must be completed in order (one-by-one).
-  /// After 2–2 hourly submit, machine seal unlocks (poll-end is not a UI step).
   static const List<String> sequentialMilestoneIds = <String>[
     PresidingMilestoneIds.leftMaterialCenter,
     PresidingMilestoneIds.materialReceived,
@@ -98,13 +79,12 @@ final class PresidingSession {
     PresidingMilestoneIds.materialHandedOver,
   ];
 
-  /// After मतदान समाप्त, freeze 2–2 hourly + live and lock live counts.
-  /// Dashboard chips then render as completed instead of enabled actions.
   PresidingSession completeDuringPollIfPollEnded() {
     if (!_isMilestoneCompleted(PresidingMilestoneIds.pollEnd)) return this;
 
     DateTime? latestHourly;
-    for (final MapEntry<String, TurnoutRecord> entry in turnoutRecords.entries) {
+    for (final MapEntry<String, TurnoutRecord> entry
+        in turnoutRecords.entries) {
       if (entry.key == TurnoutSlotIds.livePollInfo) continue;
       final DateTime? savedAt = entry.value.savedAt;
       if (savedAt == null) continue;
@@ -122,42 +102,45 @@ final class PresidingSession {
     }
 
     final TurnoutRecord? live = turnoutRecords[TurnoutSlotIds.livePollInfo];
-    final bool hasLiveCounts = (live?.male ?? 0) > 0 ||
+    final bool hasLiveCounts =
+        (live?.male ?? 0) > 0 ||
         (live?.female ?? 0) > 0 ||
         (live?.thirdGender ?? 0) > 0;
 
     bool changed = false;
-    final List<PresidingMilestone> nextMilestones = milestones.map((
-      PresidingMilestone item,
-    ) {
-      if (item.id == PresidingMilestoneIds.twoHourlyInfo && !item.isCompleted) {
-        changed = true;
-        return item.copyWith(
-          state: PresidingMilestoneState.completed,
-          completedAt: latestHourly ?? pollEndedAt ?? DateTime.now(),
-          pendingSync: false,
-        );
-      }
-      if (item.id == PresidingMilestoneIds.livePollInfo && !item.isCompleted) {
-        changed = true;
-        final DateTime? liveAt = hasLiveCounts
-            ? (live?.savedAt ?? pollEndedAt)
-            : pollEndedAt;
-        if (liveAt == null) {
-          return item.copyWith(
-            state: PresidingMilestoneState.completed,
-            clearCompletedAt: true,
-            pendingSync: false,
-          );
-        }
-        return item.copyWith(
-          state: PresidingMilestoneState.completed,
-          completedAt: liveAt,
-          pendingSync: false,
-        );
-      }
-      return item;
-    }).toList(growable: false);
+    final List<PresidingMilestone> nextMilestones = milestones
+        .map((PresidingMilestone item) {
+          if (item.id == PresidingMilestoneIds.twoHourlyInfo &&
+              !item.isCompleted) {
+            changed = true;
+            return item.copyWith(
+              state: PresidingMilestoneState.completed,
+              completedAt: latestHourly ?? pollEndedAt ?? DateTime.now(),
+              pendingSync: false,
+            );
+          }
+          if (item.id == PresidingMilestoneIds.livePollInfo &&
+              !item.isCompleted) {
+            changed = true;
+            final DateTime? liveAt = hasLiveCounts
+                ? (live?.savedAt ?? pollEndedAt)
+                : pollEndedAt;
+            if (liveAt == null) {
+              return item.copyWith(
+                state: PresidingMilestoneState.completed,
+                clearCompletedAt: true,
+                pendingSync: false,
+              );
+            }
+            return item.copyWith(
+              state: PresidingMilestoneState.completed,
+              completedAt: liveAt,
+              pendingSync: false,
+            );
+          }
+          return item;
+        })
+        .toList(growable: false);
 
     Map<String, TurnoutRecord> nextTurnout = turnoutRecords;
     if (live != null && !live.isLocked) {
@@ -178,27 +161,26 @@ final class PresidingSession {
         : this;
   }
 
-  /// Locale key when [milestoneId] cannot be actioned, else `null`.
   String? milestoneActionBlockKey(String milestoneId) {
     if (milestoneId == PresidingMilestoneIds.twoHourlyInfo ||
         milestoneId == PresidingMilestoneIds.livePollInfo) {
       if (!_isMilestoneCompleted(PresidingMilestoneIds.pollStart)) {
         return 'presiding.reach_station_first';
       }
-      // मतदान समाप्त के बाद ये बटन actionable नहीं रहने चाहिए।
+
       if (_isMilestoneCompleted(PresidingMilestoneIds.pollEnd)) {
         return 'presiding.reach_station_first';
       }
       return null;
     }
-    // Machine seal unlocks only after 2–2 hourly + live are submitted.
+
     if (milestoneId == PresidingMilestoneIds.machineSealed) {
       if (!_isMilestoneCompleted(PresidingMilestoneIds.twoHourlyInfo) ||
           !_isMilestoneCompleted(PresidingMilestoneIds.livePollInfo)) {
         return 'presiding.reach_station_first';
       }
     }
-    // Hidden poll-end step: auto-completed from 2–2 finish, not shown in UI.
+
     if (milestoneId == PresidingMilestoneIds.pollEnd) {
       if (!_isMilestoneCompleted(PresidingMilestoneIds.twoHourlyInfo) ||
           !_isMilestoneCompleted(PresidingMilestoneIds.livePollInfo)) {
@@ -235,12 +217,9 @@ final class PresidingSession {
     return null;
   }
 
-  /// Gates later milestones until earlier ones are completed, in order.
-  /// मॉक पोल is blocked on the arrival day, then before 7:00 AM IST next day.
   bool isMilestoneActionEnabled(String milestoneId) =>
       milestoneActionBlockKey(milestoneId) == null;
 
-  /// Material-tracking milestones hidden when IPBMS is opted out.
   static const List<String> ipbmsMilestoneIds = <String>[
     PresidingMilestoneIds.leftMaterialCenter,
     PresidingMilestoneIds.materialReceived,
@@ -249,13 +228,10 @@ final class PresidingSession {
   ];
 
   bool _isMilestoneCompleted(String milestoneId) {
-    // Live Voting is opt-in per booth/officer — when disabled, don't let its
-    // milestone (hidden from the UI) gate later steps like machine seal.
     if (milestoneId == PresidingMilestoneIds.livePollInfo && !isLivePoll) {
       return true;
     }
-    // IPBMS material-tracking steps are opt-in too — when disabled, treat
-    // them as satisfied so "मतदान केंद्र पहुंचे" becomes the flow's start.
+
     if (!isIpbms && ipbmsMilestoneIds.contains(milestoneId)) {
       return true;
     }

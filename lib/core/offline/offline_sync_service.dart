@@ -12,14 +12,6 @@ import 'package:evm_management_system/core/offline/web_submission_repository.dar
 import 'package:evm_management_system/core/sync/retry_policy.dart';
 import 'package:uuid/uuid.dart';
 
-/// Offline-first orchestrator for every Angular form submitted via the bridge.
-///
-/// Angular never checks connectivity or persists data — it only awaits
-/// `{ success, mode }` from Flutter. Flutter:
-///   • checks reachability via [ConnectivityService]
-///   • uploads immediately when online
-///   • persists to local DB + drains the queue when offline
-///   • retries transient failures with backoff
 class OfflineSyncService {
   OfflineSyncService({
     required WebSubmissionRepository repository,
@@ -46,7 +38,6 @@ class OfflineSyncService {
   Timer? _timer;
   bool _draining = false;
 
-  /// Entry point for the JS bridge. Returns a map Angular can consume directly.
   Future<Map<String, dynamic>> submitForm({
     required String formType,
     required String endpoint,
@@ -126,7 +117,6 @@ class OfflineSyncService {
     ).toBridgeMap();
   }
 
-  /// Watches connectivity and periodically drains the pending queue.
   void start() {
     _connectivitySub = _connectivity.onStatusChange.listen((bool online) {
       if (online) unawaited(sync());
@@ -134,7 +124,6 @@ class OfflineSyncService {
     _timer = Timer.periodic(_syncInterval, (_) => unawaited(sync()));
   }
 
-  /// Uploads every pending record. Safe to call concurrently.
   Future<void> sync() async {
     if (_draining) return;
     if (!await _connectivity.isOnline) return;
@@ -196,8 +185,9 @@ class OfflineSyncService {
     _timer?.cancel();
   }
 
-  /// Bearer token from memory this session, else Keychain officer session.
-  Future<WebFormSubmission> _withUploadToken(WebFormSubmission submission) async {
+  Future<WebFormSubmission> _withUploadToken(
+    WebFormSubmission submission,
+  ) async {
     if (submission.authToken.isNotEmpty) return submission;
     final String? stored = await PoElectionAuth.accessToken();
     if (stored == null || stored.isEmpty) return submission;

@@ -3,23 +3,18 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 
-/// AES-256-GCM for SECSearchAPI.
-///
-/// Wire format (Base64): `nonce(12) || tag(16) || ciphertext`.
-/// This matches the backend layout (tag before ciphertext, not NIST concat).
 class VoterSearchCrypto {
   VoterSearchCrypto(this._aesKeyUtf8)
-      : assert(
-          utf8.encode(_aesKeyUtf8).length == 32,
-          'AES-256 key must be 32 UTF-8 bytes',
-        );
+    : assert(
+        utf8.encode(_aesKeyUtf8).length == 32,
+        'AES-256 key must be 32 UTF-8 bytes',
+      );
 
   final String _aesKeyUtf8;
   final AesGcm _aes = AesGcm.with256bits();
 
   SecretKey get _secretKey => SecretKey(utf8.encode(_aesKeyUtf8));
 
-  /// Encrypts [plain] → Base64(`nonce|tag|ciphertext`).
   Future<String> encrypt(String plain) async {
     final List<int> nonce = _aes.newNonce();
     final SecretBox box = await _aes.encrypt(
@@ -39,7 +34,6 @@ class VoterSearchCrypto {
     return base64Encode(out);
   }
 
-  /// Decrypts Base64(`nonce|tag|ciphertext`) → clear bytes.
   Future<Uint8List> decryptToBytes(String cipherB64) async {
     final Uint8List raw = base64Decode(cipherB64);
     if (raw.length < 28) {
@@ -55,12 +49,10 @@ class VoterSearchCrypto {
     return Uint8List.fromList(clear);
   }
 
-  /// Decrypts Base64(`nonce|tag|ciphertext`) → UTF-8 string.
   Future<String> decrypt(String cipherB64) async {
     return utf8.decode(await decryptToBytes(cipherB64));
   }
 
-  /// Returns plaintext JSON when [data] is already JSON; otherwise decrypts.
   Future<String> decryptDataField(String data) async {
     final String trimmed = data.trim();
     if (trimmed.isEmpty) return trimmed;
@@ -70,7 +62,6 @@ class VoterSearchCrypto {
     return decrypt(trimmed);
   }
 
-  /// Photo [Data] may be JSON, base64 image text, or encrypted bytes/text.
   Future<Uint8List> resolvePhotoPayload(String data) async {
     final String trimmed = data.trim();
     if (trimmed.isEmpty) {
@@ -82,7 +73,6 @@ class VoterSearchCrypto {
     try {
       return await decryptToBytes(trimmed);
     } catch (_) {
-      // Unencrypted base64 / plain text photo payload.
       return Uint8List.fromList(utf8.encode(trimmed));
     }
   }

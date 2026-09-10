@@ -9,10 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// In-app self-registration for PO / Booth-PS officers (opened from login).
-///
-/// PO → `POST /api/Account/register-po-user` (`userName`, `password`)
-/// PS → `POST /api/Account/register-ps-user` (`mobileNo`, `name`, `designation`)
 class ServiceSelfRegisterScreen extends StatefulWidget {
   const ServiceSelfRegisterScreen({
     required this.isPresidingOfficer,
@@ -27,7 +23,6 @@ class ServiceSelfRegisterScreen extends StatefulWidget {
 }
 
 class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
-  // PS Survey fields
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _mobileCtrl = TextEditingController();
   final TextEditingController _designationCtrl = TextEditingController();
@@ -35,7 +30,6 @@ class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
   final FocusNode _mobileFocus = FocusNode();
   final FocusNode _designationFocus = FocusNode();
 
-  // PO fields
   final TextEditingController _userCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
   final TextEditingController _confirmPassCtrl = TextEditingController();
@@ -81,7 +75,6 @@ class _ServiceSelfRegisterScreenState extends State<ServiceSelfRegisterScreen> {
     _confirmPassFocus.dispose();
     super.dispose();
   }
-
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();

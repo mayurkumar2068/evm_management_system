@@ -8,7 +8,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_text_style
 import 'package:evm_management_system/shared/design_system/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 
-/// Renders a [Failure] as a localized, retryable error view.
 class AppErrorState extends StatelessWidget {
   const AppErrorState({required this.failure, this.onRetry, super.key});
 

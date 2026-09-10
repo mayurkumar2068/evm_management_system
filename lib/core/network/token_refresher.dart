@@ -4,11 +4,6 @@ import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/security/token_vault.dart';
 
-/// Refreshes the access token using a dedicated, interceptor-free [Dio] so the
-/// refresh call can never recurse through the [AuthInterceptor].
-///
-/// Lives in `core` (not the auth feature) so the network layer stays
-/// self-contained and feature-agnostic.
 class TokenRefresher {
   TokenRefresher({
     required EnvironmentConfig config,

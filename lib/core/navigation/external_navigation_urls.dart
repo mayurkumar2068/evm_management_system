@@ -1,4 +1,3 @@
-/// Shared rules for URLs that must leave the embedded WebView.
 abstract final class ExternalNavigationUrls {
   static const Set<String> externalSchemes = <String>{
     'mailto',

@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Verifies SMS OTP for polling-party P1 mobile, then saves party details.
 class PresidingPartyOtpScreen extends StatefulWidget {
   const PresidingPartyOtpScreen({super.key});
 
@@ -62,7 +61,6 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
     super.dispose();
   }
 
-
   Future<void> _sendOtp({required bool isResend}) async {
     final String mobile = _mobile.trim();
     if (mobile.isEmpty) {
@@ -81,12 +79,8 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
       await _api.sendOtp(mobile);
       if (!mounted) return;
       final String msg = isResend
-          ? LocaleKeys.presidingPartyOtpResent.tr(
-              args: <String>[mobile.masked],
-            )
-          : LocaleKeys.presidingPartyOtpSent.tr(
-              args: <String>[mobile.masked],
-            );
+          ? LocaleKeys.presidingPartyOtpResent.tr(args: <String>[mobile.masked])
+          : LocaleKeys.presidingPartyOtpSent.tr(args: <String>[mobile.masked]);
       setState(() {
         _sending = false;
         _info = msg;
@@ -279,9 +273,7 @@ class _PresidingPartyOtpScreenState extends State<PresidingPartyOtpScreen> {
                   const SizedBox(height: 10),
                   PresidingThemeButton(
                     label: LocaleKeys.presidingPartyOtpResend.tr(),
-                    onPressed: blocked
-                        ? null
-                        : () => _sendOtp(isResend: true),
+                    onPressed: blocked ? null : () => _sendOtp(isResend: true),
                     isLoading: _sending,
                     outlined: true,
                     icon: Icons.sms_outlined,

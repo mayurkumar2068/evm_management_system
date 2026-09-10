@@ -9,7 +9,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_text_style
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Login elector totals shown under the PO gradient header.
 class PresidingElectorHeaderStrip extends StatelessWidget {
   const PresidingElectorHeaderStrip({this.electionContext, super.key});
 
@@ -62,7 +61,6 @@ class PresidingElectorHeaderStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Re-resolves when PO service session restores on Android cold-start.
       AppServices.serviceAuth.session.value;
       final PresidingElectionContext? ctx = resolveContext(electionContext);
 

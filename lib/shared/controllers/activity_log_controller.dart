@@ -5,7 +5,6 @@ import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/shared/models/activity_event.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Single source of truth for the audit/activity log.
 class ActivityLogController extends GetxController {
   final RxList<ActivityEvent> events = <ActivityEvent>[].obs;
 
@@ -28,12 +27,9 @@ class ActivityLogController extends GetxController {
                 b.timestamp.compareTo(a.timestamp),
           );
       events.assignAll(loaded);
-    } catch (_) {
-      // Storage unavailable (e.g. in tests) — keep the in-memory log.
-    }
+    } catch (_) {}
   }
 
-  /// Appends a new event to the log (newest first) and persists it.
   ActivityEvent log({
     required ActivityType type,
     required String title,
@@ -56,12 +52,9 @@ class ActivityLogController extends GetxController {
   Future<void> _persist(ActivityEvent event) async {
     try {
       await _db.put(LocalCollections.auditLogs, event.id, event.toJson());
-    } catch (_) {
-      // Best-effort persistence; ignore storage failures.
-    }
+    } catch (_) {}
   }
 
-  /// Every event tied to [deviceId], newest first.
   List<ActivityEvent> eventsForDevice(String deviceId) => events
       .where((ActivityEvent e) => e.deviceId == deviceId)
       .toList(growable: false);

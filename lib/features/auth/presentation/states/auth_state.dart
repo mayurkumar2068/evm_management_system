@@ -3,7 +3,6 @@ import 'package:evm_management_system/features/auth/domain/entities/auth_user.da
 
 enum AuthStatus { unknown, authenticating, authenticated, unauthenticated }
 
-/// Immutable UI state for the authentication flow.
 class AuthState {
   const AuthState({this.status = AuthStatus.unknown, this.user, this.failure});
 

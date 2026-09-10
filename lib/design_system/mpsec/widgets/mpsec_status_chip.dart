@@ -2,7 +2,6 @@ import 'package:evm_management_system/design_system/mpsec/tokens/mpsec_tokens.da
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Pill-shaped status chip for timestamps or action states.
 enum MpSecChipVariant { completed, action, disabled }
 
 class MpSecStatusChip extends StatelessWidget {
@@ -17,7 +16,6 @@ class MpSecStatusChip extends StatelessWidget {
   final MpSecChipVariant variant;
   final VoidCallback? onTap;
 
-  /// Fits the longest action label ("Mark complete" / "पूर्ण करें").
   static const double _actionMinWidth = 112;
   static const double _actionMinHeight = 36;
 

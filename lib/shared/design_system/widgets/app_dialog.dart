@@ -4,9 +4,7 @@ import 'package:evm_management_system/shared/design_system/tokens/app_radius.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Standardized confirmation / message dialogs.
 abstract final class AppDialog {
-  /// Shows a confirmation dialog. Resolves to `true` when confirmed.
   static Future<bool> confirm(
     BuildContext context, {
     required String title,
@@ -52,7 +50,6 @@ abstract final class AppDialog {
     return result ?? false;
   }
 
-  /// Shared destructive sign-out confirmation (profile + WebView chrome).
   static Future<bool> confirmSignOut(BuildContext context) {
     return confirm(
       context,
@@ -64,7 +61,6 @@ abstract final class AppDialog {
     );
   }
 
-  /// Shows a single-action alert dialog (no cancel button).
   static Future<void> alert(
     BuildContext context, {
     required String title,

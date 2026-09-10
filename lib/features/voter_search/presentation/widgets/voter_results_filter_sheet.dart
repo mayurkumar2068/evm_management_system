@@ -5,7 +5,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Results filter sheet — fixed height so age stays visible; wards scroll inside.
 Future<void> showVoterResultsFilterSheet({
   required BuildContext context,
   required VoterSearchController controller,
@@ -63,27 +62,27 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
   bool get _isUrban => c.areaType.value == VoterAreaType.urban;
 
   TextStyle get _titleStyle => AppTextStyles.variant(
-        AppTextStyles.titleMedium,
-        fontWeight: FontWeight.w600,
-        color: AppColors.slate800,
-      );
+    AppTextStyles.titleMedium,
+    fontWeight: FontWeight.w600,
+    color: AppColors.slate800,
+  );
 
   TextStyle get _hintStyle => AppTextStyles.variant(
-        AppTextStyles.caption,
-        fontWeight: FontWeight.w400,
-        color: AppColors.slate500,
-      );
+    AppTextStyles.caption,
+    fontWeight: FontWeight.w400,
+    color: AppColors.slate500,
+  );
 
   TextStyle get _fieldTextStyle => AppTextStyles.variant(
-        AppTextStyles.bodyMedium,
-        fontWeight: FontWeight.w500,
-        color: AppColors.slate800,
-      );
+    AppTextStyles.bodyMedium,
+    fontWeight: FontWeight.w500,
+    color: AppColors.slate800,
+  );
 
   TextStyle get _buttonStyle => AppTextStyles.variant(
-        AppTextStyles.bodyMedium,
-        fontWeight: FontWeight.w600,
-      );
+    AppTextStyles.bodyMedium,
+    fontWeight: FontWeight.w600,
+  );
 
   @override
   void initState() {

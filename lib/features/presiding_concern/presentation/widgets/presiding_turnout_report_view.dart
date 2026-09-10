@@ -8,7 +8,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Printable election-day report — Flutter UI (app header/theme) captured to PNG/PDF.
 class PresidingTurnoutReportView extends StatelessWidget {
   const PresidingTurnoutReportView({
     required this.session,
@@ -42,8 +41,7 @@ class PresidingTurnoutReportView extends StatelessWidget {
         session.turnoutRecords[TurnoutSlotIds.livePollInfo];
     final int liveTotal =
         (live?.male ?? 0) + (live?.female ?? 0) + (live?.thirdGender ?? 0);
-    // Mirror dashboard visibility: Live Voting / IPBMS material-tracking
-    // steps stay off the printed report too when the PO login flag is off.
+
     final List<PresidingMilestone> reportMilestones = session.milestones
         .where(
           (PresidingMilestone m) =>

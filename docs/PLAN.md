@@ -137,3 +137,15 @@ Deferred (still valid for later):
 - Removed unused `kBypassPoPartySaveOn404`
 - Trimmed unused spacing/radius tokens; dropped unused `AppGradients.brand`
 - Aliased identical `nominationButton` / `survey` CTA gradients to `primaryButton`
+
+### Phase 7 follow-up (2026-09-10)
+- Removed Dart `//` / `///` / `/* */` comments across `lib/` + `test/` (analyzer-token based)
+- Kept `// ignore:` / `ignore_for_file:` / `coverage:ignore` / `@dart=` directives
+- No API/text/behavior changes; `dart analyze lib` clean (infos only)
+
+### Phase 8 follow-up (2026-09-10) — active-code only
+- Deleted hidden/orphan features: online nomination, EVM inventory/scanner, reports, audit trail, onboarding UI, device search, sync/settings/help/about stubs
+- Removed `feature_flags.dart`, device-records helpers, Olin client/endpoints, `mobile_scanner` / `fl_chart`
+- Slimmed routes/shell to active flows only
+- Dashboard keeps: claims (runtime), voter search, booth survey, presiding
+- Localization JSON values left unchanged

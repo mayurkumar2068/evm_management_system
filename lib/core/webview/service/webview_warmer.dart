@@ -2,12 +2,6 @@ import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-/// Prewarms the platform WebView so the first real page launches instantly.
-///
-/// A hidden [HeadlessInAppWebView] boots the renderer process, JS engine and
-/// network/cookie stack on app startup. Calling [warm] is idempotent and safe
-/// to invoke from app bootstrap. The instance is kept alive for the app's life
-/// (NOT disposed) so the engine stays warm; [shutdown] is available for tests.
 class WebViewWarmer {
   HeadlessInAppWebView? _headless;
   bool _warming = false;
@@ -46,9 +40,7 @@ class WebViewWarmer {
   Future<void> shutdown() async {
     try {
       await _headless?.dispose();
-    } catch (_) {
-      // ignore
-    }
+    } catch (_) {}
     _headless = null;
     _warmed = false;
   }

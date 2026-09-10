@@ -2,10 +2,8 @@ import 'package:evm_management_system/features/presiding_concern/presentation/th
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 
-/// Voter gender categories used across presiding-officer turnout UI.
 enum PresidingGenderType { male, female, other }
 
-/// Asset paths for presiding gender avatars.
 abstract final class PresidingGenderAssets {
   static const String male = 'assets/images/gender_avatar_male.png';
   static const String female = 'assets/images/gender_avatar_female.png';
@@ -32,7 +30,6 @@ abstract final class PresidingGenderAssets {
   }
 }
 
-/// Circular gender avatar used in live poll and turnout cards.
 class PresidingGenderAvatar extends StatelessWidget {
   const PresidingGenderAvatar({
     required this.type,

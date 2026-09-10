@@ -1,10 +1,3 @@
-/// A durable web-form payload queued for upload by [OfflineSyncService].
-///
-/// Angular never persists this — Flutter is the single source of truth for
-/// offline storage. [clientId] prevents duplicate enqueue/sync.
-///
-/// [authToken] is held in memory for the current session only. It is never
-/// written to local JSON; uploads after restart use Keychain via [PoElectionAuth].
 class WebFormSubmission {
   const WebFormSubmission({
     required this.clientId,
@@ -87,10 +80,8 @@ class WebFormSubmission {
   };
 }
 
-/// Lifecycle of a locally stored web submission.
 enum WebSubmissionStatus { pending, syncing, synced, failed }
 
-/// Response returned to Angular after every bridge submit.
 class WebFormSubmitResult {
   const WebFormSubmitResult({
     required this.success,

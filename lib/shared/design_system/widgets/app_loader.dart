@@ -3,8 +3,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_spacing.da
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Centralized loading indicator with an optional message and a full-screen
-/// blocking overlay variant.
 class AppLoader extends StatelessWidget {
   const AppLoader({this.message, super.key});
 
@@ -28,7 +26,6 @@ class AppLoader extends StatelessWidget {
     );
   }
 
-  /// Shows a modal blocking loader; returns a callback to dismiss it.
   static VoidCallback showOverlay(BuildContext context, {String? message}) {
     showDialog<void>(
       context: context,

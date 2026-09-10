@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 
-/// Opens device maps for turn-by-turn navigation to a polling booth.
 class MapNavigationService {
   MapNavigationService({ExternalUrlLauncher? launcher})
     : _launcher = launcher ?? const ExternalUrlLauncher();
@@ -14,7 +13,6 @@ class MapNavigationService {
 
   final ExternalUrlLauncher _launcher;
 
-  /// Google Maps directions from [origin] (optional) to booth [destination].
   Future<bool> openDirections({
     required double destinationLat,
     required double destinationLng,
@@ -41,7 +39,6 @@ class MapNavigationService {
     return _launcher.launchFirst(candidates);
   }
 
-  /// Opens Google Maps search when booth coordinates are missing.
   Future<bool> openPlaceSearch(String query) async {
     final String encoded = Uri.encodeComponent(_normalizeQuery(query));
     final List<Uri> candidates = <Uri>[
@@ -55,7 +52,6 @@ class MapNavigationService {
     return _launcher.launchFirst(candidates);
   }
 
-  /// OpenStreetMap static preview (no API key).
   String staticMapImageUrl({
     required double lat,
     required double lng,
@@ -89,9 +85,7 @@ class MapNavigationService {
             'comgooglemaps://?saddr=$originLat,$originLng'
             '&daddr=$dest&directionsmode=driving',
           ),
-          Uri.parse(
-            'maps://?saddr=$originLat,$originLng&daddr=$dest&dirflg=d',
-          ),
+          Uri.parse('maps://?saddr=$originLat,$originLng&daddr=$dest&dirflg=d'),
         ];
       }
       return <Uri>[

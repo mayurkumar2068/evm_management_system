@@ -1,16 +1,9 @@
-/// The mutation represented by a queued sync task.
 enum SyncOperation { create, update, delete }
 
-/// Lifecycle state of a queued task.
 enum SyncStatus { pending, inProgress, failed, synced, conflict }
 
-/// Strategy applied when local and server versions diverge.
 enum ConflictStrategy { lastWriteWins, serverWins, clientWins, manual }
 
-/// A single durable unit of work in the offline-first sync queue.
-///
-/// Persisted locally the moment a user mutates data; the [SyncManager] later
-/// replays it against the server and reconciles the response.
 class SyncTask {
   const SyncTask({
     required this.id,

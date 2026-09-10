@@ -49,39 +49,32 @@ class WebViewConfig {
   final WebViewHttpMethod method;
   final String? postBody;
 
-  /// Per-call headers merged on top of the auto-injected session headers.
   final Map<String, String> extraHeaders;
   final WebViewHeaderPolicy headerPolicy;
 
   final bool showHeader;
 
-  /// Shows a logout action in the header — for service-login-gated WebViews
-  /// (Booth/PS Survey, etc.). Signs out via the same [ServiceAuthController]
-  /// used by Presiding Officer, then leaves the WebView.
   final bool showLogoutButton;
   final bool enableJsBridge;
   final bool enablePullToRefresh;
   final bool injectSessionContext;
   final bool syncCookies;
 
-  /// When false, skip officer session/cookie bootstrap (third-party portals).
   final bool bootstrapSession;
   final WebViewCachePolicy cachePolicy;
 
-  /// Allow http://localhost / 10.0.2.2 (dev micro-apps) over cleartext.
   final bool allowCleartextLocalhost;
   final WebViewServerTrustPolicy serverTrustPolicy;
   final Set<String> pinnedCertificateSha256;
 
   final VoidCallback? onPageStarted;
-  final ValueChanged<String>? onPageFinished; // final URL
-  final ValueChanged<String>? onError; // message
+  final ValueChanged<String>? onPageFinished;
+  final ValueChanged<String>? onError;
   final ValueChanged<WebViewMetrics>? onMetrics;
   final ValueChanged<WebBridgeMessage>? onBridgeMessage;
   final WidgetBuilder? loadingBuilder;
   final Widget Function(BuildContext context, VoidCallback retry)? errorBuilder;
 
-  /// Returns a copy with selected fields overridden.
   WebViewConfig copyWith({
     String? url,
     String? title,

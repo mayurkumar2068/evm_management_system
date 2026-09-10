@@ -12,7 +12,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// View-model for the enterprise offline hub screen.
 final class OfflineHubState {
   const OfflineHubState({
     required this.isOnline,
@@ -37,7 +36,6 @@ final class OfflineHubState {
   final int pendingSignatures;
 }
 
-/// Aggregates offline status from connectivity and local queues.
 Future<OfflineHubState> loadOfflineHubState() async {
   final bool isOnline = await AppServices.connectivity.isOnline;
   final List<dynamic> webPendingList = await AppServices.webSubmissionRepository
@@ -63,7 +61,6 @@ Future<OfflineHubState> loadOfflineHubState() async {
   );
 }
 
-/// Enterprise offline hub — reassures users the app remains fully functional.
 class OfflineScreen extends StatefulWidget {
   const OfflineScreen({super.key});
 

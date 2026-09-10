@@ -3,7 +3,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Returns the localized display label for a supported app [locale].
 String languageLabelFor(Locale locale) {
   switch (locale.languageCode) {
     case 'hi':
@@ -15,12 +14,6 @@ String languageLabelFor(Locale locale) {
   }
 }
 
-/// Shows a bottom sheet so the user can pick from [context.supportedLocales].
-///
-/// When [onLocaleSelected] is provided it runs before the sheet closes so the
-/// new locale is visible immediately.
-///
-/// Returns the chosen [Locale], or `null` if the sheet was dismissed.
 Future<Locale?> showLanguagePickerSheet(
   BuildContext context, {
   required Locale currentLocale,

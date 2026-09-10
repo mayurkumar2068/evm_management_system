@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/network/api_log_formatter.dart';
 
-/// Logs the full HTTP lifecycle: request → status code → response body.
-///
-/// Each call is tagged with a short [logId] so request/response pairs are easy
-/// to match in the console. Sensitive headers and body fields are redacted.
 class LoggingInterceptor extends Interceptor {
   LoggingInterceptor({required this.enabled});
 

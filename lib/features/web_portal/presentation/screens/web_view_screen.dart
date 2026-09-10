@@ -2,7 +2,6 @@ import 'package:evm_management_system/core/webview/config/webview_config.dart';
 import 'package:evm_management_system/core/webview/widget/app_webview.dart';
 import 'package:flutter/material.dart';
 
-/// Navigation payload for [WebViewScreen]. Passed via GoRouter `extra`.
 class WebViewArgs {
   const WebViewArgs({
     required this.title,
@@ -26,7 +25,6 @@ class WebViewArgs {
   final bool enableJsBridge;
   final bool bootstrapSession;
 
-  /// Shows a header logout action — for service-login-gated WebViews.
   final bool showLogoutButton;
   final Map<String, String> extraHeaders;
 }

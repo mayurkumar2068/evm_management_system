@@ -3,7 +3,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Always-visible PO dashboard entry to fill / view polling-party details.
 class PresidingPartyMandatoryBanner extends StatelessWidget {
   const PresidingPartyMandatoryBanner({
     required this.onTap,
@@ -19,7 +18,9 @@ class PresidingPartyMandatoryBanner extends StatelessWidget {
     if (translated != key && !translated.startsWith('presiding.')) {
       return translated;
     }
-    final bool isHi = context.locale.languageCode.toLowerCase().startsWith('hi');
+    final bool isHi = context.locale.languageCode.toLowerCase().startsWith(
+      'hi',
+    );
     return isHi ? hi : en;
   }
 
@@ -74,7 +75,9 @@ class PresidingPartyMandatoryBanner extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: onTap,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEA580C).withValues(alpha: 0.8),
+                  foregroundColor: const Color(
+                    0xFFEA580C,
+                  ).withValues(alpha: 0.8),
                   side: BorderSide(
                     color: const Color(0xFFEA580C).withValues(alpha: 0.8),
                     width: 1.2,

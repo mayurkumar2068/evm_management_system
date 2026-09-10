@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 
-/// Uploads a [WebFormSubmission] to the survey / PSSurvey API (POElectionAPI).
-///
-/// Uses a dedicated Dio instance (not the main EVM [ApiClient]) because survey
-/// traffic uses [EnvironmentConfig.surveyApiBaseUrl] and its own auth token.
 class SurveyApiUploadService {
   SurveyApiUploadService({
     required String baseUrl,
@@ -30,7 +26,6 @@ class SurveyApiUploadService {
   final String _baseUrl;
   final Dio _dio;
 
-  /// POSTs [submission] and returns the parsed server body.
   Future<Map<String, dynamic>> upload(WebFormSubmission submission) async {
     final Response<dynamic> response = await _dio.post<dynamic>(
       '$_baseUrl${submission.endpoint}',

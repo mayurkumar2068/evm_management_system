@@ -6,20 +6,12 @@ import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/error/app_exception.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// File-backed implementation of [LocalDatabase].
-///
-/// Each collection is persisted as a single JSON document under the app's
-/// support directory and mirrored in an in-memory map for fast reads. This is
-/// the zero-codegen default; replace with `IsarLocalDatabase` for large
-/// datasets by swapping the provider binding only.
 class JsonLocalDatabase implements LocalDatabase {
   final Map<String, Map<String, Map<String, dynamic>>> _cache =
       <String, Map<String, Map<String, dynamic>>>{};
   final Map<String, StreamController<List<Map<String, dynamic>>>> _watchers =
       <String, StreamController<List<Map<String, dynamic>>>>{};
 
-  /// Serialises put/delete/clear per collection so logout + watchSession
-  /// re-seed cannot race two atomic renames on the same file.
   final Map<String, Future<void>> _writeChain = <String, Future<void>>{};
 
   late final Directory _dir;
@@ -74,9 +66,6 @@ class JsonLocalDatabase implements LocalDatabase {
 
   Future<void> _flush(String collection) async {
     try {
-      // Atomic write: serialise to a sibling temp file, then rename over the
-      // target. A crash mid-write can only ever leave the old (valid) file or
-      // an orphan ".tmp" — never a half-written, corrupt JSON document.
       final File target = _file(collection);
       final File tmp = File('${target.path}.tmp');
       final Map<String, Map<String, dynamic>> snapshot =
@@ -93,9 +82,6 @@ class JsonLocalDatabase implements LocalDatabase {
     }
   }
 
-  /// [File.rename] can fail when the destination already exists (platform
-  /// dependent) or when a concurrent writer deleted the temp file — fall back
-  /// to delete-then-rename / copy.
   Future<void> _replaceAtomically({
     required File tmp,
     required File target,
@@ -118,25 +104,20 @@ class JsonLocalDatabase implements LocalDatabase {
   }
 
   void _emit(String collection) {
-    // Borrowed reference to an existing controller; ownership/closing is
-    // handled by [dispose], so this is not a leak.
     // ignore: close_sinks
     final StreamController<List<Map<String, dynamic>>>? controller =
         _watchers[collection];
     if (controller != null && !controller.isClosed) {
       controller.add(
-        (_cache[collection] ?? <String, Map<String, dynamic>>{}).values
-            .toList(growable: false),
+        (_cache[collection] ?? <String, Map<String, dynamic>>{}).values.toList(
+          growable: false,
+        ),
       );
     }
   }
 
   @override
-  Future<void> put(
-    String collection,
-    String id,
-    Map<String, dynamic> value,
-  ) {
+  Future<void> put(String collection, String id, Map<String, dynamic> value) {
     return _runExclusive(collection, () async {
       final Map<String, Map<String, dynamic>> data = await _load(collection);
       data[id] = value;
@@ -176,7 +157,6 @@ class JsonLocalDatabase implements LocalDatabase {
 
   @override
   Stream<List<Map<String, dynamic>>> watch(String collection) {
-    // Borrowed reference; ownership/closing is handled by [dispose].
     // ignore: close_sinks
     final StreamController<List<Map<String, dynamic>>> controller = _watchers
         .putIfAbsent(
@@ -187,7 +167,6 @@ class JsonLocalDatabase implements LocalDatabase {
     return controller.stream;
   }
 
-  /// Closes all watch controllers. Called on app teardown.
   Future<void> dispose() async {
     for (final StreamController<List<Map<String, dynamic>>> c
         in _watchers.values) {

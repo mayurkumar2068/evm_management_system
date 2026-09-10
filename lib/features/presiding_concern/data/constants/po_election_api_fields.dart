@@ -1,4 +1,3 @@
-/// JSON field names for PO Election API requests and responses.
 abstract final class PoElectionRequestFields {
   static const String electionId = 'electionId';
   static const String psId = 'psId';
@@ -114,7 +113,6 @@ abstract final class PoLoginResponseFields {
   static const String otherElectors = 'OtherElectors';
   static const String totalElectors = 'TotalElectors';
 
-  /// Feature flags from PO login — gate PO-only features per booth/officer.
   static const String isIpbms = 'IsIPBMS';
   static const String isLivePoll = 'IsLivePoll';
 }

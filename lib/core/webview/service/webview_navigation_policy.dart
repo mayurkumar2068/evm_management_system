@@ -1,31 +1,15 @@
 import 'package:evm_management_system/core/navigation/external_navigation_urls.dart';
 
-/// What the engine should do with a navigation target.
-enum WebNavDecision {
-  /// Load inside the WebView (normal in-app navigation).
-  allow,
+enum WebNavDecision { allow, external, block }
 
-  /// Hand off to the OS (mailto:, tel:, maps:, upi:, intent:, external http
-  /// that should leave the app, downloadable docs, etc.).
-  external,
-
-  /// Silently block.
-  block,
-}
-
-/// Structured decision payload for a navigation target.
 class WebNavigationDecision {
-  /// Creates a structured navigation decision.
   const WebNavigationDecision({required this.action, required this.reason});
 
   final WebNavDecision action;
   final String reason;
 }
 
-/// Centralized URL interception. Every screen routes through the same rules so
-/// behavior is consistent app-wide.
 class WebViewNavigationPolicy {
-  /// Creates a centralized navigation policy.
   const WebViewNavigationPolicy();
 
   static const Set<String> _dangerousSchemes = <String>{
@@ -36,7 +20,6 @@ class WebViewNavigationPolicy {
     'about-srcdoc',
   };
 
-  /// File extensions that should be handed to the OS / download pipeline.
   static const Set<String> _downloadExt = <String>{
     'pdf',
     'doc',
@@ -50,7 +33,6 @@ class WebViewNavigationPolicy {
     'pptx',
   };
 
-  /// Returns the decision for a target URL.
   WebNavigationDecision decide(Uri uri) {
     final String scheme = uri.scheme.toLowerCase();
 

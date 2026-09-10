@@ -13,7 +13,6 @@ enum VoterSearchTab { details, epic }
 
 enum VoterAreaType { rural, urban }
 
-/// GetX controller for native voter search (SECSearchAPI).
 class VoterSearchController extends GetxController {
   VoterSearchController(
     this._repository, {
@@ -46,7 +45,6 @@ class VoterSearchController extends GetxController {
   final RxList<VoterUrbanBody> urbanBodies = <VoterUrbanBody>[].obs;
   final RxList<VoterElector> results = <VoterElector>[].obs;
 
-  /// Client-side filters on [results] (ward + age).
   final RxnString filterWardNo = RxnString();
   final RxnString filterAge = RxnString();
 
@@ -57,7 +55,8 @@ class VoterSearchController extends GetxController {
 
   final RxnString formError = RxnString();
   final Map<String, String?> photoCache = <String, String?>{};
-  final Map<String, Future<String?>> _photoFutures = <String, Future<String?>>{};
+  final Map<String, Future<String?>> _photoFutures =
+      <String, Future<String?>>{};
   bool _photoFetchBusy = false;
 
   int _searchToken = 0;
@@ -106,20 +105,14 @@ class VoterSearchController extends GetxController {
     if (_applyingTransliteration) return;
     final String text = electorNameController.text;
     if (!text.endsWith(' ') && !text.endsWith('\n')) return;
-    _transliterateController(
-      electorNameController,
-      tokenSlot: 'name',
-    );
+    _transliterateController(electorNameController, tokenSlot: 'name');
   }
 
   void _onRelativeNameChanged() {
     if (_applyingTransliteration) return;
     final String text = relativeNameController.text;
     if (!text.endsWith(' ') && !text.endsWith('\n')) return;
-    _transliterateController(
-      relativeNameController,
-      tokenSlot: 'relative',
-    );
+    _transliterateController(relativeNameController, tokenSlot: 'relative');
   }
 
   Future<void> _transliterateController(
@@ -153,7 +146,6 @@ class VoterSearchController extends GetxController {
     }
   }
 
-  /// Converts any remaining Latin words before search submit.
   Future<void> flushNameTransliteration() async {
     await Future.wait(<Future<void>>[
       _forceTransliterate(electorNameController),
@@ -244,7 +236,9 @@ class VoterSearchController extends GetxController {
     if (areaType.value == VoterAreaType.rural) {
       loadingBlocks.value = true;
       try {
-        final List<VoterBlock> list = await _repository.fetchBlocks(district.id);
+        final List<VoterBlock> list = await _repository.fetchBlocks(
+          district.id,
+        );
         blocks.assignAll(list);
       } on VoterSearchApiException catch (e) {
         formError.value = e.message;
@@ -256,8 +250,9 @@ class VoterSearchController extends GetxController {
     } else {
       loadingUrbanBodies.value = true;
       try {
-        final List<VoterUrbanBody> list =
-            await _repository.fetchUrbanBodies(district.id);
+        final List<VoterUrbanBody> list = await _repository.fetchUrbanBodies(
+          district.id,
+        );
         urbanBodies.assignAll(list);
       } on VoterSearchApiException catch (e) {
         formError.value = e.message;
@@ -291,23 +286,24 @@ class VoterSearchController extends GetxController {
       (filterWardNo.value?.trim().isNotEmpty ?? false) ||
       (filterAge.value?.trim().isNotEmpty ?? false);
 
-  /// Results after ward / age filters.
   List<VoterElector> get filteredResults {
     final String? ward = filterWardNo.value?.trim();
     final String? age = filterAge.value?.trim();
     if ((ward == null || ward.isEmpty) && (age == null || age.isEmpty)) {
       return results.toList(growable: false);
     }
-    return results.where((VoterElector e) {
-      if (ward != null && ward.isNotEmpty) {
-        final String electorWard = _wardForFilter(e);
-        if (electorWard != ward) return false;
-      }
-      if (age != null && age.isNotEmpty) {
-        if (e.age.trim() != age) return false;
-      }
-      return true;
-    }).toList(growable: false);
+    return results
+        .where((VoterElector e) {
+          if (ward != null && ward.isNotEmpty) {
+            final String electorWard = _wardForFilter(e);
+            if (electorWard != ward) return false;
+          }
+          if (age != null && age.isNotEmpty) {
+            if (e.age.trim() != age) return false;
+          }
+          return true;
+        })
+        .toList(growable: false);
   }
 
   String _wardForFilter(VoterElector e) {
@@ -325,13 +321,12 @@ class VoterSearchController extends GetxController {
     if (areaType.value == VoterAreaType.urban) {
       return e.wardName.trim();
     }
-    // Rural APIs often have no separate ward name — village / panchayat helps.
+
     if (e.villName.trim().isNotEmpty) return e.villName.trim();
     if (e.panchayatName.trim().isNotEmpty) return e.panchayatName.trim();
     return '';
   }
 
-  /// Unique wards from results: number + display name for the filter sheet.
   List<VoterFilterWardOption> get availableFilterWards {
     final Map<String, String> byNo = <String, String>{};
     for (final VoterElector e in results) {
@@ -345,10 +340,8 @@ class VoterSearchController extends GetxController {
     }
     final List<VoterFilterWardOption> list = byNo.entries
         .map(
-          (MapEntry<String, String> e) => VoterFilterWardOption(
-            wardNo: e.key,
-            wardName: e.value,
-          ),
+          (MapEntry<String, String> e) =>
+              VoterFilterWardOption(wardNo: e.key, wardName: e.value),
         )
         .toList();
     list.sort((VoterFilterWardOption a, VoterFilterWardOption b) {
@@ -485,23 +478,16 @@ class VoterSearchController extends GetxController {
   }
 
   bool isPhotoLoading(String electorId) =>
-      _photoFutures.containsKey(electorId) && !photoCache.containsKey(electorId);
+      _photoFutures.containsKey(electorId) &&
+      !photoCache.containsKey(electorId);
 
-  /// District number for photo API — elector payload, else selected district.
   String resolveDistNo(VoterElector elector) {
     final String fromElector = elector.distNo.trim();
     if (fromElector.isNotEmpty) return fromElector;
     return selectedDistrict.value?.distNo.trim() ?? '';
   }
 
-  /// Loads voter photo once and caches it. Concurrent callers share one request.
-  ///
-  /// [forceRefresh] clears a previous miss so slip generation can retry.
-  /// Transient network errors are NOT negative-cached (only empty/unavailable).
-  Future<String?> loadPhoto(
-    VoterElector elector, {
-    bool forceRefresh = false,
-  }) {
+  Future<String?> loadPhoto(VoterElector elector, {bool forceRefresh = false}) {
     final String key = elector.id;
     if (forceRefresh) {
       photoCache.remove(key);
@@ -518,7 +504,7 @@ class VoterSearchController extends GetxController {
 
   Future<String?> _fetchAndCachePhoto(VoterElector elector) async {
     final String key = elector.id;
-    // Serialize photo downloads — parallel storms hang / starve the connection pool.
+
     while (_photoFetchBusy) {
       await Future<void>.delayed(const Duration(milliseconds: 80));
     }
@@ -530,7 +516,7 @@ class VoterSearchController extends GetxController {
           '[VoterSearch] photo skipped — missing distNo/id '
           'distNo="$distNo" id="${elector.id}"',
         );
-        // Don't negative-cache missing keys — district may load later.
+
         return null;
       }
       final String? photo = await _repository.fetchPhoto(
@@ -542,12 +528,11 @@ class VoterSearchController extends GetxController {
         update(<Object>['photo_$key']);
         return photo;
       }
-      // Definite miss from API (empty / Status:false) — avoid hammering.
+
       photoCache[key] = '';
       update(<Object>['photo_$key']);
       return null;
     } catch (e) {
-      // Transient errors: do not cache so next open / slip can retry.
       AppLogger.d('[VoterSearch] photo fetch error (not cached): $e');
       return null;
     } finally {
@@ -558,12 +543,8 @@ class VoterSearchController extends GetxController {
   }
 }
 
-/// Ward choice for results filter sheet (number + optional name).
 class VoterFilterWardOption {
-  const VoterFilterWardOption({
-    required this.wardNo,
-    this.wardName = '',
-  });
+  const VoterFilterWardOption({required this.wardNo, this.wardName = ''});
 
   final String wardNo;
   final String wardName;
@@ -574,17 +555,14 @@ class VoterFilterWardOption {
     return '$wardNo - $name';
   }
 
-  /// Single-row display: `15 - इंदिरा गांधी वार्ड` (or just number).
   String get rowLabel => label;
 
-  /// Compact primary line for filter tiles (name preferred, else number).
   String get shortLabel {
     final String name = wardName.trim();
     if (name.isNotEmpty) return name;
     return wardNo;
   }
 
-  /// Secondary line — ward number when a name is shown.
   String? get subtitle {
     final String name = wardName.trim();
     if (name.isEmpty) return null;

@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Serialises presiding-officer entities to JSON for local storage.
 abstract final class PresidingSessionMapper {
   static const String _milestonesKey = 'milestones';
   static const String _turnoutKey = 'turnout';
@@ -13,7 +12,6 @@ abstract final class PresidingSessionMapper {
   static const String _isLivePollKey = 'is_live_poll';
   static const String _isIpbmsKey = 'is_ipbms';
 
-  /// Seeds the default milestone catalogue matching the legacy workflow.
   static List<PresidingMilestone> defaultMilestones() {
     return <PresidingMilestone>[
       const PresidingMilestone(
@@ -81,7 +79,6 @@ abstract final class PresidingSessionMapper {
     ];
   }
 
-  /// Converts a [PresidingSession] to a JSON map.
   static Map<String, dynamic> toJson(PresidingSession session) {
     return <String, dynamic>{
       if (session.electionId != null) _electionIdKey: session.electionId,
@@ -101,7 +98,6 @@ abstract final class PresidingSessionMapper {
     };
   }
 
-  /// Parses a JSON map into a [PresidingSession].
   static PresidingSession fromJson(Map<String, dynamic> json) {
     final List<dynamic> rawMilestones =
         json[_milestonesKey] as List<dynamic>? ?? <dynamic>[];

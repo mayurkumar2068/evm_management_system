@@ -1,15 +1,8 @@
 import 'package:logger/logger.dart';
 
-/// Application-wide logging facade.
-///
-/// Wraps the `logger` package behind a single entry point so call sites never
-/// use `print`. Verbosity is environment-driven: in production only warnings
-/// and errors are emitted. Replace [_logger] output to forward logs to Crashlytics
-/// or a remote sink without touching call sites.
 abstract final class AppLogger {
   static Logger _logger = _build(enabled: true, verbose: true);
 
-  /// Configures the logger for the active environment. Call once on bootstrap.
   static void configure({required bool enabled, required bool verbose}) {
     _logger = _build(enabled: enabled, verbose: verbose);
   }

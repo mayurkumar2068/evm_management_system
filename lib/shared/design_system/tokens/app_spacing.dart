@@ -1,11 +1,6 @@
 import 'package:evm_management_system/shared/design_system/responsive/app_responsive.dart';
 import 'package:flutter/widgets.dart';
 
-/// Consistent 4-pt based spacing scale. UI uses these instead of magic numbers.
-///
-/// The raw `double` steps are fixed design constants; the `gap*` / `page`
-/// helpers are device-aware (see [AppResponsive]) so breathing room grows on
-/// large screens and tightens on small ones while staying perfectly aligned.
 abstract final class AppSpacing {
   static const double xs = 4;
   static const double sm = 8;
@@ -13,10 +8,8 @@ abstract final class AppSpacing {
   static const double lg = 16;
   static const double xl = 24;
 
-  /// Fixed card padding (used as a `const` constructor default).
   static const EdgeInsets card = EdgeInsets.all(lg);
 
-  /// Responsive page paddings — scale gently with the device.
   static EdgeInsets get pageH =>
       EdgeInsets.symmetric(horizontal: AppResponsive.space(lg));
   static EdgeInsets get page => EdgeInsets.all(AppResponsive.space(lg));

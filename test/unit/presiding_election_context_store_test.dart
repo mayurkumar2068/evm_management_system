@@ -22,9 +22,9 @@ void main() {
   test('mergePreservingElectors keeps counts from fallback', () {
     final PresidingElectionContext merged =
         PresidingElectionContextStore.mergePreservingElectors(
-      withoutElectors,
-      withElectors,
-    );
+          withoutElectors,
+          withElectors,
+        );
 
     expect(merged.maleElectors, 100);
     expect(merged.femaleElectors, 90);
@@ -35,9 +35,9 @@ void main() {
   test('mergePreservingElectors does not overwrite existing counts', () {
     final PresidingElectionContext merged =
         PresidingElectionContextStore.mergePreservingElectors(
-      withElectors,
-      withoutElectors,
-    );
+          withElectors,
+          withoutElectors,
+        );
 
     expect(merged, withElectors);
   });
@@ -45,9 +45,9 @@ void main() {
   test('preferWithElectors prefers context that has elector counts', () {
     final PresidingElectionContext? picked =
         PresidingElectionContextStore.preferWithElectors(
-      withoutElectors,
-      withElectors,
-    );
+          withoutElectors,
+          withElectors,
+        );
 
     expect(picked?.hasElectorCounts, isTrue);
     expect(picked?.maleElectors, 100);
@@ -72,9 +72,9 @@ void main() {
 
     final PresidingElectionContext merged =
         PresidingElectionContextStore.mergePreservingIdentity(
-      electorsOnly,
-      fromDisk,
-    );
+          electorsOnly,
+          fromDisk,
+        );
 
     expect(merged.userId, 'po-123');
     expect(merged.loginUserName, 'Rural PO');

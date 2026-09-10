@@ -3,7 +3,6 @@ import 'package:evm_management_system/features/presiding_concern/data/constants/
 import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Maps turnout slot status fields from `po-status`.
 final class TurnoutStatusFields {
   const TurnoutStatusFields({
     required this.male,
@@ -18,7 +17,6 @@ final class TurnoutStatusFields {
   final String updatedAt;
 }
 
-/// Single source of truth for turnout slot metadata, endpoints, and status keys.
 final class TurnoutSlotConfig {
   const TurnoutSlotConfig({
     required this.slotId,
@@ -45,7 +43,6 @@ final class TurnoutSlotConfig {
   }
 }
 
-/// Registry consumed by UI, API mapper, and status sync.
 abstract final class TurnoutSlotRegistry {
   static const TurnoutSlotConfig slot9Am = TurnoutSlotConfig(
     slotId: TurnoutSlotIds.slot9Am,

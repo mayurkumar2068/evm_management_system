@@ -17,13 +17,4 @@ void main() {
       );
     });
   });
-
-  group('appendWebViewLang', () {
-    test('normalizes origin and appends lang only', () {
-      expect(
-        appendWebViewLang('http://localhost:4200', lang: 'hi'),
-        'http://localhost:4200/?lang=hi',
-      );
-    });
-  });
 }

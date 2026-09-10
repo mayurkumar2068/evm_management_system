@@ -1,23 +1,12 @@
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:flutter/services.dart';
 
-/// Controls screenshot / screen-recording protection.
-///
-/// Abstracted behind an interface so the native secure-flag implementation
-/// (Android `FLAG_SECURE`, iOS screenshot notifications) can be swapped without
-/// touching UI code.
 abstract interface class ScreenSecurityService {
-  /// Blocks screenshots and hides app content in the recents switcher.
   Future<void> enableSecureMode();
 
-  /// Re-allows screenshots (e.g. on non-sensitive screens).
   Future<void> disableSecureMode();
 }
 
-/// Default implementation using a platform [MethodChannel].
-///
-/// The corresponding native handler applies `FLAG_SECURE` on Android and posts
-/// screenshot notifications on iOS. Missing handlers degrade gracefully.
 class DefaultScreenSecurityService implements ScreenSecurityService {
   const DefaultScreenSecurityService();
 

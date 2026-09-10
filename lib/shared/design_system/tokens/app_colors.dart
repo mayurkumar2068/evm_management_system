@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Soft Booth-Survey theme — single source for the whole app.
-///
-/// Extracted from the staging soft UI: sky blue → mint green, soft surfaces,
-/// rounded cards. PO login, survey login, session-expiry login, and Flutter
-/// chrome all share these tokens with Angular `survey_web` CSS variables.
 abstract final class AppColors {
-  // Brand — soft blue / mint (Booth Survey reference).
   static const Color saffron = Color(0xFFF4801F);
   static const Color green = Color(0xFF10B981);
   static const Color teal = Color(0xFF0D9488);
 
-  /// Soft sky blue (hero / primary actions).
   static const Color primary = Color(0xFF3B82F6);
   static const Color primaryDark = Color(0xFF2563EB);
   static const Color primaryDeep = Color(0xFF1D4ED8);
@@ -27,16 +20,13 @@ abstract final class AppColors {
   static const Color purple = Color(0xFF6366F1);
   static const Color purpleLight = Color(0xFFEEF2FF);
 
-  /// Survey WebView — same soft primary as the rest of the app.
   static const Color surveyPrimary = Color(0xFF3B82F6);
 
-  // Neutrals
   static const Color background = Color(0xFFEEF5FC);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF0F7FC);
   static const Color outline = Color(0xFFE2E8F0);
 
-  // Slate scale
   static const Color slate50 = Color(0xFFF8FAFC);
   static const Color slate100 = Color(0xFFF1F5F9);
   static const Color slate200 = Color(0xFFE2E8F0);
@@ -48,13 +38,11 @@ abstract final class AppColors {
   static const Color slate800 = Color(0xFF1E3A5F);
   static const Color slate900 = Color(0xFF0F2744);
 
-  // Text
   static const Color textPrimary = Color(0xFF0F2744);
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textDisabled = Color(0xFF94A3B8);
   static const Color onPrimary = Color(0xFFFFFFFF);
 
-  // Status
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
@@ -65,7 +53,6 @@ abstract final class AppColors {
   static const Color errorSurface = Color(0xFFFEE2E2);
   static const Color infoSurface = Color(0xFFDBEAFE);
 
-  // Dark theme neutrals
   static const Color darkBackground = Color(0xFF0E1116);
   static const Color darkSurface = Color(0xFF171C24);
   static const Color darkOutline = Color(0xFF2B3340);

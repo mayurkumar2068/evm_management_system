@@ -5,12 +5,9 @@ import 'package:evm_management_system/shared/design_system/tokens/app_radius.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Small rounded status badge with a leading dot, mirroring the design's
-/// device-status pills (registered / pending / in transit / defective).
 class AppStatusPill extends StatelessWidget {
   const AppStatusPill({required this.status, super.key});
 
-  /// Raw status key, e.g. `registered`, `pending`, `in_transit`, `defective`.
   final String status;
 
   ({String label, Color bg, Color fg}) _config() => switch (status) {

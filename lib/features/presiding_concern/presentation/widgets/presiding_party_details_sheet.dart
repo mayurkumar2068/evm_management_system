@@ -6,7 +6,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Opens polling-party details (P1–P4) in a half-height glass bottom sheet.
 Future<void> showPresidingPartyDetailsSheet(
   BuildContext context, {
   VoidCallback? onCompleted,
@@ -83,7 +82,12 @@ Future<void> showPresidingPartyDetailsSheet(
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(48, 14, 48, 10),
+                              padding: const EdgeInsets.fromLTRB(
+                                48,
+                                14,
+                                48,
+                                10,
+                              ),
                               child: Column(
                                 children: <Widget>[
                                   Container(

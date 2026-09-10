@@ -7,7 +7,6 @@ import 'package:evm_management_system/features/voter_search/data/voter_search_cr
 import 'package:evm_management_system/features/voter_search/presentation/controllers/voter_search_controller.dart';
 import 'package:get/get.dart';
 
-/// Lazy DI for native voter search (SECSearchAPI).
 abstract final class VoterSearchModule {
   static Dio? _dio;
   static VoterSearchCrypto? _crypto;
@@ -37,7 +36,6 @@ abstract final class VoterSearchModule {
     return _repository ??= VoterSearchRepository(datasource);
   }
 
-  /// Ensures controller is registered for the voter-search screen.
   static VoterSearchController ensureController() {
     if (Get.isRegistered<VoterSearchController>()) {
       return Get.find<VoterSearchController>();

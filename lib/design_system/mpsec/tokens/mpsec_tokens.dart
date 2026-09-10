@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// MP SEC soft theme — mirrors Booth Survey blue → mint reference.
 abstract final class MpSecTokens {
   static const double cardRadius = 20;
   static const double touchTarget = 48;

@@ -1,6 +1,5 @@
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// Master dashboard card from `GET /api/Masters/card-list`.
 class DashboardCardModel {
   const DashboardCardModel({
     required this.id,
@@ -28,7 +27,10 @@ class DashboardCardModel {
       isLogin: parseLooseBoolOr(json['IsLogin'] ?? json['isLogin']),
       isWebView: parseLooseBoolOr(json['IsWebView'] ?? json['isWebView']),
       url: trimmedOrNull(json['Url'] ?? json['url']),
-      isActive: parseLooseBoolOr(json['IsActive'] ?? json['isActive'], defaultValue: true),
+      isActive: parseLooseBoolOr(
+        json['IsActive'] ?? json['isActive'],
+        defaultValue: true,
+      ),
     );
   }
 
@@ -57,9 +59,7 @@ class DashboardCardModel {
     return categoryName.trim();
   }
 
-  /// Stable English key used for native route mapping.
   String get matchKey => cardNameEn.trim().toLowerCase();
 
   static String _str(Object? value) => value?.toString().trim() ?? '';
-
 }

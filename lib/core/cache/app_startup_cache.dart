@@ -5,11 +5,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Clears disposable runtime caches (images, WebView, temp PDF/PNG exports).
-///
-/// Does **not** touch auth tokens, onboarding, settings, or PO offline DB JSON.
 abstract final class AppStartupCache {
-  /// Called on cold start and on logout.
   static Future<void> clearOnLaunch() => clearDisposableCaches();
 
   static Future<void> clearDisposableCaches() async {
@@ -20,7 +16,6 @@ abstract final class AppStartupCache {
     AppLogger.i('Disposable caches cleared');
   }
 
-  /// Removes generated report/slip exports from temp (safe during a session).
   static Future<void> clearGeneratedExports() async {
     final Directory? dir = await _safeTempDir();
     if (dir == null) return;
@@ -105,8 +100,6 @@ abstract final class AppStartupCache {
       } else if (entity is Directory) {
         await entity.delete(recursive: true);
       }
-    } catch (_) {
-      // Best-effort — file may be in use by share sheet.
-    }
+    } catch (_) {}
   }
 }

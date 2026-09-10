@@ -55,7 +55,8 @@ class DashboardServicesGrid extends StatelessWidget {
     ServiceSession? session = AppServices.serviceAuth.session.value;
 
     if (s.requiresServiceLogin) {
-      final bool kindMismatch = s.requiredLoginKind != null &&
+      final bool kindMismatch =
+          s.requiredLoginKind != null &&
           session != null &&
           session.kind != s.requiredLoginKind;
       final bool needsLogin =
@@ -112,7 +113,6 @@ class DashboardServicesGrid extends StatelessWidget {
   }
 }
 
-/// Classic service tile — white card, tinted icon, title (+ optional desc).
 class _ServiceCard extends StatelessWidget {
   const _ServiceCard({required this.service, required this.onTap});
 

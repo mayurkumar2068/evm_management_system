@@ -4,7 +4,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Hero illustration for the offline hub screen.
 class OfflineIllustration extends StatelessWidget {
   const OfflineIllustration({super.key});
 
@@ -31,7 +30,6 @@ class OfflineIllustration extends StatelessWidget {
   }
 }
 
-/// Connection and storage summary card.
 class OfflineStatusCard extends StatelessWidget {
   const OfflineStatusCard({
     required this.connectionLabel,

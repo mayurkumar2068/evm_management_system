@@ -37,13 +37,13 @@ class PresidingCollapsedSummary extends StatelessWidget {
               locked
                   ? Icons.lock_rounded
                   : saved
-                      ? Icons.check_circle_rounded
-                      : Icons.pending_actions_rounded,
+                  ? Icons.check_circle_rounded
+                  : Icons.pending_actions_rounded,
               color: locked
                   ? AppColors.slate400
                   : saved
-                      ? AppColors.success
-                      : AppColors.slate400,
+                  ? AppColors.success
+                  : AppColors.slate400,
             ),
             const SizedBox(width: 12),
             Expanded(

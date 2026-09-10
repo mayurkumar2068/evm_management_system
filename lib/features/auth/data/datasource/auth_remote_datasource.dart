@@ -5,7 +5,7 @@ import 'package:evm_management_system/features/auth/data/models/auth_response_mo
 import 'package:evm_management_system/features/auth/data/models/user_model.dart';
 import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
 import 'package:evm_management_system/core/notifications/notification_service.dart';
-/// Contract for the auth network calls.
+
 abstract interface class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginCredentials credentials);
   Future<UserModel> localNotification(UserModel usermodel);
@@ -13,10 +13,6 @@ abstract interface class AuthRemoteDataSource {
   Future<void> logout();
 }
 
-/// Dio-backed implementation of [AuthRemoteDataSource].
-///
-/// Throws [DioException] on transport errors; the repository converts these to
-/// [Failure]s via `ErrorMapper`, so no error handling leaks past the data layer.
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   const AuthRemoteDataSourceImpl(this._apiClient);
 

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-/// Shared SECSearchAPI request envelope.
 class VoterSearchRequest {
   const VoterSearchRequest({required this.reqData, required this.passKey});
 
@@ -13,7 +12,6 @@ class VoterSearchRequest {
   };
 }
 
-/// Shared SECSearchAPI response envelope (`Data` is a JSON string).
 class VoterSearchEnvelope {
   const VoterSearchEnvelope({
     required this.status,
@@ -31,7 +29,6 @@ class VoterSearchEnvelope {
     );
   }
 
-  /// API may return [Data] as a JSON string, or already-parsed Map/List.
   static String _dataToString(Object? data) {
     if (data == null) return '';
     if (data is String) return data;
@@ -43,7 +40,6 @@ class VoterSearchEnvelope {
   final String data;
   final String? pubKey;
 
-  /// Decodes [data] JSON string into a List / Map / dynamic.
   dynamic decodeData() {
     if (data.trim().isEmpty) return null;
     return jsonDecode(data);
@@ -72,8 +68,9 @@ class VoterDistrict {
   final String nameEn;
   final String distNo;
 
-  String displayName(bool preferHindi) =>
-      preferHindi && name.isNotEmpty ? name : (nameEn.isNotEmpty ? nameEn : name);
+  String displayName(bool preferHindi) => preferHindi && name.isNotEmpty
+      ? name
+      : (nameEn.isNotEmpty ? nameEn : name);
 }
 
 class VoterBlock {
@@ -98,8 +95,9 @@ class VoterBlock {
   final String nameEn;
   final String blockNo;
 
-  String displayName(bool preferHindi) =>
-      preferHindi && name.isNotEmpty ? name : (nameEn.isNotEmpty ? nameEn : name);
+  String displayName(bool preferHindi) => preferHindi && name.isNotEmpty
+      ? name
+      : (nameEn.isNotEmpty ? nameEn : name);
 }
 
 class VoterUrbanBody {
@@ -127,8 +125,9 @@ class VoterUrbanBody {
   final String ubType;
   final String ubNo;
 
-  String displayName(bool preferHindi) =>
-      preferHindi && name.isNotEmpty ? name : (nameEn.isNotEmpty ? nameEn : name);
+  String displayName(bool preferHindi) => preferHindi && name.isNotEmpty
+      ? name
+      : (nameEn.isNotEmpty ? nameEn : name);
 }
 
 class VoterElector {
@@ -215,7 +214,6 @@ class VoterElector {
   final String ubName;
   final String ubTypeName;
 
-  /// Urban when API marks `U`, or urban body / urban ward is present.
   bool get isUrban {
     final String type = elecType.toUpperCase().trim();
     if (type.contains('U')) return true;
@@ -223,13 +221,10 @@ class VoterElector {
     return ubName.isNotEmpty || urbanWardNo.isNotEmpty;
   }
 
-  /// Combined ward used by slip / legacy callers.
-  String get wardNo =>
-      isUrban
-          ? (urbanWardNo.isNotEmpty ? urbanWardNo : ruralWardNo)
-          : (ruralWardNo.isNotEmpty ? ruralWardNo : urbanWardNo);
+  String get wardNo => isUrban
+      ? (urbanWardNo.isNotEmpty ? urbanWardNo : ruralWardNo)
+      : (ruralWardNo.isNotEmpty ? ruralWardNo : urbanWardNo);
 
-  /// Relation label from API `rlnType`: F=father, M=mother, H=husband, W=wife, O=other.
   String get relativeLabel {
     return switch (rlnType.toUpperCase().trim()) {
       'F' => 'पिता का नाम',
@@ -241,7 +236,6 @@ class VoterElector {
     };
   }
 
-  /// Localized relation label for UI (EN/HI).
   String relativeLabelLocalized(bool preferHindi) {
     if (preferHindi) return relativeLabel;
     return switch (rlnType.toUpperCase().trim()) {
@@ -287,7 +281,6 @@ class VoterElector {
     return '$wardNo - $wardName';
   }
 
-  /// Body / panchayat / urban body name for slip + result card.
   String get slipBodyName {
     if (isUrban) {
       if (ubName.isNotEmpty) return ubName;
@@ -299,7 +292,6 @@ class VoterElector {
     return '';
   }
 
-  /// Compact address used on printed slip (house + body/village).
   String get slipAddressLine {
     final List<String> parts = <String>[
       if (houseNo.isNotEmpty) houseNo,
@@ -316,7 +308,6 @@ class VoterElector {
   }
 }
 
-/// Payload for `/api/Search/search-elector`.
 class ElectorSearchQuery {
   const ElectorSearchQuery({
     required this.elecType,
@@ -359,12 +350,8 @@ class ElectorSearchQuery {
   };
 }
 
-/// Payload for `/api/Search/search-elector-epic`.
 class ElectorEpicSearchQuery {
-  const ElectorEpicSearchQuery({
-    required this.epicNo,
-    required this.distNo,
-  });
+  const ElectorEpicSearchQuery({required this.epicNo, required this.distNo});
 
   final String epicNo;
   final String distNo;

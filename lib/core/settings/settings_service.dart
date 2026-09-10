@@ -1,7 +1,6 @@
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 
-/// Persistent app preference storage used by theme and locale providers.
 final class AppSettingsService {
   const AppSettingsService(this._storage);
 

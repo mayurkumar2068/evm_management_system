@@ -16,8 +16,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Root application widget. Wires GetX navigation, theme and localization,
-/// restores the session on first build, and reacts to session-expiry events.
 class EvmApp extends StatefulWidget {
   const EvmApp({super.key});
 
@@ -63,7 +61,6 @@ class _EvmAppState extends State<EvmApp> {
     await AppServices.auth.restoreSession();
     if (!mounted) return;
 
-    // Safety net if restore left status as unknown.
     if (AppServices.auth.authState.value.status == AuthStatus.unknown) {
       if (AppServices.onboarding.seen) {
         await AppServices.auth.continueAsGuest();
@@ -72,7 +69,6 @@ class _EvmAppState extends State<EvmApp> {
       }
     }
 
-    // Ensure redirect runs even if the auth worker missed a frame.
     AuthNavigationGuard.apply();
   }
 
@@ -88,8 +84,6 @@ class _EvmAppState extends State<EvmApp> {
     final SessionTimeoutManager? timeout = _idleTimeout;
     if (timeout == null) return;
     if (next.isAuthenticated) {
-      // Keep login session alive until explicit logout.
-      // Idle tracking continues only to keep heartbeat plumbing intact.
       timeout.dispose();
     } else {
       timeout.dispose();

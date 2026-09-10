@@ -80,7 +80,8 @@ abstract class PoElectionBaseDatasource {
         break;
     }
     final int? code = e.response?.statusCode;
-    if (code == 408 || code == 429 || (code != null && code >= 500)) return true;
+    if (code == 408 || code == 429 || (code != null && code >= 500))
+      return true;
     final String msg = (e.message ?? '').toLowerCase();
     return msg.contains('offline') ||
         msg.contains('socket') ||

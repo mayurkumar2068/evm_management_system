@@ -3,7 +3,6 @@ import 'package:evm_management_system/features/presiding_concern/presentation/wi
 import 'package:evm_management_system/shared/design_system/widgets/app_gradient_header.dart';
 import 'package:flutter/material.dart';
 
-/// PO gradient header with elector cards in the bottom slot.
 class PresidingPoScreenHeader extends StatelessWidget {
   const PresidingPoScreenHeader({
     required this.title,
@@ -29,9 +28,7 @@ class PresidingPoScreenHeader extends StatelessWidget {
       leading: leading,
       trailing: trailing,
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-      bottom: PresidingElectorHeaderStrip(
-        electionContext: electionContext,
-      ),
+      bottom: PresidingElectorHeaderStrip(electionContext: electionContext),
     );
   }
 }

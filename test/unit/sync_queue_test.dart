@@ -3,7 +3,6 @@ import 'package:evm_management_system/core/sync/sync_models.dart';
 import 'package:evm_management_system/core/sync/sync_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// In-memory [LocalDatabase] fake for fast, isolated tests.
 class _InMemoryDb implements LocalDatabase {
   final Map<String, Map<String, Map<String, dynamic>>> _data =
       <String, Map<String, Map<String, dynamic>>>{};

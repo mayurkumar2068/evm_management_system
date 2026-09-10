@@ -5,10 +5,8 @@ import 'package:evm_management_system/core/webview/service/webview_security.dart
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Unit coverage for reusable WebView navigation and SSL decisions.
 void main() {
   group('WebViewNavigationPolicy', () {
-    /// Returns a new policy for each test.
     WebViewNavigationPolicy createPolicy() {
       return const WebViewNavigationPolicy();
     }
@@ -37,7 +35,9 @@ void main() {
         WebNavDecision.external,
       );
       expect(
-        createPolicy().decide(Uri.parse('comgooglemaps://?daddr=22.7,75.8')).action,
+        createPolicy()
+            .decide(Uri.parse('comgooglemaps://?daddr=22.7,75.8'))
+            .action,
         WebNavDecision.external,
       );
     });
@@ -64,7 +64,6 @@ void main() {
   });
 
   group('WebViewSecurity', () {
-    /// Creates a trust challenge for the supplied host.
     ServerTrustChallenge createChallenge(String host, {SslError? sslError}) {
       return ServerTrustChallenge(
         protectionSpace: URLProtectionSpace(host: host, sslError: sslError),

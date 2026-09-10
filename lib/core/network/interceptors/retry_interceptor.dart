@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 
-/// Retries transient failures (timeouts, connection errors, 502/503/504)
-/// using exponential backoff with jitter.
 class RetryInterceptor extends Interceptor {
   RetryInterceptor({
     required this.dio,

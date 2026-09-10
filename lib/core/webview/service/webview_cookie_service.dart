@@ -4,16 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../models/web_session_context.dart';
 import 'webview_logger.dart';
 
-/// Central cookie manager: mirrors the session into first-party cookies for the
-/// page's origin so server-rendered pages and same-site XHR are authenticated
-/// without the token ever appearing in the URL.
-///
-/// - `app_token`  → Secure + HttpOnly (only over https)
-/// - `app_lang`   → readable by JS (language sync)
-/// - `app_theme`  → readable by JS (theme sync)
-/// - `app_device` → readable by JS
 class WebViewCookieService {
-  /// Creates the cookie synchronization service.
   WebViewCookieService({CookieManager? manager, WebViewLogger? logger})
     : _cookies = manager ?? CookieManager.instance(),
       _logger = logger ?? const WebViewLogger();
@@ -21,7 +12,6 @@ class WebViewCookieService {
   final CookieManager _cookies;
   final WebViewLogger _logger;
 
-  /// Mirrors the current app session into the WebView cookie jar.
   Future<void> sync(WebUri url, WebSessionContext ctx) async {
     final bool secure = url.scheme == 'https';
     final Uri uri = Uri.tryParse(url.toString()) ?? Uri();
@@ -96,7 +86,6 @@ class WebViewCookieService {
     await logCookiesFor(url, source: 'post_sync');
   }
 
-  /// Remove the session cookies for an origin (e.g. on logout).
   Future<void> clearFor(WebUri url) async {
     for (final String name in const <String>[
       'app_token',
@@ -114,7 +103,6 @@ class WebViewCookieService {
     }
   }
 
-  /// Clears mirrored session cookies for every configured web/API origin.
   Future<void> clearSessionCookiesFor(EnvironmentConfig config) async {
     final Set<String> origins = <String>{};
     for (final String raw in <String>[
@@ -137,7 +125,6 @@ class WebViewCookieService {
     }
   }
 
-  /// Reads and logs cookies for the supplied origin.
   Future<void> logCookiesFor(WebUri url, {required String source}) async {
     final List<Cookie> cookies = await _cookies.getCookies(url: url);
     final Uri uri = Uri.tryParse(url.toString()) ?? Uri();

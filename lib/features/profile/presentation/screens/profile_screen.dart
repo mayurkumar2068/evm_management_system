@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/app_build_info.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/legal/privacy_policy.dart';
@@ -11,19 +10,16 @@ import 'package:evm_management_system/features/service_auth/domain/entities/serv
 import 'package:evm_management_system/features/profile/presentation/widgets/profile_login_required_sheet.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/shared/models/device_record.dart';
 import 'package:evm_management_system/shared/widgets/language_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Officer profile — real session data + language / theme / services.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Touch reactive deps so language / theme / sessions rebuild immediately.
       AppServices.settings.locale.value;
       final ThemeMode currentThemeMode = AppServices.settings.themeMode.value;
       final AuthUser? authUser = AppServices.auth.authState.value.user;
@@ -65,10 +61,6 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ],
               ),
-            ],
-            if (!kHideEvmScanning) ...<Widget>[
-              const SizedBox(height: 16),
-              _InventoryStats(),
             ],
             const SizedBox(height: 22),
             _GroupCard(
@@ -115,8 +107,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            // Sign Out only when an officer/service session exists.
-            // Guest (signed out) sees Sign In instead — Sign Out stays hidden.
+
             const SizedBox(height: 28),
             if (hasOfficerSession)
               _SignOutButton(onTap: () => _confirmSignOut(context))
@@ -135,8 +126,7 @@ class ProfileScreen extends StatelessWidget {
     if (!confirmed) return;
 
     final AuthUser? user = AppServices.auth.authState.value.user;
-    // Guest + officer/service session: clear session only, stay in app.
-    // Sign Out button then hides and Sign In is shown instead.
+
     if (user?.isGuest == true) {
       await AppServices.serviceAuth.signOut();
       if (!context.mounted) return;
@@ -145,7 +135,7 @@ class ProfileScreen extends StatelessWidget {
       );
       return;
     }
-    // Show before auth navigation tear-down.
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(LocaleKeys.profileSignOutSuccess.tr())),
@@ -209,7 +199,6 @@ class _ProfileViewData {
       return LocaleKeys.dashboardRole.tr();
     }();
 
-    // Prefer login username over GUID user id.
     final String primaryId = () {
       if (hasSessionName) return session.name.trim();
       if (isGuest) return '—';
@@ -249,16 +238,17 @@ class _ProfileViewData {
       add(LocaleKeys.profileState.tr(), authUser?.stateCode);
     }
 
-    final String pollingStation = <String?>[
-      authUser?.pollingStationCode,
-      authUser?.pollingStationName,
-      authUser?.psId,
-    ]
-        .whereType<String>()
-        .map((String s) => s.trim())
-        .where((String s) => s.isNotEmpty)
-        .toSet()
-        .join(' · ');
+    final String pollingStation =
+        <String?>[
+              authUser?.pollingStationCode,
+              authUser?.pollingStationName,
+              authUser?.psId,
+            ]
+            .whereType<String>()
+            .map((String s) => s.trim())
+            .where((String s) => s.isNotEmpty)
+            .toSet()
+            .join(' · ');
     if (!isGuest) {
       add(
         LocaleKeys.profilePollingStation.tr(),
@@ -489,82 +479,6 @@ class _OfficerHero extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InventoryStats extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final List<DeviceRecord> all = AppServices.deviceRecords.records;
-      final DeviceStats stats = AppServices.deviceRecords.statsFor(null);
-      final DateTime weekAgo = DateTime.now().subtract(const Duration(days: 7));
-      final int thisWeek = all
-          .where((DeviceRecord r) => r.timestamp.isAfter(weekAgo))
-          .length;
-
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        decoration: BoxDecoration(
-          color: context.appSurface,
-          borderRadius: AppRadius.brXl,
-          border: Border.all(color: context.appOutline),
-        ),
-        child: Row(
-          children: <Widget>[
-            _Stat(
-              value: '${stats.total}',
-              label: LocaleKeys.regInventory.tr(),
-              color: AppColors.primary,
-            ),
-            _Stat(
-              value: '$thisWeek',
-              label: LocaleKeys.profileThisWeek.tr(),
-              color: AppColors.green,
-            ),
-            _Stat(
-              value: '${stats.pending}',
-              label: LocaleKeys.statsPending.tr(),
-              color: AppColors.warning,
-            ),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label, required this.color});
-  final String value;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: <Widget>[
-          Text(
-            value,
-            style: AppTextStyles.titleLarge.copyWith(
-              color: color,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: context.appMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -841,7 +755,9 @@ class _SignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primary.withValues(alpha: context.isAppDark ? 0.18 : 0.08),
+      color: AppColors.primary.withValues(
+        alpha: context.isAppDark ? 0.18 : 0.08,
+      ),
       borderRadius: AppRadius.brXl,
       child: InkWell(
         onTap: onTap,

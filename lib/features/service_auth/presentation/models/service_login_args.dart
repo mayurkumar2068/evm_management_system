@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 
-/// Navigation arguments for [ServiceLoginScreen].
 class ServiceLoginArgs {
   const ServiceLoginArgs({
     this.serviceTitle,
@@ -8,7 +7,6 @@ class ServiceLoginArgs {
     this.registrationAllowed,
   });
 
-  /// Resolves string / map / [ServiceLoginArgs] from GetX route arguments.
   factory ServiceLoginArgs.from(Object? raw) {
     if (raw is ServiceLoginArgs) return raw;
     if (raw is String) {
@@ -29,7 +27,8 @@ class ServiceLoginArgs {
       }
       final Object? reg = raw['registrationAllowed'];
       return ServiceLoginArgs(
-        serviceTitle: raw['serviceTitle']?.toString() ?? raw['title']?.toString(),
+        serviceTitle:
+            raw['serviceTitle']?.toString() ?? raw['title']?.toString(),
         loginKind: kind,
         registrationAllowed: reg is bool ? reg : null,
       );
@@ -40,6 +39,5 @@ class ServiceLoginArgs {
   final String? serviceTitle;
   final ServiceLoginKind? loginKind;
 
-  /// From Masters `IsRegistrationAllowed`. Register UI shows only when `true`.
   final bool? registrationAllowed;
 }

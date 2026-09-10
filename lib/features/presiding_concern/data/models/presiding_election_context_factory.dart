@@ -3,7 +3,6 @@ import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/features/auth/data/models/user_model.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 
-/// Builds [PresidingElectionContext] from auth user payloads.
 abstract final class PresidingElectionContextFactory {
   static PresidingElectionContext? fromUserModel(
     UserModel user, {
@@ -26,7 +25,6 @@ abstract final class PresidingElectionContextFactory {
     );
   }
 
-  /// DEV-only fallback from `assets/env/dev.env` for local PO API testing.
   static PresidingElectionContext? fromDevEnv(EnvironmentConfig config) {
     if (config.flavor != Flavor.dev) return null;
     final int? electionId = config.electionId;

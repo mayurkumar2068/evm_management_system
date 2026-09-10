@@ -3,8 +3,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_radius.dar
 import 'package:evm_management_system/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter/material.dart';
 
-/// Standard white surface container with the signature soft blue shadow and
-/// 20px radius used throughout the EVM design system.
 class AppCard extends StatelessWidget {
   const AppCard({
     required this.child,
@@ -35,7 +33,8 @@ class AppCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: surface,
           borderRadius: borderRadius,
-          border: border ??
+          border:
+              border ??
               Border.all(
                 color: isDark ? AppColors.darkOutline : AppColors.outline,
               ),

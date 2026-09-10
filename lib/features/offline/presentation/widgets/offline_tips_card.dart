@@ -4,7 +4,6 @@ import 'package:evm_management_system/localization/locale_keys.dart';
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Offline usage tips for field officers.
 class OfflineTipsCard extends StatelessWidget {
   const OfflineTipsCard({super.key});
 

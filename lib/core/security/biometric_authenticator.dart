@@ -1,14 +1,12 @@
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:local_auth/local_auth.dart';
 
-/// Wraps platform biometric (fingerprint / Face ID) authentication.
 class BiometricAuthenticator {
   BiometricAuthenticator([LocalAuthentication? auth])
     : _auth = auth ?? LocalAuthentication();
 
   final LocalAuthentication _auth;
 
-  /// Whether the device has biometric hardware that is enrolled and usable.
   Future<bool> isAvailable() async {
     try {
       final bool supported = await _auth.isDeviceSupported();
@@ -24,7 +22,6 @@ class BiometricAuthenticator {
     }
   }
 
-  /// Prompts the user for biometric authentication. Returns `true` on success.
   Future<bool> authenticate({required String localizedReason}) async {
     try {
       return await _auth.authenticate(

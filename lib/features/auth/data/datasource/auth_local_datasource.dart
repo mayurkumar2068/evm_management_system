@@ -4,7 +4,6 @@ import 'package:evm_management_system/core/security/token_vault.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/features/auth/data/models/user_model.dart';
 
-/// Contract for persisting auth state on-device.
 abstract interface class AuthLocalDataSource {
   Future<void> saveSession({
     required UserModel user,
@@ -17,10 +16,6 @@ abstract interface class AuthLocalDataSource {
   Future<bool> isBiometricEnabled();
 }
 
-/// Secure-storage backed implementation.
-///
-/// Tokens and the user session live ONLY in the encrypted keystore via
-/// [TokenVault] / [SecureStorageService] — never in SharedPreferences.
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   const AuthLocalDataSourceImpl({
     required TokenVault tokenVault,

@@ -3,17 +3,12 @@ import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
-/// Forces India Standard Time for the whole app (notifications, scheduling, API).
-///
-/// Device OS timezone cannot be changed; this sets the app's logical clock to
-/// [Asia/Kolkata] (IST, UTC+05:30) on every cold start.
 abstract final class AppTimeZone {
   static const String ianaId = 'Asia/Kolkata';
   static const String displayName = 'India Standard Time (IST)';
 
   static bool _ready = false;
 
-  /// Call once at bootstrap — before notifications or any scheduled work.
   static Future<void> ensureInitialized() async {
     if (_ready) return;
 
@@ -21,7 +16,6 @@ abstract final class AppTimeZone {
     final tz.Location india = tz.getLocation(ianaId);
     tz.setLocalLocation(india);
 
-    // DateFormat / intl default — India locale for calendar formatting.
     Intl.defaultLocale = 'en_IN';
 
     _ready = true;
@@ -34,7 +28,6 @@ abstract final class AppTimeZone {
 
   static tz.Location get location {
     if (!_ready) {
-      // Safe fallback if called before bootstrap (should not happen).
       tzdata.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation(ianaId));
       _ready = true;
@@ -42,20 +35,15 @@ abstract final class AppTimeZone {
     return tz.getLocation(ianaId);
   }
 
-  /// Current instant in India Standard Time.
   static tz.TZDateTime now() => tz.TZDateTime.now(location);
 
-  /// Converts any instant to India Standard Time.
   static tz.TZDateTime fromDateTime(DateTime dateTime) =>
       tz.TZDateTime.from(dateTime, location);
 
-  /// Calendar date in IST (`year-month-day`, time stripped).
   static DateTime calendarDate([DateTime? dateTime]) {
-    final tz.TZDateTime ist =
-        dateTime == null ? now() : fromDateTime(dateTime);
+    final tz.TZDateTime ist = dateTime == null ? now() : fromDateTime(dateTime);
     return DateTime(ist.year, ist.month, ist.day);
   }
 
-  /// IANA id for API headers / WebView context.
   static String get headerValue => ianaId;
 }

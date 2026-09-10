@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
 import 'package:evm_management_system/core/database/local_database.dart';
 import 'package:evm_management_system/core/di/onboarding_store.dart';
@@ -35,21 +34,15 @@ import 'package:evm_management_system/core/webview/service/web_session_service.d
 import 'package:evm_management_system/core/webview/service/webview_cookie_service.dart';
 import 'package:evm_management_system/core/webview/service/webview_logger.dart';
 import 'package:evm_management_system/core/webview/service/webview_warmer.dart';
-import 'package:evm_management_system/features/online_nomination/data/repositories/nomination_draft_repository.dart';
-import 'package:evm_management_system/features/online_nomination/data/repositories/urban_nomination_master_repository.dart';
-import 'package:evm_management_system/features/online_nomination/data/datasources/urban_nomination_remote_datasource.dart';
-import 'package:evm_management_system/core/network/olin_api_client.dart';
 import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
 import 'package:evm_management_system/shared/controllers/activity_log_controller.dart';
-import 'package:evm_management_system/shared/controllers/device_records_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Composition root for application-lifetime dependencies (GetX only).
 abstract final class AppServices {
   static Future<void> register({
     required EnvironmentConfig config,
@@ -157,28 +150,9 @@ abstract final class AppServices {
     Get.put<DeviceIdService>(DeviceIdService(secureStorage), permanent: true);
     Get.put<WebSessionService>(WebSessionService(), permanent: true);
 
-    // App Store 5.1.1 — do not construct OLIN/nomination clients this build.
-    if (!kHideOnlineNomination) {
-      Get.put<NominationDraftRepository>(
-        NominationDraftRepository(database),
-        permanent: true,
-      );
-      Get.put<UrbanNominationMasterRepository>(
-        UrbanNominationMasterRepository(
-          UrbanNominationRemoteDatasource(OlinApiClient.instance(config)),
-        ),
-        permanent: true,
-      );
-    }
-    // Voter search: Dio/repo created lazily via VoterSearchModule on first open.
-
-    Get.put<DeviceRecordsController>(
-      DeviceRecordsController(database),
-      permanent: true,
-    );
     Get.put<ActivityLogController>(ActivityLogController(), permanent: true);
     Get.put<ServiceAuthController>(ServiceAuthController(), permanent: true);
-    // Auth before dashboard — DashboardController.onInit listens to authState.
+
     Get.put<AuthController>(AuthController(), permanent: true);
     Get.put<DashboardController>(DashboardController(), permanent: true);
     Get.put<PresidingDashboardController>(
@@ -217,17 +191,10 @@ abstract final class AppServices {
       Get.find<WebSubmissionRepository>();
   static AuthController get auth => Get.find<AuthController>();
   static SettingsController get settings => Get.find<SettingsController>();
-  static DeviceRecordsController get deviceRecords =>
-      Get.find<DeviceRecordsController>();
   static ActivityLogController get activityLog =>
       Get.find<ActivityLogController>();
-  static NominationDraftRepository get nominationDrafts =>
-      Get.find<NominationDraftRepository>();
-  static UrbanNominationMasterRepository get urbanNominationMasters =>
-      Get.find<UrbanNominationMasterRepository>();
 }
 
-/// Reactive locale and theme preferences.
 class SettingsController extends GetxController {
   SettingsController(
     this._settings,

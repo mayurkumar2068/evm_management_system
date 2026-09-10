@@ -2,13 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/error/app_exception.dart';
 import 'package:evm_management_system/core/error/failure.dart';
 
-/// Centralized translation of low-level errors into domain [Failure]s.
-///
-/// This is the single place that knows how HTTP status codes and exception
-/// types map to failures, satisfying the "handle 401/403/404/422/500 centrally"
-/// requirement.
 abstract final class ErrorMapper {
-  /// Maps any caught [error] into a [Failure].
   static Failure map(Object error, [StackTrace? stackTrace]) {
     if (error is Failure) return error;
     if (error is DioException) return _fromDio(error);
@@ -53,7 +47,6 @@ abstract final class ErrorMapper {
       case DioExceptionType.unknown:
         return _fromStatusCode(e);
       case DioExceptionType.transformTimeout:
-        // TODO: Handle this case.
         throw UnimplementedError();
     }
   }

@@ -5,7 +5,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Full-screen fallback route for polling-party details (dashboard uses bottom sheet).
 class PresidingPartyDetailsScreen extends StatelessWidget {
   const PresidingPartyDetailsScreen({super.key});
 

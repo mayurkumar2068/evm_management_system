@@ -1,24 +1,18 @@
 import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 
-/// Typography scale using bundled Noto Sans Devanagari (no Google Fonts
-/// network download / disk cache on Android production).
 abstract final class AppTextStyles {
   static const String fontFamily = 'NotoSansDevanagari';
 
-  /// Bundled family from `pubspec.yaml` `fonts:`.
   static const String devanagariFontFamily = 'NotoSansDevanagari';
 
-  /// Renders Hindi (Devanagari) when a Latin-only face lacks those glyphs.
   static const List<String> devanagariFontFallback = <String>[
     devanagariFontFamily,
   ];
 
-  /// Applies [devanagariFontFallback] so mixed Latin + Hindi strings render cleanly.
   static TextStyle withDevanagariFallback(TextStyle style) =>
       style.copyWith(fontFamilyFallback: devanagariFontFallback);
 
-  /// Applies token style with optional overrides; always keeps Devanagari fallback.
   static TextStyle variant(
     TextStyle base, {
     Color? color,
@@ -36,7 +30,6 @@ abstract final class AppTextStyles {
     ),
   );
 
-  /// Base style from bundled Noto Sans Devanagari.
   static TextStyle _poppins({
     required double fontSize,
     required FontWeight fontWeight,
@@ -94,7 +87,6 @@ abstract final class AppTextStyles {
     color: AppColors.textSecondary,
   );
 
-  /// Tiny uppercase eyebrow label (e.g. field labels, section eyebrows).
   static TextStyle get overline => _poppins(
     fontSize: 11,
     fontWeight: FontWeight.w600,

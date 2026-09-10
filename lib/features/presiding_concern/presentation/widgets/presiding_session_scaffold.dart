@@ -5,7 +5,6 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Shared async session wrapper for presiding-officer screens.
 class PresidingSessionScaffold extends StatefulWidget {
   const PresidingSessionScaffold({required this.builder, super.key});
 

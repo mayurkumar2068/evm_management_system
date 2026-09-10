@@ -4,7 +4,6 @@ import 'package:evm_management_system/features/presiding_concern/data/constants/
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
 
-/// Maps presiding-officer domain actions to PO Election API request bodies.
 abstract final class PoElectionApiMapper {
   static Map<String, dynamic>? milestoneBody({
     required PresidingElectionContext context,
@@ -50,7 +49,6 @@ abstract final class PoElectionApiMapper {
     };
   }
 
-  /// Resolves the PO Election endpoint for a milestone.
   static String? milestoneEndpoint(String milestoneId) {
     return switch (milestoneId) {
       PresidingMilestoneIds.leftMaterialCenter =>
@@ -71,7 +69,6 @@ abstract final class PoElectionApiMapper {
     };
   }
 
-  /// Builds the request body for a turnout slot save action.
   static Map<String, dynamic>? turnoutBody({
     required PresidingElectionContext context,
     required TurnoutRecord record,
@@ -96,12 +93,10 @@ abstract final class PoElectionApiMapper {
     return null;
   }
 
-  /// Resolves the PO Election endpoint for a turnout slot.
   static String turnoutEndpoint(String slotId) {
     return TurnoutSlotRegistry.endpointFor(slotId);
   }
 
-  /// Live poll snapshot body used after poll start.
   static Map<String, dynamic> livePollBody({
     required PresidingElectionContext context,
     required TurnoutRecord record,

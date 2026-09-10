@@ -9,13 +9,6 @@ import 'package:evm_management_system/core/sync/sync_models.dart';
 import 'package:evm_management_system/core/sync/sync_queue.dart';
 import 'package:evm_management_system/core/sync/sync_service.dart';
 
-/// Orchestrates the offline-first sync lifecycle.
-///
-/// Flow per the architecture spec:
-/// `save local -> mark pending -> background sync -> server success -> update local`.
-/// Triggered by connectivity changes and a periodic interval; serializes work
-/// so only one drain runs at a time. Conflicts are reconciled by
-/// [ConflictResolver]; transient failures back off via [RetryPolicy].
 class SyncManager {
   SyncManager({
     required SyncQueue queue,
@@ -48,19 +41,12 @@ class SyncManager {
   Timer? _timer;
   bool _draining = false;
 
-  /// Persists a mutation locally and queues it for background sync.
-  ///
-  /// The optimistic local write is keyed off [SyncTask.entityType] — the very
-  /// same collection [_process] writes the server-confirmed record back to —
-  /// so the pending and confirmed copies can never land in different
-  /// collections.
   Future<void> submit(SyncTask task) async {
     await _db.put(task.entityType, task.entityId, task.payload);
     await _queue.enqueue(task);
     unawaited(sync());
   }
 
-  /// Begins watching connectivity and scheduling periodic drains.
   void start() {
     _connectivitySub = _connectivity.onStatusChange.listen((bool online) {
       if (online) unawaited(sync());
@@ -68,7 +54,6 @@ class SyncManager {
     _timer = Timer.periodic(_interval, (_) => unawaited(sync()));
   }
 
-  /// Drains the queue once. Safe to call concurrently — extra calls no-op.
   Future<void> sync() async {
     if (_draining) return;
     if (!await _connectivity.isOnline) return;

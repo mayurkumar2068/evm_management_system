@@ -8,7 +8,6 @@ import 'package:evm_management_system/shared/models/activity_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Notifications — survey sync alerts and recent activity.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -27,8 +26,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _load() async {
-    final List<WebFormSubmission> all =
-        await AppServices.webSubmissionRepository.all();
+    final List<WebFormSubmission> all = await AppServices
+        .webSubmissionRepository
+        .all();
     if (!mounted) return;
     setState(() {
       _submissions = all;
@@ -73,9 +73,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           _Notif(
             _NotifType.alert,
             LocaleKeys.dashboardStatSurveysPending.tr(),
-            LocaleKeys.dashboardNotifPendingSync.tr(
-              args: <String>['$pending'],
-            ),
+            LocaleKeys.dashboardNotifPendingSync.tr(args: <String>['$pending']),
             '',
             false,
           ),
@@ -109,13 +107,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       for (final ActivityEvent e in activity.take(8)) {
         items.add(
           _Notif(
-            e.type == ActivityType.sync
-                ? _NotifType.success
-                : _NotifType.info,
+            e.type == ActivityType.sync ? _NotifType.success : _NotifType.info,
             e.title,
-            e.deviceId.isEmpty
-                ? e.officer
-                : '${e.deviceId} • ${e.officer}',
+            e.deviceId.isEmpty ? e.officer : '${e.deviceId} • ${e.officer}',
             e.timestamp.relativeTime,
             false,
           ),
@@ -192,13 +186,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 enum _NotifType { alert, success, warning, info }
 
 class _Notif {
-  const _Notif(
-    this.type,
-    this.title,
-    this.body,
-    this.time,
-    this.read,
-  );
+  const _Notif(this.type, this.title, this.body, this.time, this.read);
   final _NotifType type;
   final String title;
   final String body;

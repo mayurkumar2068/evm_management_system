@@ -16,14 +16,12 @@ import 'package:evm_management_system/features/presiding_concern/presentation/co
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Lazily wires presiding concern dependencies via GetX.
 abstract final class PresidingConcernModule {
   static PresidingElectionContextBootstrap? _bootstrap;
   static PresidingConcernLocalDatasource? _local;
   static PresidingConcernRemoteDatasource? _remote;
   static PresidingConcernRepository? _repository;
 
-  /// Clears cached network clients so the next call uses a fresh auth token.
   static void resetClients() {
     PoElectionApiClient.reset();
     _remote = null;
@@ -31,13 +29,11 @@ abstract final class PresidingConcernModule {
     _resetWarmSyncState();
   }
 
-  /// Wipes PO local DB cache (logout / re-login). Does not delete GetX
-  /// controllers — those are permanent and deleting them causes a white screen.
   static Future<void> clearLocalCache() async {
     _resetWarmSyncState();
     try {
-      final PresidingConcernLocalDatasource local =
-          _local ??= PresidingConcernLocalDatasource(AppServices.database);
+      final PresidingConcernLocalDatasource local = _local ??=
+          PresidingConcernLocalDatasource(AppServices.database);
       await local.clearSession();
     } catch (_) {}
     resetClients();
@@ -61,16 +57,12 @@ abstract final class PresidingConcernModule {
         ),
       );
 
-  // True only once a warm sync has genuinely completed (pending actions
-  // pushed + latest PO status pulled). Never set optimistically — a failed
-  // or skipped (offline) attempt must be retried, not treated as done.
   static bool _warmSyncDone = false;
   static bool _warmSyncInFlight = false;
-  // Lives for the app process, like the static clients above — never cancelled.
+
   // ignore: cancel_subscriptions
   static StreamSubscription<bool>? _connectivitySub;
 
-  /// Local session stream. Warm-syncs pending actions + latest PO status.
   static Stream<PresidingSession> watchSession() async* {
     await bootstrap.ensureContext();
     _ensureConnectivityWatcher();
@@ -78,9 +70,6 @@ abstract final class PresidingConcernModule {
     yield* repository.watchSession();
   }
 
-  /// Runs the warm sync when it hasn't succeeded yet and isn't already
-  /// running. Safe to call repeatedly (screen revisits, reconnects) — it's a
-  /// no-op once a sync has actually gone through.
   static Future<void> _attemptWarmSync() async {
     if (_warmSyncDone || _warmSyncInFlight) return;
     _warmSyncInFlight = true;
@@ -91,19 +80,14 @@ abstract final class PresidingConcernModule {
         await Get.find<PresidingPartyController>().syncPending();
       }
       await repository.refreshFromServer();
-      // Only reached when every step above succeeded.
+
       _warmSyncDone = true;
     } catch (_) {
-      // Leave _warmSyncDone false — the next watchSession() call or the
-      // connectivity watcher below will retry automatically.
     } finally {
       _warmSyncInFlight = false;
     }
   }
 
-  /// Auto-retries the warm sync the moment connectivity returns, so a PO who
-  /// re-logs in without a network yet still gets API data as soon as they're
-  /// back online — without needing to leave/reopen the dashboard.
   static void _ensureConnectivityWatcher() {
     if (_connectivitySub != null) return;
     _connectivitySub = AppServices.connectivity.onStatusChange.listen((
@@ -121,7 +105,6 @@ abstract final class PresidingConcernModule {
   }
 }
 
-/// Coordinates milestone actions for the presiding-officer dashboard.
 final class PresidingDashboardController extends GetxController {
   PresidingConcernRepository get _repository =>
       PresidingConcernModule.repository;
@@ -136,7 +119,6 @@ final class PresidingDashboardController extends GetxController {
   void onInit() {
     super.onInit();
     unawaited(_bindConnectivity());
-    // First paint uses watchSession warm sync (API-first). Manual / reconnect use syncNow.
   }
 
   @override
@@ -160,12 +142,10 @@ final class PresidingDashboardController extends GetxController {
     });
   }
 
-  /// True when connectivity flips from offline → online.
   @visibleForTesting
   static bool offlineToOnline(bool wasOnline, bool isOnline) =>
       !wasOnline && isOnline;
 
-  /// Uploads pending local actions and then refreshes latest PO status.
   Future<bool> syncNow() async {
     if (isSyncing.value) return false;
     isSyncing.value = true;
@@ -193,7 +173,6 @@ final class PresidingDashboardController extends GetxController {
   }
 }
 
-/// Coordinates turnout slot persistence.
 final class PresidingTurnoutController extends GetxController {
   PresidingConcernRepository get _repository =>
       PresidingConcernModule.repository;

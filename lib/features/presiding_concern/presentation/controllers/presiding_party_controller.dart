@@ -8,11 +8,6 @@ import 'package:evm_management_system/features/presiding_concern/data/datasource
 import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
 import 'package:get/get.dart';
 
-/// Tracks whether PO polling-party details (P1–P4) are filled and saved.
-///
-/// Online: `save-po-party` immediately (no OTP).
-/// Offline / transient API errors: local draft + pending flag; dashboard stays
-/// unblocked; payload flushes on reconnect.
 final class PresidingPartyController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool isComplete = false.obs;
@@ -69,7 +64,6 @@ final class PresidingPartyController extends GetxController {
     }
   }
 
-  /// Prefers pending local draft; otherwise server; otherwise last cache.
   Future<PoPartyDetails?> loadForForm() async {
     final String? poUserId = _poUserId;
     if (poUserId == null || poUserId.isEmpty) return null;
@@ -89,7 +83,6 @@ final class PresidingPartyController extends GetxController {
     return local;
   }
 
-  /// Saves without OTP. Offline / transient failures queue locally.
   Future<void> save(PoPartyDetails details) async {
     final String poUserId = details.poUserId.trim();
     if (poUserId.isEmpty) {
@@ -119,7 +112,8 @@ final class PresidingPartyController extends GetxController {
     } on PoApiException catch (e) {
       if (e.isUnauthorized) rethrow;
       await _markPending(poUserId, details);
-      final bool fatalClient = e.statusCode != null &&
+      final bool fatalClient =
+          e.statusCode != null &&
           e.statusCode! >= 400 &&
           e.statusCode! < 500 &&
           e.statusCode != 408 &&
@@ -134,7 +128,6 @@ final class PresidingPartyController extends GetxController {
     }
   }
 
-  /// Uploads a queued `save-po-party` when the device is online.
   Future<void> syncPending() async {
     final String? poUserId = _poUserId;
     if (poUserId == null || poUserId.isEmpty) return;
@@ -169,8 +162,7 @@ final class PresidingPartyController extends GetxController {
     isComplete.value = true;
   }
 
-  String? get _poUserId =>
-      AppServices.serviceAuth.session.value?.userId.trim();
+  String? get _poUserId => AppServices.serviceAuth.session.value?.userId.trim();
 
   static bool _isFilledOnServer(PoPartyDetails? details) {
     if (details == null) return false;

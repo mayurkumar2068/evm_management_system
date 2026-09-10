@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Polling-party details form (P1–P4) used in bottom sheet and full screen.
 class PresidingPartyDetailsForm extends StatefulWidget {
   const PresidingPartyDetailsForm({
     this.onCompleted,
@@ -20,7 +19,6 @@ class PresidingPartyDetailsForm extends StatefulWidget {
 
   final VoidCallback? onCompleted;
 
-  /// When true (bottom sheet), subtitle is centered under the sheet title.
   final bool compactHeader;
 
   @override
@@ -81,8 +79,9 @@ class _PresidingPartyDetailsFormState extends State<PresidingPartyDetailsForm> {
           await Get.find<PresidingPartyController>().loadForForm();
       if (!mounted) return;
       if (existing != null) {
-        _existingId =
-            PoPartyDetails.isPartyGuid(existing.id) ? existing.id : null;
+        _existingId = PoPartyDetails.isPartyGuid(existing.id)
+            ? existing.id
+            : null;
         _partyNoCtrl.text = existing.partyNo;
         _p1Name.text = existing.p1Name;
         _p1Mobile.text = existing.p1MobileNo;
@@ -382,7 +381,10 @@ class _Field extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.4,
+              ),
             ),
           ),
         ),

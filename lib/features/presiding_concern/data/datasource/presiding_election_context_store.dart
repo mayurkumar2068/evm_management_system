@@ -6,22 +6,20 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// Persists presiding-officer election context from login as a single source of truth.
 final class PresidingElectionContextStore {
   const PresidingElectionContextStore(this._secureStorage);
 
   final SecureStorageService _secureStorage;
 
-  /// In-memory copy so the PO header can render on Android without waiting
-  /// on Keystore / EncryptedSharedPreferences (and without FutureBuilder reset).
   static PresidingElectionContext? memoryCache;
 
-  /// Keeps elector counts from [fallback] when [primary] lacks them.
   static PresidingElectionContext mergePreservingElectors(
     PresidingElectionContext primary,
     PresidingElectionContext? fallback,
   ) {
-    if (primary.hasElectorCounts || fallback == null || !fallback.hasElectorCounts) {
+    if (primary.hasElectorCounts ||
+        fallback == null ||
+        !fallback.hasElectorCounts) {
       return primary;
     }
     return primary.copyWith(
@@ -32,7 +30,6 @@ final class PresidingElectionContextStore {
     );
   }
 
-  /// Prefers whichever context carries elector counts (Release cold-start safe).
   static PresidingElectionContext? preferWithElectors(
     PresidingElectionContext? a,
     PresidingElectionContext? b,
@@ -44,7 +41,6 @@ final class PresidingElectionContextStore {
     return a.isComplete ? a : b;
   }
 
-  /// Fills login identity / booth fields from [fallback] when [primary] lacks them.
   static PresidingElectionContext mergePreservingIdentity(
     PresidingElectionContext primary,
     PresidingElectionContext? fallback,
@@ -58,22 +54,27 @@ final class PresidingElectionContextStore {
     );
     return primary.copyWith(
       userId: trimmedOrNull(primary.userId) ?? fallback.userId,
-      loginUserName: trimmedOrNull(primary.loginUserName) ?? fallback.loginUserName,
-      electionId: primary.electionId > 0 ? primary.electionId : fallback.electionId,
+      loginUserName:
+          trimmedOrNull(primary.loginUserName) ?? fallback.loginUserName,
+      electionId: primary.electionId > 0
+          ? primary.electionId
+          : fallback.electionId,
       psId: trimmedOrNull(primary.psId) ?? fallback.psId,
       areaType: primaryArea.isNotEmpty ? primaryArea : fallbackArea,
       pollingStationCode:
-          trimmedOrNull(primary.pollingStationCode) ?? fallback.pollingStationCode,
+          trimmedOrNull(primary.pollingStationCode) ??
+          fallback.pollingStationCode,
       pollingStationName:
-          trimmedOrNull(primary.pollingStationName) ?? fallback.pollingStationName,
+          trimmedOrNull(primary.pollingStationName) ??
+          fallback.pollingStationName,
       boothLat: primary.boothLat ?? fallback.boothLat,
       boothLong: primary.boothLong ?? fallback.boothLong,
     );
   }
 
-  /// Android fallback: PO service session also stores login elector totals.
   static void warmFromServiceSession(ServiceSession session) {
-    if (session.kind != ServiceLoginKind.presiding || !session.hasElectorCounts) {
+    if (session.kind != ServiceLoginKind.presiding ||
+        !session.hasElectorCounts) {
       return;
     }
     final PresidingElectionContext fromSession = PresidingElectionContext(
@@ -94,7 +95,6 @@ final class PresidingElectionContextStore {
     memoryCache = merged;
   }
 
-  /// Saves [context] to secure storage.
   Future<void> save(PresidingElectionContext context) async {
     PresidingElectionContext toSave = mergePreservingElectors(
       context,
@@ -115,7 +115,6 @@ final class PresidingElectionContextStore {
     );
   }
 
-  /// Reads the stored context, or `null` when absent or invalid.
   Future<PresidingElectionContext?> read() async {
     PresidingElectionContext? fromDisk;
     try {
@@ -150,7 +149,6 @@ final class PresidingElectionContextStore {
     return _fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
-  /// Clears stored presiding election context (e.g. on logout).
   Future<void> clear() {
     memoryCache = null;
     return _secureStorage.delete(SecureStorageKeys.presidingElectionContext);
@@ -191,8 +189,8 @@ final class PresidingElectionContextStore {
         (json['area_type'] ?? json['areaType'])?.toString(),
       ),
       userId: (json['user_id'] ?? json['userId'])?.toString(),
-      loginUserName:
-          (json['login_user_name'] ?? json['loginUserName'])?.toString(),
+      loginUserName: (json['login_user_name'] ?? json['loginUserName'])
+          ?.toString(),
       pollingStationCode:
           (json['polling_station_code'] ??
                   json['pollingStationCode'] ??

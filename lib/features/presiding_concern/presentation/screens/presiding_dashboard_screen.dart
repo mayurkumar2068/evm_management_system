@@ -24,7 +24,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Presiding-officer election-day milestone dashboard.
 class PresidingDashboardScreen extends StatelessWidget {
   const PresidingDashboardScreen({super.key});
 
@@ -117,17 +116,14 @@ class _DashboardBodyState extends State<_DashboardBody> {
     return _partyCtrl.isComplete.value;
   }
 
-  /// IPBMS material-tracking is opt-in — when the officer doesn't do it,
-  /// treat पोल-एंड (auto-derived from 2-2 hourly finish) as the "done" mark
-  /// instead of the hidden निर्वाचन सामग्री सौंपी गई step.
   bool get _canGenerateReport => widget.session.milestones.any(
-        (PresidingMilestone m) =>
-            m.id ==
-                (widget.session.isIpbms
-                    ? PresidingMilestoneIds.materialHandedOver
-                    : PresidingMilestoneIds.pollEnd) &&
-            m.isCompleted,
-      );
+    (PresidingMilestone m) =>
+        m.id ==
+            (widget.session.isIpbms
+                ? PresidingMilestoneIds.materialHandedOver
+                : PresidingMilestoneIds.pollEnd) &&
+        m.isCompleted,
+  );
 
   Future<void> _generateReport() async {
     if (!_canGenerateReport) {
@@ -186,15 +182,13 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final Map<String, List<PresidingMilestone>> grouped =
         <String, List<PresidingMilestone>>{};
     for (final PresidingMilestone milestone in widget.session.milestones) {
-      // मतदान समाप्त is submitted via 2–2 hourly finish — hide from section 4.
       if (milestone.id == PresidingMilestoneIds.pollEnd) continue;
-      // Live Voting is opt-in per booth/officer (PO login `IsLivePoll` flag).
+
       if (milestone.id == PresidingMilestoneIds.livePollInfo &&
           !widget.session.isLivePoll) {
         continue;
       }
-      // IPBMS material-tracking steps are opt-in too (PO login `IsIPBMS`
-      // flag) — when disabled, the flow starts from "मतदान केंद्र पहुंचे".
+
       if (!widget.session.isIpbms &&
           PresidingSession.ipbmsMilestoneIds.contains(milestone.id)) {
         continue;
@@ -232,10 +226,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
         PresidingPoScreenHeader(
           title: LocaleKeys.presidingOfficerTitle.tr(),
           subtitle: LocaleKeys.presidingPollingStation.tr(
-            args: <String>[
-              widget.session.pollingStationCode,
-              stationLabel,
-            ],
+            args: <String>[widget.session.pollingStationCode, stationLabel],
           ),
           electionContext: _electionContext,
           leading: AppCircleBackButton(onTap: () => Get.back<void>()),
@@ -326,7 +317,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                       index: section.index,
                       title: section.title,
                       milestones: grouped[section.id]!,
-                      // Booth map / "देखें" only when PO login `IsIPBMS` is true.
+
                       boothMapStationName:
                           section.index == 1 && widget.session.isIpbms
                           ? stationLabel
@@ -341,8 +332,8 @@ class _DashboardBodyState extends State<_DashboardBody> {
                           return;
                         }
 
-                        final String? blockKey =
-                            widget.session.milestoneActionBlockKey(milestone.id);
+                        final String? blockKey = widget.session
+                            .milestoneActionBlockKey(milestone.id);
                         if (blockKey != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(blockKey.tr())),
@@ -371,9 +362,9 @@ class _DashboardBodyState extends State<_DashboardBody> {
                         final String? msg = outcome.message;
                         if (msg == LocaleKeys.presidingPollStartBefore7Am ||
                             msg == LocaleKeys.presidingReachStationFirst) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(msg!.tr())),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(msg!.tr())));
                           return;
                         }
                         if (outcome.alreadyRegistered) {

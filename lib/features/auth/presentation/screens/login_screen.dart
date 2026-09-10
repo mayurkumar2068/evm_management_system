@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
 import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
@@ -9,10 +8,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// App entry after onboarding / session expiry — splash-style gateway.
-///
-/// No credential fields. Officer continues as guest into Dashboard / Reports /
-/// Profile. Pooling Survey and पीठासीन still use [ServiceLoginScreen].
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -99,16 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.dashboard),
                           ),
-                          if (!kHideReports) ...<Widget>[
-                            const SizedBox(height: 10),
-                            _NavTile(
-                              icon: AppIcons.reports,
-                              color: AppColors.green,
-                              title: LocaleKeys.regReports.tr(),
-                              enabled: !loading,
-                              onTap: () => _enter(AppRoute.reports),
-                            ),
-                          ],
                           const SizedBox(height: 10),
                           _NavTile(
                             icon: AppIcons.profile,
@@ -117,16 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             enabled: !loading,
                             onTap: () => _enter(AppRoute.profile),
                           ),
-                          if (!kHideEvmScanning) ...<Widget>[
-                            const SizedBox(height: 10),
-                            _NavTile(
-                              icon: AppIcons.stockRegister,
-                              color: AppColors.teal,
-                              title: LocaleKeys.regInventory.tr(),
-                              enabled: !loading,
-                              onTap: () => _enter(AppRoute.masterStockRegister),
-                            ),
-                          ],
                         ],
                       ),
                     ),

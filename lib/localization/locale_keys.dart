@@ -1,12 +1,9 @@
-/// Centralized, type-safe localization keys.
 abstract final class LocaleKeys {
-  // App
   static const String appName = 'app.name';
   static const String appTagline = 'app.tagline';
   static const String appSystem = 'app.system';
   static const String appVersion = 'app.version';
 
-  // Common
   static const String commonOk = 'common.ok';
   static const String commonCancel = 'common.cancel';
   static const String commonRetry = 'common.retry';
@@ -26,7 +23,6 @@ abstract final class LocaleKeys {
   static const String commonPickImageSource = 'common.pick_image_source';
   static const String commonNoInternet = 'common.no_internet';
 
-  // Error
   static const String errorNetwork = 'error.network';
   static const String errorServer = 'error.server';
   static const String errorUnauthorized = 'error.unauthorized';
@@ -35,7 +31,6 @@ abstract final class LocaleKeys {
   static const String errorValidation = 'error.validation';
   static const String errorUnknown = 'error.unknown';
 
-  // Auth
   static const String authUsername = 'auth.username';
   static const String authPassword = 'auth.password';
   static const String authBiometricReason = 'auth.biometric_reason';
@@ -51,7 +46,6 @@ abstract final class LocaleKeys {
   static const String authOtpSendFailed = 'auth.otp_send_failed';
   static const String authOtpInvalid = 'auth.otp_invalid';
 
-  // Service auth
   static const String serviceAuthSubtitleDefault =
       'service_auth.subtitle_default';
   static const String serviceAuthUserId = 'service_auth.user_id';
@@ -92,7 +86,8 @@ abstract final class LocaleKeys {
       'service_auth.otp_sent_success';
   static const String serviceAuthChangeMobile = 'service_auth.change_mobile';
   static const String serviceAuthNoAccount = 'service_auth.no_account';
-  static const String serviceAuthRegisterButton = 'service_auth.register_button';
+  static const String serviceAuthRegisterButton =
+      'service_auth.register_button';
   static const String serviceAuthRegisterTitle = 'service_auth.register_title';
   static const String serviceAuthRegisterSubtitle =
       'service_auth.register_subtitle';
@@ -116,7 +111,8 @@ abstract final class LocaleKeys {
       'service_auth.register_password_confirm_hint';
   static const String serviceAuthRegisterPasswordMismatch =
       'service_auth.register_password_mismatch';
-  static const String serviceAuthRegisterSubmit = 'service_auth.register_submit';
+  static const String serviceAuthRegisterSubmit =
+      'service_auth.register_submit';
   static const String serviceAuthRegisterSuccess =
       'service_auth.register_success';
   static const String serviceAuthRegisterSuccessPo =
@@ -124,7 +120,6 @@ abstract final class LocaleKeys {
   static const String serviceAuthRegisterUrlMissing =
       'service_auth.register_url_missing';
 
-  // Onboarding
   static const String onboardingSecurityTag = 'onboarding.security.tag';
   static const String onboardingSecurityTitle = 'onboarding.security.title';
   static const String onboardingSecurityDesc = 'onboarding.security.desc';
@@ -145,7 +140,6 @@ abstract final class LocaleKeys {
   static const String onboardingLanguageEnglish = 'onboarding.language_english';
   static const String onboardingLanguageSoon = 'onboarding.language_soon';
 
-  // Registration
   static const String regControlUnit = 'registration.control_unit';
   static const String regBallotUnit = 'registration.ballot_unit';
   static const String regRegisterCu = 'registration.register_cu';
@@ -166,7 +160,6 @@ abstract final class LocaleKeys {
   static const String regOpenScanner = 'registration.open_scanner';
   static const String regScannerSub = 'registration.scanner_sub';
 
-  // Dashboard
   static const String dashboardRecentActivity = 'dashboard.recent_activity';
   static const String dashboardBrandTitle = 'dashboard.brand_title';
   static const String dashboardGreeting = 'dashboard.greeting';
@@ -205,7 +198,6 @@ abstract final class LocaleKeys {
       'dashboard.weekly_registrations';
   static const String dashboardSearchHint = 'dashboard.search_hint';
 
-  // Scanner
   static const String scannerTitle = 'scanner.title';
   static const String scannerDetectionCombined = 'scanner.detection_combined';
   static const String scannerScanning = 'scanner.scanning';
@@ -224,7 +216,6 @@ abstract final class LocaleKeys {
   static const String scannerDiscard = 'scanner.discard';
   static const String scannerConfirmPrefill = 'scanner.confirm_prefill';
 
-  // Stats
   static const String statsTotal = 'stats.total';
   static const String statsActive = 'stats.active';
   static const String statsPending = 'stats.pending';
@@ -240,7 +231,6 @@ abstract final class LocaleKeys {
   static const String statsDefective = 'stats.defective';
   static const String statsSearchInventory = 'stats.search_inventory';
 
-  // Profile
   static const String profileTitle = 'profile.title';
   static const String profileSettings = 'profile.settings';
   static const String profileNotifications = 'profile.notifications';
@@ -273,7 +263,6 @@ abstract final class LocaleKeys {
   static const String profileState = 'profile.state';
   static const String profileActiveSession = 'profile.active_session';
 
-  // Audit
   static const String auditTitle = 'audit.title';
   static const String auditToday = 'audit.today';
   static const String auditYesterday = 'audit.yesterday';
@@ -281,7 +270,6 @@ abstract final class LocaleKeys {
   static const String auditEmpty = 'audit.empty';
   static const String auditEmptySub = 'audit.empty_sub';
 
-  // Settings
   static const String settingsAppearance = 'settings.appearance';
   static const String settingsDarkMode = 'settings.dark_mode';
   static const String settingsLanguage = 'settings.language';
@@ -296,13 +284,11 @@ abstract final class LocaleKeys {
   static const String settingsRecordsStored = 'settings.records_stored';
   static const String settingsLegal = 'settings.legal';
 
-  // Legal / privacy (Apple 5.1.1(i))
   static const String legalPrivacyPolicy = 'legal.privacy_policy';
   static const String legalPrivacyPolicySub = 'legal.privacy_policy_sub';
   static const String legalPrivacyPolicyOpenFailed =
       'legal.privacy_policy_open_failed';
 
-  // Device Detail
   static const String detailTitle = 'detail.title';
   static const String detailBoxNo = 'detail.box_no';
   static const String detailDistrict = 'detail.district';
@@ -310,7 +296,6 @@ abstract final class LocaleKeys {
   static const String detailNotFound = 'detail.not_found';
   static const String detailNotFoundSub = 'detail.not_found_sub';
 
-  // Search
   static const String searchHint = 'search.hint';
   static const String searchRecent = 'search.recent';
   static const String searchRecentEmpty = 'search.recent_empty';
@@ -319,11 +304,9 @@ abstract final class LocaleKeys {
   static const String searchResultFor = 'search.result_for';
   static const String searchResultsFor = 'search.results_for';
 
-  // Notifications
   static const String notificationsTitle = 'notifications.title';
   static const String notificationsCount = 'notifications.count';
 
-  // Sync
   static const String syncTitle = 'sync.title';
   static const String syncPendingRecords = 'sync.pending_records';
   static const String syncNoPending = 'sync.no_pending';
@@ -336,7 +319,6 @@ abstract final class LocaleKeys {
   static const String syncStart = 'sync.start';
   static const String syncForceOffline = 'sync.force_offline';
 
-  // Reports
   static const String reportsTitle = 'reports.title';
   static const String reportsLast7Days = 'reports.last_7_days';
   static const String reportsWeeklyTrend = 'reports.weekly_trend';
@@ -367,13 +349,11 @@ abstract final class LocaleKeys {
   static const String reportsDaySun = 'reports.day_sun';
   static const String reportsWeekLabel = 'reports.week_label';
 
-  // Time
   static const String timeJustNow = 'time.just_now';
   static const String timeMinutes = 'time.minutes';
   static const String timeHours = 'time.hours';
   static const String timeDays = 'time.days';
 
-  // Services
   static const String serviceExpenditureTitle = 'services.expenditure.title';
 
   static const String serviceVoterSearchEngineTitle =
@@ -389,7 +369,6 @@ abstract final class LocaleKeys {
   static const String serviceOnlineNominationDesc =
       'services.online_nomination.desc';
 
-  // Voter search (native)
   static const String voterSearchTitle = 'voter_search.title';
   static const String voterSearchEngineTitle = 'voter_search.engine_title';
   static const String voterSearchInstruction = 'voter_search.instruction';
@@ -465,7 +444,6 @@ abstract final class LocaleKeys {
   static const String voterSearchFilterUrbanHint =
       'voter_search.filter_urban_hint';
 
-  // Online nomination
   static const String nominationTitle = 'nomination.title';
   static const String nominationSubtitle = 'nomination.subtitle';
   static const String nominationApplyOnline = 'nomination.apply_online';
@@ -722,7 +700,6 @@ abstract final class LocaleKeys {
   static const String nominationCopiedId = 'nomination.copied_id';
   static const String nominationDigitalReceipt = 'nomination.digital_receipt';
 
-  // Presiding officer (mpsec_presiding_concern)
   static const String presidingOfficerTitle = 'presiding.officer_title';
   static const String presidingPollingStation = 'presiding.polling_station';
   static const String presidingEnterInfo = 'presiding.enter_info';
@@ -939,7 +916,6 @@ abstract final class LocaleKeys {
   static const String presidingCollapse = 'presiding.collapse';
   static const String presidingExpand = 'presiding.expand';
 
-  // WebView
   static const String webviewLoadFailedSubtitle =
       'webview.load_failed_subtitle';
   static const String webviewErrorNetworkTitle = 'webview.error_network_title';
@@ -957,7 +933,6 @@ abstract final class LocaleKeys {
   static const String webviewErrorDetailsLabel = 'webview.error_details_label';
   static const String webviewErrorGoBack = 'webview.error_go_back';
 
-  // Offline hub
   static const String offlineHubTitle = 'offline_hub.title';
   static const String offlineHubHeadline = 'offline_hub.headline';
   static const String offlineHubSubtitle = 'offline_hub.subtitle';
@@ -989,7 +964,6 @@ abstract final class LocaleKeys {
   static const String offlineHubBanner = 'offline_hub.banner';
   static const String offlineHubBlockedService = 'offline_hub.blocked_service';
 
-  // Menu
   static const String menuDashboard = 'menu.dashboard';
   static const String menuMasterStockRegister = 'menu.master_stock_register';
   static const String menuControlUnit = 'menu.control_unit';
@@ -1005,6 +979,5 @@ abstract final class LocaleKeys {
   static const String menuHelpSupport = 'menu.help_support';
   static const String menuAbout = 'menu.about';
 
-  // Splash
   static const String splashLoading = 'splash.loading';
 }

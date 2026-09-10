@@ -19,8 +19,6 @@ import 'package:evm_management_system/features/presiding_concern/domain/entities
 import 'package:evm_management_system/features/presiding_concern/data/models/presiding_election_context_factory.dart';
 import 'package:evm_management_system/localization/locale_keys.dart';
 
-/// Concrete [AuthRepository] orchestrating remote, local and biometric sources.
-/// Never throws: every path returns a [Result].
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({
     required AuthRemoteDataSource remote,
@@ -65,8 +63,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void>> logout() async {
-    // Local-only logout — remote revoke is unreliable on this network and must
-    // never block or crash the UI after the user confirms sign-out.
     try {
       await _local.clearSession();
       await _presidingElectionContextStore.clear();

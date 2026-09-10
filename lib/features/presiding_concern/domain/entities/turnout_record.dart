@@ -1,6 +1,5 @@
 import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_ids.dart';
 
-/// Voter turnout figures captured at a time interval.
 final class TurnoutRecord {
   const TurnoutRecord({
     required this.slotId,
@@ -26,8 +25,6 @@ final class TurnoutRecord {
 
   bool get isLivePoll => slotId == TurnoutSlotIds.livePollInfo;
 
-  /// Hourly/queue slots lock after save. Live poll stays editable until locked
-  /// (when 2–2 hourly turnout is submitted / live milestone completed).
   bool get isReadOnly {
     if (isLivePoll) return isLocked;
     return isLocked || savedAt != null;

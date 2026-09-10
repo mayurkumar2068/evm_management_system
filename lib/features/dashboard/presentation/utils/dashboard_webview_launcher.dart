@@ -3,14 +3,12 @@ import 'package:evm_management_system/core/webview/url/webview_url_utils.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/features/web_portal/presentation/screens/web_view_screen.dart';
 
-/// Builds survey / portal WebView launch payloads from dashboard tiles.
 abstract final class DashboardWebViewLauncher {
   static const Map<String, String> _externalPortalHeaders = <String, String>{
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'hi-IN,hi;q=0.9,en;q=0.8',
   };
 
-  /// Resolves the final URL, including officer session context when required.
   static String launchUrl({
     required String baseUrl,
     required ServiceSession? session,
@@ -37,7 +35,6 @@ abstract final class DashboardWebViewLauncher {
     return url;
   }
 
-  /// WebView screen args tuned for internal survey vs external portals.
   static WebViewArgs args({
     required String title,
     required String url,

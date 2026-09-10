@@ -1,9 +1,5 @@
 import 'package:evm_management_system/core/utils/json_map.dart';
 
-/// Data-transfer object for the user as returned by the API / stored locally.
-///
-/// Kept separate from the [AuthUser] domain entity; conversion happens in
-/// `UserMapper` so transport concerns never leak into the domain.
 class UserModel {
   const UserModel({
     required this.id,

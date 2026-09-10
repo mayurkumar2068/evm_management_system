@@ -1,7 +1,6 @@
 import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
-/// Presiding CTA using the shared app theme gradient (blue → mint).
 class PresidingThemeButton extends StatelessWidget {
   const PresidingThemeButton({
     required this.label,
@@ -23,7 +22,6 @@ class PresidingThemeButton extends StatelessWidget {
   final bool expanded;
   final double borderRadius;
 
-  /// When true, uses outline style (secondary actions like Back).
   final bool outlined;
 
   @override
@@ -37,9 +35,7 @@ class PresidingThemeButton extends StatelessWidget {
         child: Ink(
           height: height,
           decoration: BoxDecoration(
-            gradient: disabled || outlined
-                ? null
-                : AppGradients.primaryButton,
+            gradient: disabled || outlined ? null : AppGradients.primaryButton,
             color: disabled
                 ? AppColors.slate200
                 : outlined

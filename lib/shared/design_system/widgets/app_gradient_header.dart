@@ -3,9 +3,6 @@ import 'package:evm_management_system/shared/design_system/tokens/app_gradients.
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-/// Signature gradient header band used at the top of primary screens. Renders
-/// the brand gradient with a soft saffron glow, a title/subtitle and optional
-/// leading (back) and trailing widgets, plus arbitrary [bottom] content.
 class AppGradientHeader extends StatelessWidget {
   const AppGradientHeader({
     this.title,
@@ -25,7 +22,6 @@ class AppGradientHeader extends StatelessWidget {
   final Widget? trailing;
   final Widget? bottom;
 
-  /// When true, title/subtitle are centered (leading/trailing stay at edges).
   final bool centerTitle;
   final Gradient gradient;
   final EdgeInsetsGeometry padding;
@@ -85,7 +81,8 @@ class AppGradientHeader extends StatelessWidget {
                                 ),
                               Padding(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: leading != null || trailing != null
+                                  horizontal:
+                                      leading != null || trailing != null
                                       ? _sideSlot + 8
                                       : 0,
                                 ),
@@ -96,9 +93,8 @@ class AppGradientHeader extends StatelessWidget {
                                       Text(
                                         title!,
                                         textAlign: TextAlign.center,
-                                        style: AppTextStyles.titleLarge.copyWith(
-                                          color: Colors.white,
-                                        ),
+                                        style: AppTextStyles.titleLarge
+                                            .copyWith(color: Colors.white),
                                       ),
                                     if (subtitle != null)
                                       Text(
@@ -162,7 +158,6 @@ class AppGradientHeader extends StatelessWidget {
   }
 }
 
-/// Circular translucent icon button used inside gradient headers.
 class HeaderIconButton extends StatelessWidget {
   const HeaderIconButton({
     required this.icon,
@@ -220,7 +215,6 @@ class HeaderIconButton extends StatelessWidget {
   }
 }
 
-/// Small white circular back button used on light-background screens.
 class AppCircleBackButton extends StatelessWidget {
   const AppCircleBackButton({
     required this.onTap,
@@ -230,7 +224,6 @@ class AppCircleBackButton extends StatelessWidget {
 
   final VoidCallback onTap;
 
-  /// When true, renders a translucent style for gradient backgrounds.
   final bool light;
 
   @override

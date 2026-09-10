@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 
-/// Immutable bundle of authentication tokens.
 class AuthTokens {
   const AuthTokens({
     required this.accessToken,
@@ -22,7 +21,6 @@ class AuthTokens {
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
 
-  /// True when the token expires within [window] and should be refreshed early.
   bool willExpireWithin(Duration window) =>
       DateTime.now().add(window).isAfter(expiresAt);
 
@@ -33,11 +31,6 @@ class AuthTokens {
   };
 }
 
-/// Single owner of authentication tokens, persisted only in secure storage.
-///
-/// Tokens are encrypted at rest by the platform keystore via
-/// [SecureStorageService]; they are never written to SharedPreferences or the
-/// app database.
 class TokenVault {
   TokenVault(this._storage);
 
@@ -66,6 +59,5 @@ class TokenVault {
     _cached = null;
     await _storage.delete(SecureStorageKeys.accessToken);
     await _storage.delete(SecureStorageKeys.refreshToken);
-    // Do not delete userSession here — that belongs to ServiceAuthController.signOut.
   }
 }

@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/constants/feature_flags.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
 import 'package:evm_management_system/features/dashboard/presentation/utils/dashboard_webview_launcher.dart';
@@ -13,7 +12,6 @@ import 'package:evm_management_system/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
-/// Profile Sign In → pick a login-required service (skips gateway guest step).
 Future<void> showProfileLoginRequiredSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -55,7 +53,6 @@ class _LoginServiceOption {
     required this.tabLabel,
     this.routeName,
     this.url,
-    this.openAsExternalPortal = false,
     this.registrationAllowed = false,
   });
 
@@ -65,13 +62,10 @@ class _LoginServiceOption {
   final Color color;
   final ServiceLoginKind kind;
 
-  /// Dashboard tab name shown as the card tag (e.g. निर्वाचन संबंधी सेवाएँ).
   final String tabLabel;
   final String? routeName;
   final String? url;
-  final bool openAsExternalPortal;
 
-  /// Mirrors Masters `IsRegistrationAllowed`.
   final bool registrationAllowed;
 }
 
@@ -102,22 +96,6 @@ class _ProfileLoginSheet extends StatelessWidget {
         registrationAllowed: true,
       ),
     ];
-    if (!kHideExpenditureAccount) {
-      items.insert(
-        1,
-        _LoginServiceOption(
-          title: LocaleKeys.serviceExpenditureTitle.tr(),
-          subtitle: LocaleKeys.profileLoginPickExpenditureSub.tr(),
-          icon: Icons.account_balance_wallet_outlined,
-          color: AppColors.saffron,
-          kind: ServiceLoginKind.survey,
-          tabLabel: electionTab,
-          url: AppServices.config.candidateExpenditureUrl,
-          openAsExternalPortal: true,
-          registrationAllowed: false,
-        ),
-      );
-    }
     return items;
   }
 
@@ -159,15 +137,15 @@ class _ProfileLoginSheet extends StatelessWidget {
     final String url = DashboardWebViewLauncher.launchUrl(
       baseUrl: baseUrl,
       session: session,
-      passSessionContext: !option.openAsExternalPortal,
-      openAsExternalPortal: option.openAsExternalPortal,
+      passSessionContext: true,
+      openAsExternalPortal: false,
     );
     await Get.toNamed<dynamic>(
       AppRoute.webView.path,
       arguments: DashboardWebViewLauncher.args(
         title: option.title,
         url: url,
-        openAsExternalPortal: option.openAsExternalPortal,
+        openAsExternalPortal: false,
       ),
     );
   }
@@ -257,10 +235,7 @@ class _ProfileLoginSheet extends StatelessWidget {
 }
 
 class _LoginServiceCard extends StatelessWidget {
-  const _LoginServiceCard({
-    required this.option,
-    required this.onTap,
-  });
+  const _LoginServiceCard({required this.option, required this.onTap});
 
   final _LoginServiceOption option;
   final VoidCallback onTap;
@@ -319,7 +294,9 @@ class _LoginServiceCard extends StatelessWidget {
                               color: AppColors.primary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.28),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.28,
+                                ),
                               ),
                             ),
                             child: Text(
