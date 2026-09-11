@@ -27,7 +27,8 @@ android {
 
     defaultConfig {
         applicationId = "com.mpsec.mpsecnet"
-        minSdk = maxOf(flutter.minSdkVersion, 23)
+        // L1 VULN-002: Android 10+ (API 29) — supported OS security updates floor.
+        minSdk = maxOf(flutter.minSdkVersion, 29)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

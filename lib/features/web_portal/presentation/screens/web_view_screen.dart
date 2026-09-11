@@ -1,3 +1,4 @@
+import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/webview/config/webview_config.dart';
 import 'package:evm_management_system/core/webview/widget/app_webview.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,8 @@ class WebViewScreen extends StatelessWidget {
         enableJsBridge: args.enableJsBridge,
         bootstrapSession: args.bootstrapSession,
         showLogoutButton: args.showLogoutButton,
+        // Cleartext / LAN WebView only in non-prod (L1 VULN-001 / VULN-019).
+        allowCleartextLocalhost: !AppServices.config.isProduction,
       ),
     );
   }

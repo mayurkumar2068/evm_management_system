@@ -6,9 +6,13 @@ class SecureStorageService {
     : _storage =
           storage ??
           const FlutterSecureStorage(
+            // L1 VULN-003: AEAD (AES-GCM) instead of CBC+PKCS padding.
             aOptions: AndroidOptions(
               resetOnError: true,
               migrateOnAlgorithmChange: true,
+              keyCipherAlgorithm:
+                  KeyCipherAlgorithm.RSA_ECB_OAEPwithSHA_256andMGF1Padding,
+              storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
             ),
             iOptions: IOSOptions(
               accessibility: KeychainAccessibility.first_unlock_this_device,

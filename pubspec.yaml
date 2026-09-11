@@ -66,7 +66,11 @@ flutter:
     enable-swift-package-manager: false
 
   assets:
-    - assets/env/dev.env
+    # Private LAN hosts live only in dev.env and must not ship in prod APKs
+    # (L1 VULN-019). prod/uat stay unflavored so tests and default runs work.
+    - path: assets/env/dev.env
+      flavors:
+        - dev
     - assets/env/uat.env
     - assets/env/prod.env
     - assets/translations/en.json

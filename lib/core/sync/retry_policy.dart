@@ -6,7 +6,7 @@ class RetryPolicy {
     this.baseDelay = const Duration(seconds: 2),
     this.maxDelay = const Duration(minutes: 5),
     Random? random,
-  }) : _random = random ?? Random();
+  }) : _random = random ?? Random.secure();
 
   final int maxAttempts;
   final Duration baseDelay;

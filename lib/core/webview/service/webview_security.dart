@@ -11,7 +11,7 @@ class WebViewSecurity {
     required this.serverTrustPolicy,
     required this.pinnedSha256,
     required this.logger,
-    this.allowCleartextLocalhost = true,
+    this.allowCleartextLocalhost = false,
   });
 
   final Set<String> pinnedSha256;
@@ -23,15 +23,17 @@ class WebViewSecurity {
     'localhost',
     '127.0.0.1',
     '10.0.2.2',
-    '10.115.197.192',
   };
 
   bool _isDevHost(String? host) {
     if (host == null) return false;
     final String normalized = host.toLowerCase();
     if (_devHosts.contains(normalized)) return true;
-
-    return normalized.startsWith('10.');
+    // Emulator / private LAN ranges — only when cleartext localhost is allowed
+    // (dev builds). Avoid hardcoding specific internal IPs in release binaries.
+    return normalized.startsWith('10.') ||
+        normalized.startsWith('192.168.') ||
+        normalized.startsWith('172.');
   }
 
   Future<ServerTrustAuthResponse> decide(

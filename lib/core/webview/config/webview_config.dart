@@ -32,7 +32,7 @@ class WebViewConfig {
     this.syncCookies = true,
     this.bootstrapSession = true,
     this.cachePolicy = WebViewCachePolicy.noCache,
-    this.allowCleartextLocalhost = true,
+    this.allowCleartextLocalhost = false,
     this.serverTrustPolicy = WebViewServerTrustPolicy.compatibility,
     this.pinnedCertificateSha256 = const <String>{},
     this.onPageStarted,

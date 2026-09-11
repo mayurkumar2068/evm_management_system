@@ -67,6 +67,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- VULN-009: keep ProfileInstaller non-exported in release (no dump IPC). -->
+        <receiver
+            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+            android:exported="false"
+            tools:replace="android:exported" />
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />

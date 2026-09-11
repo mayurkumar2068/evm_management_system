@@ -3,7 +3,8 @@ import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/media/app_image_picker_service.dart';
 import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:flutter/services.dart';
+import 'package:evm_management_system/core/security/sensitive_clipboard.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -86,9 +87,7 @@ class WebViewBridge {
         }
         return <String, dynamic>{'ok': true};
       case 'clipboardCopy':
-        await Clipboard.setData(
-          ClipboardData(text: payload['text']?.toString() ?? ''),
-        );
+        await SensitiveClipboard.setText(payload['text']?.toString() ?? '');
         return <String, dynamic>{'ok': true};
       case 'log':
         AppLogger.d('[webview] ${payload['message']}');

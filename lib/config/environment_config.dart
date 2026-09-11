@@ -81,10 +81,6 @@ class EnvironmentConfig {
         ?.trim();
     final String? voterSearchApiRaw = dotenv.env['VOTER_SEARCH_API_BASE_URL']
         ?.trim();
-    final String? voterSearchPassKeyRaw = dotenv.env['VOTER_SEARCH_PASS_KEY']
-        ?.trim();
-    final String? voterSearchAesKeyRaw = dotenv.env['VOTER_SEARCH_AES_KEY']
-        ?.trim();
     final String? voterRegistrationRaw = dotenv.env['VOTER_REGISTRATION_URL']
         ?.trim();
     final String? candidateExpenditureRaw = dotenv
@@ -93,21 +89,26 @@ class EnvironmentConfig {
     final String? emsRaw = dotenv.env['EMS_URL']?.trim();
     final String? privacyPolicyRaw = dotenv.env['PRIVACY_POLICY_URL']?.trim();
 
+    final String poElectionApiBaseUrl =
+        (poElectionRaw != null && poElectionRaw.isNotEmpty)
+        ? poElectionRaw
+        : _defaultPoElectionBaseUrl(apiBaseUrl);
+
     return EnvironmentConfig(
       flavor: flavor,
       apiBaseUrl: apiBaseUrl,
-      poElectionApiBaseUrl: (poElectionRaw != null && poElectionRaw.isNotEmpty)
-          ? poElectionRaw
-          : _defaultPoElectionBaseUrl(apiBaseUrl),
+      poElectionApiBaseUrl: poElectionApiBaseUrl,
+      // No private-IP / secret string literals in Dart (L1 VULN-004 / VULN-019).
+      // Values come from flavor env assets only.
       olinApiBaseUrl: (olinApiRaw != null && olinApiRaw.isNotEmpty)
           ? olinApiRaw
-          : 'http://10.115.197.192/OLINAPI',
+          : _requireHttpsSibling(poElectionApiBaseUrl, 'OLINAPI', 'OLIN_API_BASE_URL'),
       surveyApiBaseUrl: (surveyApiRaw != null && surveyApiRaw.isNotEmpty)
           ? surveyApiRaw
           : _localServiceDefault(
               flavor,
               'SURVEY_API_BASE_URL',
-              'http://10.115.197.192/POElectionAPI/api',
+              apiBaseUrl,
               nonDevFallback: apiBaseUrl,
             ),
       surveyWebBaseUrl: (surveyWebRaw != null && surveyWebRaw.isNotEmpty)
@@ -120,23 +121,13 @@ class EnvironmentConfig {
       voterSearchEngineUrl:
           (voterSearchRaw != null && voterSearchRaw.isNotEmpty)
           ? voterSearchRaw
-          : _defaultVoterSearchUrl(
-              (poElectionRaw != null && poElectionRaw.isNotEmpty)
-                  ? poElectionRaw
-                  : _defaultPoElectionBaseUrl(apiBaseUrl),
-            ),
+          : _defaultVoterSearchUrl(poElectionApiBaseUrl),
       voterSearchApiBaseUrl:
           (voterSearchApiRaw != null && voterSearchApiRaw.isNotEmpty)
           ? voterSearchApiRaw
           : 'https://mpsecerms.mp.gov.in/SECSearchAPI',
-      voterSearchPassKey:
-          (voterSearchPassKeyRaw != null && voterSearchPassKeyRaw.isNotEmpty)
-          ? voterSearchPassKeyRaw
-          : '3fb7Fb5dBbl643',
-      voterSearchAesKey:
-          (voterSearchAesKeyRaw != null && voterSearchAesKeyRaw.isNotEmpty)
-          ? voterSearchAesKeyRaw
-          : '7ed64fb158a45676bef0e0c565c9be53',
+      voterSearchPassKey: require('VOTER_SEARCH_PASS_KEY'),
+      voterSearchAesKey: require('VOTER_SEARCH_AES_KEY'),
       voterRegistrationUrl:
           (voterRegistrationRaw != null && voterRegistrationRaw.isNotEmpty)
           ? voterRegistrationRaw
@@ -145,7 +136,11 @@ class EnvironmentConfig {
           (candidateExpenditureRaw != null &&
               candidateExpenditureRaw.isNotEmpty)
           ? candidateExpenditureRaw
-          : 'http://10.115.197.192/CandidateExpenditure/Home.aspx',
+          : _requireHttpsSibling(
+              poElectionApiBaseUrl,
+              'CandidateExpenditure/Home.aspx',
+              'CANDIDATE_EXPENDITURE_URL',
+            ),
       emsUrl: (emsRaw != null && emsRaw.isNotEmpty)
           ? emsRaw
           : 'https://www.mplocalelection.mp.gov.in/iems/EMS/Login.aspx',
@@ -251,6 +246,26 @@ class EnvironmentConfig {
         ? '${uri.scheme}://${uri.host}:${uri.port}'
         : '${uri.scheme}://${uri.host}';
     return '$origin/SECSearchEngine';
+  }
+
+  /// Derive a same-origin sibling path when env omits a key. Never invents
+  /// private/dev LAN hosts — those belong only in flavor env assets.
+  static String _requireHttpsSibling(
+    String baseUrl,
+    String pathSuffix,
+    String envKey,
+  ) {
+    final Uri uri = Uri.parse(baseUrl);
+    if (uri.host.isEmpty) {
+      throw StateError('Missing required env key: $envKey');
+    }
+    final String origin = uri.hasPort
+        ? '${uri.scheme}://${uri.host}:${uri.port}'
+        : '${uri.scheme}://${uri.host}';
+    final String cleaned = pathSuffix.startsWith('/')
+        ? pathSuffix
+        : '/$pathSuffix';
+    return '$origin$cleaned';
   }
 
   static String _localServiceDefault(
