@@ -7,6 +7,7 @@ import 'package:evm_management_system/core/cache/app_startup_cache.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
+import 'package:evm_management_system/core/network/api_envelope.dart';
 import 'package:evm_management_system/core/network/dio_factory.dart';
 import 'package:evm_management_system/core/network/po_election_api_client.dart';
 import 'package:evm_management_system/core/security/token_vault.dart';
@@ -378,30 +379,46 @@ class ServiceAuthController extends GetxController {
     return message.isNotEmpty ? message : LocaleKeys.serviceAuthRegisterSuccess;
   }
 
-  Future<void> sendSurveyLoginOtp({required String mobileNo}) async {
+  /// Returns the API `Message` when OTP send succeeds (for UI display).
+  Future<String> sendSurveyLoginOtp({required String mobileNo}) async {
+    final String trimmed = mobileNo.trim();
+    const String endpoint = ApiEndpoints.surveyIsPsUserExistsOtp;
+    AppLogger.w(
+      '[SendOTP] POST $endpoint mobileNo=$trimmed',
+    );
+
     final Response<dynamic> res;
     try {
       res = await _surveyDioClient().post<dynamic>(
-        ApiEndpoints.surveyIsPsUserExistsOtp,
-        data: <String, dynamic>{'mobileNo': mobileNo.trim()},
+        endpoint,
+        data: <String, dynamic>{'mobileNo': trimmed},
         options: Options(
           contentType: Headers.jsonContentType,
           extra: <String, dynamic>{'skipAuth': true},
         ),
       );
     } on DioException catch (e) {
+      AppLogger.w(
+        '[SendOTP] DioException http=${e.response?.statusCode} '
+        'data=${e.response?.data} err=${e.message}',
+      );
       throw ServiceAuthException(_networkOrServerMessage(e));
     }
 
-    final dynamic body = res.data;
-    final Map<String, dynamic> envelope = body is Map<String, dynamic>
-        ? body
-        : <String, dynamic>{};
-    final bool ok = envelope['Status'] == true;
-    final String message = (envelope['Message'] as String?)?.trim() ?? '';
+    final Map<String, dynamic> envelope =
+        asStringKeyedMap(res.data) ?? <String, dynamic>{};
+    final Object? statusRaw = envelope['Status'] ?? envelope['status'];
+    final bool ok = parseLooseBoolOr(statusRaw);
+    final String message =
+        (ApiEnvelope.message(envelope) ?? '').trim();
 
-    // Backend sometimes returns Status=true (and may even SMS an OTP) while
-    // Message says the user is not registered. Never treat that as success.
+    AppLogger.w(
+      '[SendOTP] http=${res.statusCode} Status=$statusRaw ok=$ok '
+      'Message="$message" body=$envelope',
+    );
+
+    // Backend sometimes returns Status=true (and may even SMS OTP) while
+    // Message says the user is not registered. Never open the OTP field then.
     if (_isUserNotRegisteredMessage(message)) {
       throw ServiceAuthException(
         message.isNotEmpty ? message : LocaleKeys.authOtpSendFailed,
@@ -413,6 +430,8 @@ class ServiceAuthController extends GetxController {
         message.isNotEmpty ? message : LocaleKeys.authOtpSendFailed,
       );
     }
+
+    return message.isNotEmpty ? message : LocaleKeys.serviceAuthOtpSentSuccess;
   }
 
   static bool _isUserNotRegisteredMessage(String message) {
@@ -421,9 +440,10 @@ class ServiceAuthController extends GetxController {
       ' ',
     );
     return normalized.contains('not register') ||
+        normalized.contains('user not registered') ||
         normalized.contains('unregistered') ||
         normalized.contains('user does not exist') ||
-        normalized.contains("user doesn't exist") ||
+        normalized.contains('user doesn\'t exist') ||
         normalized.contains('mobile not registered') ||
         normalized.contains('number not registered');
   }

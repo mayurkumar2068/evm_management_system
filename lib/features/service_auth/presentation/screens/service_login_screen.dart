@@ -205,27 +205,37 @@ class _ServiceLoginScreenState extends State<ServiceLoginScreen> {
     });
 
     try {
-      await AppServices.serviceAuth.sendSurveyLoginOtp(mobileNo: mobileNo);
+      final String apiMessage = await AppServices.serviceAuth
+          .sendSurveyLoginOtp(mobileNo: mobileNo);
       if (!mounted) return;
       setState(() {
         _busy = false;
         _otpSent = true;
+        _error = null;
       });
       _startResendCooldown();
       _otpFocus.requestFocus();
-      AppSnackbar.success(context, LocaleKeys.serviceAuthOtpSentSuccess.tr());
+      AppSnackbar.success(context, localizedAuthMessage(apiMessage));
     } on ServiceAuthException catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
+        _otpSent = false;
+        _otpCtrl.clear();
+        _resendRemaining = 0;
         _error = localizedAuthMessage(e.message);
       });
+      _resendTimer?.cancel();
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _busy = false;
+        _otpSent = false;
+        _otpCtrl.clear();
+        _resendRemaining = 0;
         _error = LocaleKeys.serviceAuthGenericError.tr();
       });
+      _resendTimer?.cancel();
     }
   }
 

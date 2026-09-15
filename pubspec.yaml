@@ -2,7 +2,7 @@ name: evm_management_system
 description: "EVM Management System is a mobile-based inventory and tracking solution developed for the Election Commission of India to manage Control Units and Ballot Units using Barcode/QR scanning, real-time stock monitoring, audit trails, offline synchronization, and reporting dashboards, ensuring secure and transparent EVM lifecycle management."
 publish_to: 'none'
 
-version: 1.0.0+5
+version: 1.0.0+7
 
 environment:
   sdk: ^3.9.0
