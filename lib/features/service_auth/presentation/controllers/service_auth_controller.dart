@@ -290,12 +290,34 @@ class ServiceAuthController extends GetxController {
         ? body
         : <String, dynamic>{};
     final bool ok = envelope['Status'] == true;
+    final String message = (envelope['Message'] as String?)?.trim() ?? '';
+
+    // Backend sometimes returns Status=true (and may even SMS an OTP) while
+    // Message says the user is not registered. Never treat that as success.
+    if (_isUserNotRegisteredMessage(message)) {
+      throw ServiceAuthException(
+        message.isNotEmpty ? message : LocaleKeys.authOtpSendFailed,
+      );
+    }
 
     if (res.statusCode != 200 || !ok) {
-      final String message =
-          (envelope['Message'] as String?) ?? LocaleKeys.authOtpSendFailed;
-      throw ServiceAuthException(message);
+      throw ServiceAuthException(
+        message.isNotEmpty ? message : LocaleKeys.authOtpSendFailed,
+      );
     }
+  }
+
+  static bool _isUserNotRegisteredMessage(String message) {
+    final String normalized = message.toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
+    return normalized.contains('not register') ||
+        normalized.contains('unregistered') ||
+        normalized.contains('user does not exist') ||
+        normalized.contains("user doesn't exist") ||
+        normalized.contains('mobile not registered') ||
+        normalized.contains('number not registered');
   }
 
   /// Logs in a Booth/PS Survey user via mobile number + OTP.
