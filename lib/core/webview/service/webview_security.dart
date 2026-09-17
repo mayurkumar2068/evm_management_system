@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../config/webview_config.dart';
+import 'webview_dev_host.dart';
 import 'webview_logger.dart';
 
 class WebViewSecurity {
@@ -19,22 +20,7 @@ class WebViewSecurity {
   final bool allowCleartextLocalhost;
   final WebViewLogger logger;
 
-  static const Set<String> _devHosts = <String>{
-    'localhost',
-    '127.0.0.1',
-    '10.0.2.2',
-  };
-
-  bool _isDevHost(String? host) {
-    if (host == null) return false;
-    final String normalized = host.toLowerCase();
-    if (_devHosts.contains(normalized)) return true;
-    // Emulator / private LAN ranges — only when cleartext localhost is allowed
-    // (dev builds). Avoid hardcoding specific internal IPs in release binaries.
-    return normalized.startsWith('10.') ||
-        normalized.startsWith('192.168.') ||
-        normalized.startsWith('172.');
-  }
+  bool _isDevHost(String? host) => WebViewDevHost.matches(host);
 
   Future<ServerTrustAuthResponse> decide(
     URLAuthenticationChallenge challenge,

@@ -27,6 +27,19 @@ class AppImagePickerService {
 
   final ImagePicker _picker;
 
+  // L2 VAPT F-04/F-05: defense-in-depth allowlist. image_picker already
+  // scopes the source to the OS camera/gallery UI (images only), but we
+  // still reject anything outside this extension set before it leaves this
+  // service — server-side validation remains the primary control.
+  static const Set<String> _allowedExtensions = <String>{
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+    'heic',
+    'heif',
+  };
+
   Future<AppPickedImage?> pickCompressedImage({
     required ImageSource source,
     double maxSide = 1280,
@@ -44,6 +57,9 @@ class AppImagePickerService {
     if (file == null) {
       return null;
     }
+    if (!_hasAllowedExtension(file.path)) {
+      return null;
+    }
 
     final Uint8List bytes = await file.readAsBytes();
     final String fileName = _fileNameFromPath(file.path);
@@ -53,6 +69,13 @@ class AppImagePickerService {
       bytes: bytes,
       mimeType: _mimeForPath(file.path),
     );
+  }
+
+  static bool _hasAllowedExtension(String path) {
+    final String p = path.toLowerCase();
+    final int dot = p.lastIndexOf('.');
+    if (dot == -1 || dot == p.length - 1) return false;
+    return _allowedExtensions.contains(p.substring(dot + 1));
   }
 
   Future<String> persistToTemp({

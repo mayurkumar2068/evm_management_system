@@ -26,6 +26,7 @@ import '../service/webview_warmer.dart';
 import '../service/webview_logger.dart';
 import '../service/webview_navigation_policy.dart';
 import '../service/webview_security.dart';
+import '../service/webview_trusted_hosts.dart';
 import 'app_webview_header.dart';
 
 class AppWebView extends StatefulWidget {
@@ -91,6 +92,26 @@ class _AppWebViewState extends State<AppWebView> {
   }
 
   Future<void> _prepare() async {
+    // L2 VAPT F-16: refuse to even start loading a URL outside the trusted
+    // government-domain allowlist (see WebViewTrustedHosts).
+    if (!_isTrustedHost(_normalizedUri)) {
+      _logger.logError(
+        uri: _normalizedUri,
+        category: 'untrusted_host',
+        description: 'Blocked: host is not on the approved domain allowlist',
+      );
+      if (!mounted) return;
+      setState(() {
+        _prepared = true;
+        _loading = false;
+        _error = true;
+        _errorCategory = 'blocked';
+        _errorMessage =
+            'This destination is not on an approved government domain.';
+      });
+      return;
+    }
+
     unawaited(Get.find<WebViewWarmer>().warm());
 
     final WebThemeMode theme =
@@ -149,6 +170,11 @@ class _AppWebViewState extends State<AppWebView> {
   Uri get _normalizedUri => Uri.parse(_normalizeUrl(_config.url));
 
   String _normalizeUrl(String rawUrl) => normalizeWebViewLaunchUrl(rawUrl);
+
+  bool _isTrustedHost(Uri uri) => WebViewTrustedHosts.isTrusted(
+    uri,
+    allowCleartextLocalhost: _config.allowCleartextLocalhost,
+  );
 
   Future<void> _reload() async {
     _loadSettleTimer?.cancel();
@@ -295,6 +321,19 @@ class _AppWebViewState extends State<AppWebView> {
 
     switch (decision.action) {
       case WebNavDecision.allow:
+        // L2 VAPT F-16: even a scheme/extension-cleared http(s) navigation
+        // must stay within the trusted government-domain allowlist.
+        if (!_isTrustedHost(uri)) {
+          _logger.logNavigationDecision(
+            uri: uri,
+            reason: 'untrusted_host',
+            action: 'block',
+            isMainFrame: action.isForMainFrame,
+            isRedirect: action.isRedirect,
+            method: action.request.method,
+          );
+          return NavigationActionPolicy.CANCEL;
+        }
         return NavigationActionPolicy.ALLOW;
       case WebNavDecision.external:
         await _launchExternal(uri);
@@ -315,6 +354,19 @@ class _AppWebViewState extends State<AppWebView> {
       final WebNavigationDecision decision = _navPolicy.decide(uri);
       if (decision.action == WebNavDecision.external) {
         await _launchExternal(uri);
+        return false;
+      }
+      // L2 VAPT F-16: popup/new-window navigation must not bypass the
+      // trusted-host allowlist that shouldOverrideUrlLoading enforces.
+      if (decision.action == WebNavDecision.allow && !_isTrustedHost(uri)) {
+        _logger.logNavigationDecision(
+          uri: uri,
+          reason: 'untrusted_host',
+          action: 'block',
+          isMainFrame: true,
+          isRedirect: false,
+          method: createWindowAction.request.method ?? 'GET',
+        );
         return false;
       }
     }

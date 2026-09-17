@@ -20,6 +20,12 @@ class MapNavigationService {
     double? originLng,
     String? destinationLabel,
   }) async {
+    // L2 VAPT F-15: never build a geo:/google.navigation: URI from
+    // out-of-range or non-finite coordinates.
+    if (!_isValidCoordinate(destinationLat, destinationLng) ||
+        !_isValidOptionalPair(originLat, originLng)) {
+      return false;
+    }
     final String dest = '$destinationLat,$destinationLng';
     final String label = _encodeLabel(destinationLabel);
     final List<Uri> candidates = <Uri>[
@@ -66,11 +72,35 @@ class MapNavigationService {
         '&markers=$lat,$lng,red-pushpin';
   }
 
-  static String _normalizeQuery(String query) =>
-      query.trim().isNotEmpty ? query.trim() : _defaultDestinationLabel;
+  static String _normalizeQuery(String query) {
+    final String sanitized = _sanitizeFreeText(query);
+    return sanitized.isNotEmpty ? sanitized : _defaultDestinationLabel;
+  }
 
   static String _encodeLabel(String? destinationLabel) =>
       Uri.encodeComponent(_normalizeQuery(destinationLabel ?? ''));
+
+  // L2 VAPT F-15: strip control characters and cap length before any
+  // free-text value is embedded in a geo:/google.navigation: URI. This
+  // runs ahead of Uri.encodeComponent, which escapes but does not itself
+  // validate content.
+  static String _sanitizeFreeText(String input, {int maxLength = 100}) {
+    final String cleaned = input
+        .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '')
+        .trim();
+    return cleaned.length > maxLength
+        ? cleaned.substring(0, maxLength)
+        : cleaned;
+  }
+
+  static bool _isValidCoordinate(double lat, double lng) =>
+      lat.isFinite && lng.isFinite && lat.abs() <= 90 && lng.abs() <= 180;
+
+  static bool _isValidOptionalPair(double? lat, double? lng) {
+    if (lat == null && lng == null) return true;
+    if (lat == null || lng == null) return false;
+    return _isValidCoordinate(lat, lng);
+  }
 
   static List<Uri> _nativeDirectionUris({
     required String dest,

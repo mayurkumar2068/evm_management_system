@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:logger/logger.dart';
 
 abstract final class AppLogger {
@@ -37,6 +38,11 @@ class _EnvFilter extends LogFilter {
 
   @override
   bool shouldLog(LogEvent event) {
+    // L2 VAPT F-17 backstop: a --release build must never emit verbose /
+    // request-body logs, even if ENABLE_LOGGING=true leaks into a UAT
+    // release build. Only warnings and errors ever print in release mode,
+    // regardless of what the env config requested.
+    if (kReleaseMode) return event.level.index >= Level.warning.index;
     if (!enabled) return event.level.index >= Level.warning.index;
     if (verbose) return true;
     return event.level.index >= Level.info.index;
