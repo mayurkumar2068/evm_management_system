@@ -19,7 +19,7 @@ echo "Building prod release IPA (bundle id com.mpsec.mpsecnet)..."
 flutter build ipa \
   --release \
   --flavor prod \
-  --dart-define=APP_FLAVOR=prod \
+  -t lib/main_prod.dart \
   "${EXPORT_ARGS[@]}"
 
 echo "IPA output under: build/ios/ipa/"

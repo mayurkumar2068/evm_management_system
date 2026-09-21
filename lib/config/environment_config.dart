@@ -2,7 +2,6 @@ import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/legal/privacy_urls.dart';
 import 'package:evm_management_system/core/network/api_endpoints.dart';
 import 'package:evm_management_system/core/utils/json_map.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EnvironmentConfig {
   const EnvironmentConfig({
@@ -40,9 +39,13 @@ class EnvironmentConfig {
     required this.psSelfRegisterUrl,
   });
 
-  factory EnvironmentConfig.load(Flavor flavor) {
+  /// [env] must be the constant map for [flavor] — callers that need real
+  /// per-flavor tree-shaking (i.e. every shipping entry point) pass it in
+  /// directly from their own `env/*_constants.dart` import rather than going
+  /// through `AppConstants.forFlavor`, which would defeat the isolation.
+  factory EnvironmentConfig.load(Flavor flavor, Map<String, String> env) {
     String require(String key) {
-      final String? value = dotenv.env[key];
+      final String? value = env[key];
       if (value == null || value.isEmpty) {
         if (key == 'SSL_PIN_SHA256') return '';
         throw StateError('Missing required env key: $key');
@@ -54,40 +57,37 @@ class EnvironmentConfig {
     bool requireBool(String key) => require(key).toLowerCase() == 'true';
 
     int? optionalInt(String key) {
-      final String? value = dotenv.env[key];
+      final String? value = env[key];
       if (value == null || value.trim().isEmpty) return null;
       return int.tryParse(value.trim());
     }
 
     String? optionalString(String key) {
-      final String? value = dotenv.env[key]?.trim();
+      final String? value = env[key]?.trim();
       if (value == null || value.isEmpty) return null;
       return value;
     }
 
     bool optionalBool(String key, {required bool defaultValue}) {
-      final String? value = dotenv.env[key]?.trim();
+      final String? value = env[key]?.trim();
       if (value == null || value.isEmpty) return defaultValue;
       return parseLooseBoolOr(value, defaultValue: defaultValue);
     }
 
     final String apiBaseUrl = require('API_BASE_URL');
-    final String? poElectionRaw = dotenv.env['PO_ELECTION_API_BASE_URL']
+    final String? poElectionRaw = env['PO_ELECTION_API_BASE_URL']?.trim();
+    final String? olinApiRaw = env['OLIN_API_BASE_URL']?.trim();
+    final String? surveyApiRaw = env['SURVEY_API_BASE_URL']?.trim();
+    final String? surveyWebRaw = env['SURVEY_WEB_BASE_URL']?.trim();
+    final String? voterSearchRaw = env['VOTER_SEARCH_ENGINE_URL']?.trim();
+    final String? voterSearchApiRaw = env['VOTER_SEARCH_API_BASE_URL']
         ?.trim();
-    final String? olinApiRaw = dotenv.env['OLIN_API_BASE_URL']?.trim();
-    final String? surveyApiRaw = dotenv.env['SURVEY_API_BASE_URL']?.trim();
-    final String? surveyWebRaw = dotenv.env['SURVEY_WEB_BASE_URL']?.trim();
-    final String? voterSearchRaw = dotenv.env['VOTER_SEARCH_ENGINE_URL']
+    final String? voterRegistrationRaw = env['VOTER_REGISTRATION_URL']
         ?.trim();
-    final String? voterSearchApiRaw = dotenv.env['VOTER_SEARCH_API_BASE_URL']
+    final String? candidateExpenditureRaw = env['CANDIDATE_EXPENDITURE_URL']
         ?.trim();
-    final String? voterRegistrationRaw = dotenv.env['VOTER_REGISTRATION_URL']
-        ?.trim();
-    final String? candidateExpenditureRaw = dotenv
-        .env['CANDIDATE_EXPENDITURE_URL']
-        ?.trim();
-    final String? emsRaw = dotenv.env['EMS_URL']?.trim();
-    final String? privacyPolicyRaw = dotenv.env['PRIVACY_POLICY_URL']?.trim();
+    final String? emsRaw = env['EMS_URL']?.trim();
+    final String? privacyPolicyRaw = env['PRIVACY_POLICY_URL']?.trim();
 
     final String poElectionApiBaseUrl =
         (poElectionRaw != null && poElectionRaw.isNotEmpty)
@@ -162,7 +162,7 @@ class EnvironmentConfig {
       sendTimeout: Duration(milliseconds: requireInt('API_SEND_TIMEOUT_MS')),
       enableLogging: requireBool('ENABLE_LOGGING'),
       enableSslPinning: requireBool('ENABLE_SSL_PINNING'),
-      sslPinSha256: dotenv.env['SSL_PIN_SHA256'] ?? '',
+      sslPinSha256: env['SSL_PIN_SHA256'] ?? '',
       sessionTimeout: Duration(minutes: requireInt('SESSION_TIMEOUT_MINUTES')),
       syncInterval: Duration(seconds: requireInt('SYNC_INTERVAL_SECONDS')),
       syncMaxRetry: requireInt('SYNC_MAX_RETRY'),

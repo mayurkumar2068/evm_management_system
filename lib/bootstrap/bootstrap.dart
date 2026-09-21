@@ -15,12 +15,14 @@ import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:evm_management_system/core/time/app_time_zone.dart';
 import 'package:evm_management_system/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/notifications/notification_service.dart';
 
-Future<void> bootstrap(Flavor flavor) async {
+/// [env] must be the constant map for [flavor] — see
+/// [EnvironmentConfig.load] for why callers pass it in rather than resolving
+/// it here.
+Future<void> bootstrap(Flavor flavor, Map<String, String> env) async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +32,7 @@ Future<void> bootstrap(Flavor flavor) async {
       WidgetsFlutterBinding.ensureInitialized();
 
       await LocalNotificationService.instance.initialize();
-      await dotenv.load(fileName: flavor.envFile);
-      final EnvironmentConfig config = EnvironmentConfig.load(flavor);
+      final EnvironmentConfig config = EnvironmentConfig.load(flavor, env);
 
       GoogleFonts.config.allowRuntimeFetching = false;
 

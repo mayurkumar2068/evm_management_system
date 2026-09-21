@@ -45,14 +45,15 @@ final class PresidingElectionContextBootstrap {
       if (fromEnv != null) {
         await _contextStore.save(fromEnv);
         AppLogger.i(
-          'DEV presiding election context loaded from assets/env/dev.env',
+          'DEV presiding election context loaded from dev_constants.dart',
         );
         return fromEnv;
       }
       AppLogger.w(
         'DEV presiding context unavailable — set ELECTION_ID, DEV_PO_PS_ID, '
-        'and DEV_PO_AREA_TYPE (U/R) in assets/env/dev.env, or login with a '
-        'presiding officer account whose API returns psId + areaType.',
+        'and DEV_PO_AREA_TYPE (U/R) in lib/config/env/dev_constants.dart, '
+        'or login with a presiding officer account whose API returns '
+        'psId + areaType.',
       );
     }
 

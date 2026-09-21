@@ -1,0 +1,32 @@
+/// UAT-flavor build-time configuration values.
+///
+/// Kept in its own file so `lib/main_uat.dart` can import *only* this file —
+/// see `dev_constants.dart` for why that isolation matters.
+const Map<String, String> uatConstants = <String, String>{
+  'API_BASE_URL': 'https://uat-api.evm.eci.gov.in/api/v1',
+  'API_CONNECT_TIMEOUT_MS': '20000',
+  'API_RECEIVE_TIMEOUT_MS': '20000',
+  'API_SEND_TIMEOUT_MS': '20000',
+  'ENABLE_LOGGING': 'true',
+  'ENABLE_SSL_PINNING': 'true',
+  'SSL_PIN_SHA256': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+  'SESSION_TIMEOUT_MINUTES': '15',
+  'SYNC_INTERVAL_SECONDS': '60',
+  'SYNC_MAX_RETRY': '5',
+  'PO_ELECTION_API_BASE_URL': 'https://uat-api.evm.eci.gov.in',
+  'OLIN_API_BASE_URL': 'https://mplocalelection.mp.gov.in/OLINAPI',
+  'SURVEY_API_BASE_URL': 'https://uat-api.evm.eci.gov.in/api/v1',
+  'SURVEY_WEB_BASE_URL':
+      'https://mayurkumar2068.github.io/evm_management_system/location/',
+  'VOTER_SEARCH_ENGINE_URL': 'https://mpsecerms.mp.gov.in/SECSearchEngine/',
+  'VOTER_SEARCH_API_BASE_URL': 'https://mpsecerms.mp.gov.in/SECSearchAPI',
+  'VOTER_SEARCH_PASS_KEY': '3fb7Fb5dBbl643',
+  'VOTER_SEARCH_AES_KEY': '7ed64fb158a45676bef0e0c565c9be53',
+  'VOTER_REGISTRATION_URL': 'https://mpsecerms.mp.gov.in/secforms',
+  'SHOW_REGISTRATION': 'true',
+  'EMS_URL': 'https://www.mplocalelection.mp.gov.in/iems/EMS/Login.aspx',
+  'PRIVACY_POLICY_URL':
+      'https://mplocalelection.mp.gov.in/privacystatement.aspx',
+  'CANDIDATE_EXPENDITURE_URL':
+      'https://mplocalelection.mp.gov.in/iems2/CandidateExpenditure/login.aspx',
+};

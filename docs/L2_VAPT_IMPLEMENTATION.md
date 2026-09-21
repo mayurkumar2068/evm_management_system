@@ -37,20 +37,22 @@ Applied to this working tree (`dart analyze` clean on all edited files, `xmllint
 
 (F-04 and F-05 are counted together — same finding, two report entries.)
 
+**Update (21 Sep 2026):** F-01 and F-06 (still counted as "Architectural" above — the real fix is unchanged) got a defense-in-depth pass: `assets/env/{dev,uat,prod}.env` were deleted along with the `flutter_dotenv` dependency; all config (URLs, timeouts, and the F-01 Voter Search key/passkey) now lives in per-flavor Dart files under `lib/config/env/` as compiled constants instead of a plaintext bundled asset. This raises the bar from "unzip the APK and cat a text file" to "string/binary-analyze `libapp.so`" — it does not make the secret unrecoverable, and it does **not** touch the actual fix (backend-issued, session-scoped key). A same-day follow-up (`lib/main_dev.dart`/`main_uat.dart`/`main_prod.dart` + updated CI/build scripts) closed the one regression this introduced — dev's private LAN IP briefly compiled into prod/uat binaries too (L1 `VULN-019`) — verified empirically by building real release APKs and grepping the compiled `libapp.so` in each. See the F-01/F-06 sections for full detail.
+
 ---
 
 ## Critical
 
 ### F-01 — Hardcoded AES key & passkey (`VOTER_SEARCH_AES_KEY`, `VOTER_SEARCH_PASS_KEY`)
-**Status:** Architectural — needs backend work. Same root cause as L1 `VULN-004` (already logged Partial there).
+**Status:** Partially mitigated (21 Sep 2026) — literal secret moved out of a plaintext bundled asset into compiled Dart constants. Architecturally still needs backend work; same root cause as L1 `VULN-004` (already logged Partial there).
 
-**Current state:** `assets/env/{prod,dev,uat}.env` all contain the identical literal secrets, bundled as Flutter assets in every flavor's APK. Consumed by `EnvironmentConfig.load()` (`lib/config/environment_config.dart`) and used directly as the AES-GCM key in `lib/features/voter_search/data/voter_search_crypto.dart` — no derivation, no Keystore wrapping, no runtime fetch.
+**Current state:** `assets/env/{prod,dev,uat}.env` are gone. The identical literal secrets now live in `lib/config/app_constants.dart` (`AppConstants._dev/_uat/_prod`), consumed by `EnvironmentConfig.load()` and used directly as the AES-GCM key in `lib/features/voter_search/data/voter_search_crypto.dart` — still no derivation, no Keystore wrapping, no runtime fetch. This is **defense-in-depth, not a fix**: a plaintext `.env` asset was extractable with `unzip app.apk && cat` and zero reverse engineering; the same string is now compiled into the release AOT snapshot (`libapp.so`), which raises the bar to binary/string analysis but does not make the key unrecoverable — `strings libapp.so` will often still surface it. The key is still identical across all three environments.
 
-**Plan:**
+**Plan (unchanged, only step 1 more urgent given the key was pasted into a chat during this remediation and must be treated as disclosed):**
 1. **Immediate (ops, not code):** rotate `VOTER_SEARCH_AES_KEY` and `VOTER_SEARCH_PASS_KEY` server-side now that they're known-disclosed.
 2. **Short term:** stop shipping the same key in prod and UAT — separate per-environment secrets at minimum, so a UAT compromise doesn't decrypt prod data.
-3. **Real fix (backend-dependent, tracked, not startable from this repo alone):** serve the Voter Search key from an authenticated bootstrap endpoint after login, cached only in memory / Android Keystore-backed secure storage — never bundled in `.env`. Requires a backend change to issue session-scoped keys; app-side `VoterSearchCrypto` already isolates the key behind one constructor argument, so swapping the source is a small, contained change once the endpoint exists.
-4. Add `gitleaks`/`trufflehog` to CI to catch any future re-introduction of literal secrets.
+3. **Real fix (backend-dependent, tracked, not startable from this repo alone):** serve the Voter Search key from an authenticated bootstrap endpoint after login, cached only in memory / Android Keystore-backed secure storage — never bundled in the app at all (asset or compiled constant). Requires a backend change to issue session-scoped keys; app-side `VoterSearchCrypto` already isolates the key behind one constructor argument (`VoterSearchModule.crypto`, `lib/features/voter_search/di/voter_search_module.dart:23-25`), so swapping the source is a small, contained change once the endpoint exists.
+4. Add `gitleaks`/`trufflehog` to CI to catch any future re-introduction of literal secrets — applies equally now that secrets live in `.dart` source, not just `.env` assets.
 
 ---
 
@@ -96,11 +98,26 @@ The actual unrestricted-upload vector is the WebView's native file chooser trigg
 ---
 
 ### F-06 — Production & UAT API endpoint topology exposed in APK assets
-**Status:** Architectural — same fix family as F-01.
+**Status:** Partially mitigated (21 Sep 2026, isolation fix same day) — same change family as F-01, still architectural for the real fix.
 
-**Current state:** `assets/env/prod.env` and `assets/env/uat.env` list every backend hostname in cleartext (`API_BASE_URL`, `PO_ELECTION_API_BASE_URL`, `OLIN_API_BASE_URL`, `VOTER_SEARCH_*`, `EMS_URL`, `CANDIDATE_EXPENDITURE_URL`, etc.), bundled unconditionally (not flavor-gated) in every build.
+**Current state:** every backend hostname (`API_BASE_URL`, `PO_ELECTION_API_BASE_URL`, `OLIN_API_BASE_URL`, `VOTER_SEARCH_*`, `EMS_URL`, `CANDIDATE_EXPENDITURE_URL`, etc.) moved from `assets/env/{prod,uat}.env` into per-flavor Dart files (`lib/config/env/{dev,uat,prod}_constants.dart`), compiled into the app instead of shipped as a plaintext asset. `assets/env/dev.env` used to be flavor-gated to the **dev** Android flavor only (closing L1 `VULN-019` — a private LAN IP shipping in a public release build); prod/uat `.env` were already unflavored (shipped in every build, dev included) before this change.
 
-**Plan:** Hostnames alone are lower severity than F-01 (they're not secrets, and a determined attacker can often enumerate `*.mp.gov.in`/`*.eci.gov.in` subdomains anyway), but combined with F-01's hardcoded key they hand over a working, authenticated attack surface. Track under the same bootstrap-config-endpoint effort as F-01 rather than as a separate workstream — fetch endpoint URLs dynamically post-auth instead of bundling the full topology client-side. No standalone app-side action until that backend work lands.
+**Flavor isolation, fixed and empirically verified:** the app now has three separate entry points — `lib/main_dev.dart`, `lib/main_uat.dart`, `lib/main_prod.dart` — each importing *only* its own `env/*_constants.dart` file. `EnvironmentConfig.load(flavor, env)` and `bootstrap(flavor, env)` both take the resolved config map as a parameter now instead of resolving it internally, so nothing in the shared `lib/config`/`lib/bootstrap` code imports all three flavors at once. `lib/main.dart` (used for ad hoc `flutter run`/`flutter test` with no explicit `-t`) still imports the `AppConstants` aggregator and is **not** isolated — that's intentional, see the note in `app_constants.dart`. `.github/workflows/build.yml` and `scripts/build_prod_{aab,ipa}.sh` were updated to build with `-t lib/main_<flavor>.dart`.
+
+Verified by building actual release APKs (`flutter clean && flutter build apk --release --flavor <x> -t lib/main_<x>.dart`) and running `strings` against the compiled `lib/*/libapp.so` inside each:
+
+| Check | prod APK | dev APK |
+| --- | ---: | ---: |
+| dev LAN IP (`10.115.197.192`) | 0 hits | 12 hits (expected — it's dev's own config) |
+| UAT GitHub Pages URL (F-11) | 0 hits | 0 hits |
+| UAT SSL-pin placeholder | 0 hits | 0 hits |
+| prod AES key (F-01) | 3 hits (expected — it's prod's own config) | not checked (same key as dev today, see F-01) |
+
+(An initial build attempt showed all three flavors' data compiled into every APK — traced to a stale Gradle/frontend_server cache reusing the pre-refactor snapshot, not a flaw in the isolation approach. `flutter clean` before rebuilding fixed it. Worth remembering if CI ever behaves the same way: force a clean build after this kind of entry-point change.)
+
+**Residual, unresolved by this pass:** the AES key/passkey (F-01) is still identical across all three flavors' constants files — flavor isolation only stops a *dev* build from carrying *prod's* config (and vice versa); it does nothing about the key itself being reusable across environments. That's still F-01's step 2/3 (per-environment keys, then backend-issued session keys).
+
+**Plan (unchanged for the real fix):** Hostnames alone are lower severity than F-01 (they're not secrets, and a determined attacker can often enumerate `*.mp.gov.in`/`*.eci.gov.in` subdomains anyway), but combined with F-01's hardcoded key they hand over a working, authenticated attack surface. Track under the same bootstrap-config-endpoint effort as F-01 rather than as a separate workstream — fetch endpoint URLs dynamically post-auth instead of bundling the full topology client-side.
 
 ---
 

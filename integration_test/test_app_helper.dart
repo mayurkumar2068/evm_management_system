@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/app.dart';
+import 'package:evm_management_system/config/app_constants.dart';
 import 'package:evm_management_system/config/environment_config.dart';
 import 'package:evm_management_system/config/flavor.dart';
 import 'package:evm_management_system/core/database/json_local_database.dart';
@@ -7,14 +8,15 @@ import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/core/settings/settings_service.dart';
 import 'package:evm_management_system/core/storage/secure_storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
 /// Boots [EvmApp] with GetX services registered for integration tests.
 Future<void> pumpEvmAppForTest({required bool onboardingSeen}) async {
   await EasyLocalization.ensureInitialized();
-  await dotenv.load(fileName: Flavor.dev.envFile);
-  final EnvironmentConfig config = EnvironmentConfig.load(Flavor.dev);
+  final EnvironmentConfig config = EnvironmentConfig.load(
+    Flavor.dev,
+    AppConstants.forFlavor(Flavor.dev),
+  );
   final JsonLocalDatabase db = JsonLocalDatabase();
   await db.init();
   final SecureStorageService secureStorage = SecureStorageService();

@@ -29,7 +29,7 @@ echo "Building prod release AAB (applicationId com.mpsec.mpsecnet)..."
 flutter build appbundle \
   --release \
   --flavor prod \
-  --dart-define=APP_FLAVOR=prod
+  -t lib/main_prod.dart
 
 AAB="build/app/outputs/bundle/prodRelease/app-prod-release.aab"
 echo "Done: $AAB"

@@ -2,7 +2,7 @@ name: evm_management_system
 description: "EVM Management System is a mobile-based inventory and tracking solution developed for the Election Commission of India to manage Control Units and Ballot Units using Barcode/QR scanning, real-time stock monitoring, audit trails, offline synchronization, and reporting dashboards, ensuring secure and transparent EVM lifecycle management."
 publish_to: 'none'
 
-version: 1.0.0+7
+version: 1.0.0+8
 
 environment:
   sdk: ^3.9.0
@@ -14,7 +14,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   get: ^4.7.2
   dio: ^5.9.2
-  flutter_dotenv: ^6.0.1
   flutter_secure_storage: ^10.3.1
   local_auth: ^2.3.0
   easy_localization: ^3.0.8
@@ -66,13 +65,9 @@ flutter:
     enable-swift-package-manager: false
 
   assets:
-    # Private LAN hosts live only in dev.env and must not ship in prod APKs
-    # (L1 VULN-019). prod/uat stay unflavored so tests and default runs work.
-    - path: assets/env/dev.env
-      flavors:
-        - dev
-    - assets/env/uat.env
-    - assets/env/prod.env
+    # L2 VAPT F-01/F-06: former assets/env/*.env files removed — config now
+    # lives in compiled Dart constants (lib/config/app_constants.dart), not
+    # a plaintext bundled asset. See docs/L2_VAPT_IMPLEMENTATION.md.
     - assets/translations/en.json
     - assets/translations/hi.json
     - assets/certs/

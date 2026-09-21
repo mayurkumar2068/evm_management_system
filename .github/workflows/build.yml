@@ -36,8 +36,7 @@ jobs:
       - name: Build APK (${{ matrix.flavor }})
         run: >
           flutter build apk --release
-          -t lib/main.dart
-          --dart-define=APP_FLAVOR=${{ matrix.flavor }}
+          -t lib/main_${{ matrix.flavor }}.dart
           --build-name=${{ github.ref_name }}
           --build-number=${{ github.run_number }}
 
@@ -67,7 +66,6 @@ jobs:
       - name: Build iOS (no codesign, ${{ matrix.flavor }})
         run: >
           flutter build ios --release --no-codesign
-          -t lib/main.dart
-          --dart-define=APP_FLAVOR=${{ matrix.flavor }}
+          -t lib/main_${{ matrix.flavor }}.dart
           --build-name=${{ github.ref_name }}
           --build-number=${{ github.run_number }}
