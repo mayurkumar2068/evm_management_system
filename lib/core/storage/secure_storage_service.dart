@@ -89,4 +89,5 @@ abstract final class SecureStorageKeys {
 
   static String poOfficerProfile(String poUserId) =>
       'evm.po_officer_profile.$poUserId';
+
 }

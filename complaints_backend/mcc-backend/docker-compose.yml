@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: mcc
+      MYSQL_PASSWORD: mcc_password
+      MYSQL_DATABASE: mcc_complaints
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro   # runs once, on first start
+    ports: ["3306:3306"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: mysql+pymysql://mcc:mcc_password@mysql:3306/mcc_complaints?charset=utf8mb4
+      ENABLE_SLA_WORKER: "false"
+    volumes:
+      - media:/app/storage
+    ports: ["8000:8000"]
+    depends_on:
+      mysql: {condition: service_healthy}
+
+  sla-worker:            # exactly one instance
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: mysql+pymysql://mcc:mcc_password@mysql:3306/mcc_complaints?charset=utf8mb4
+    command: ["python", "-m", "app.workers.sla_worker"]
+    depends_on:
+      mysql: {condition: service_healthy}
+
+volumes:
+  mysql_data:
+  media:

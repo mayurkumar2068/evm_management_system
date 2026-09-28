@@ -34,14 +34,14 @@ class VoterSearchInstructionCard extends StatelessWidget {
                       LocaleKeys.voterSearchEngineTitle.tr(),
                       style: AppTextStyles.titleSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.slate800,
+                        color: context.appOnSurface,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       LocaleKeys.voterSearchInstruction.tr(),
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.slate500,
+                        color: context.appMuted,
                         height: 1.35,
                       ),
                     ),
@@ -74,7 +74,7 @@ class VoterAreaTypeRadioRow extends StatelessWidget {
         Text(
           LocaleKeys.voterSearchUrbanRural.tr(),
           style: AppTextStyles.label.copyWith(
-            color: AppColors.slate600,
+            color: context.appMuted,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -120,10 +120,26 @@ class _AreaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color selectedBg = isDark
+        ? AppColors.primary.withValues(alpha: 0.22)
+        : AppColors.primary.withValues(alpha: 0.12);
+    final Color unselectedBg = isDark ? AppColors.darkSurface : AppColors.slate50;
+    final Color borderColor = selected
+        ? AppColors.primary
+        : (isDark ? AppColors.darkOutline : AppColors.slate200);
+    final Color textColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkTextPrimary : AppColors.slate700);
+    final Color iconColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkTextSecondary : AppColors.slate500);
+    final Color radioColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkOutline : AppColors.slate400);
+
     return Material(
-      color: selected
-          ? AppColors.primary.withValues(alpha: 0.12)
-          : AppColors.slate50,
+      color: selected ? selectedBg : unselectedBg,
       borderRadius: AppRadius.brMd,
       child: InkWell(
         onTap: onTap,
@@ -134,7 +150,7 @@ class _AreaChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.brMd,
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.slate200,
+              color: borderColor,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -143,7 +159,7 @@ class _AreaChip extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: selected ? AppColors.primary : AppColors.slate500,
+                color: iconColor,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -152,7 +168,7 @@ class _AreaChip extends StatelessWidget {
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
-                    color: selected ? AppColors.primary : AppColors.slate700,
+                    color: textColor,
                   ),
                 ),
               ),
@@ -161,7 +177,7 @@ class _AreaChip extends StatelessWidget {
                     ? Icons.radio_button_checked_rounded
                     : Icons.radio_button_off_rounded,
                 size: 18,
-                color: selected ? AppColors.primary : AppColors.slate400,
+                color: radioColor,
               ),
             ],
           ),

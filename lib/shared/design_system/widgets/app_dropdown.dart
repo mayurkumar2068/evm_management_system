@@ -1,10 +1,12 @@
 import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
 import 'package:evm_management_system/shared/design_system/tokens/app_radius.dart';
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
+import 'package:evm_management_system/shared/design_system/tokens/app_theme_colors.dart';
 import 'package:flutter/material.dart';
 
 abstract final class AppFieldDecoration {
   static InputDecoration dropdown({
+    required BuildContext context,
     required String labelText,
     String? errorText,
     String? helperText,
@@ -12,25 +14,37 @@ abstract final class AppFieldDecoration {
     Widget? suffixIcon,
     bool enabled = true,
   }) {
+    final bool isDark = context.isAppDark;
+    final Color bg = enabled
+        ? (isDark ? AppColors.darkSurface : AppColors.surface)
+        : (isDark ? AppColors.darkBackground : AppColors.slate100);
+    final Color borderColor = isDark ? AppColors.darkOutline : AppColors.slate200;
+    final Color disabledBorderColor = isDark ? AppColors.darkOutline.withValues(alpha: 0.5) : AppColors.slate100;
+    final Color primaryColor = isDark ? AppColors.primaryBright : AppColors.primary;
+    final Color labelColor = isDark ? AppColors.darkTextSecondary : AppColors.slate500;
+    final Color iconColor = enabled
+        ? (isDark ? AppColors.darkTextSecondary : AppColors.slate500)
+        : (isDark ? AppColors.darkOutline : AppColors.slate300);
+
     return InputDecoration(
       labelText: labelText,
       errorText: errorText,
       helperText: helperText,
       filled: true,
-      fillColor: enabled ? AppColors.surface : AppColors.slate100,
+      fillColor: bg,
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       alignLabelWithHint: true,
       isDense: true,
       contentPadding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
       labelStyle: AppTextStyles.caption.copyWith(
-        color: AppColors.slate500,
+        color: labelColor,
         fontWeight: FontWeight.w600,
       ),
       floatingLabelStyle: AppTextStyles.label.copyWith(
-        color: AppColors.primary,
+        color: primaryColor,
         fontWeight: FontWeight.w700,
       ),
-      helperStyle: AppTextStyles.caption.copyWith(color: AppColors.slate500),
+      helperStyle: AppTextStyles.caption.copyWith(color: labelColor),
       errorStyle: AppTextStyles.caption.copyWith(color: AppColors.error),
       errorMaxLines: 2,
       prefixIcon: prefixIcon == null
@@ -38,14 +52,14 @@ abstract final class AppFieldDecoration {
           : Icon(
               prefixIcon,
               size: 20,
-              color: enabled ? AppColors.slate500 : AppColors.slate300,
+              color: iconColor,
             ),
       prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       suffixIcon: suffixIcon,
-      border: _border(AppColors.slate200),
-      enabledBorder: _border(AppColors.slate200),
-      disabledBorder: _border(AppColors.slate100),
-      focusedBorder: _border(AppColors.primary, width: 1.5),
+      border: _border(borderColor),
+      enabledBorder: _border(borderColor),
+      disabledBorder: _border(disabledBorderColor),
+      focusedBorder: _border(primaryColor, width: 1.5),
       errorBorder: _border(AppColors.error),
       focusedErrorBorder: _border(AppColors.error, width: 1.5),
     );
@@ -102,31 +116,41 @@ class AppDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color textColor = isDark ? AppColors.darkTextPrimary : AppColors.slate800;
+    final Color placeholderColor = enabled
+        ? (isDark ? AppColors.darkTextSecondary : AppColors.slate400)
+        : (isDark ? AppColors.darkOutline : AppColors.slate300);
+    final Color arrowColor = enabled
+        ? (isDark ? AppColors.darkTextSecondary : AppColors.slate500)
+        : (isDark ? AppColors.darkOutline : AppColors.slate300);
+
     final Widget placeholder = Text(
       hint ?? _label,
       style: AppTextStyles.bodyMedium.copyWith(
-        color: enabled ? AppColors.slate400 : AppColors.slate300,
+        color: placeholderColor,
       ),
       overflow: TextOverflow.ellipsis,
     );
 
     return DropdownButtonFormField<T>(
-      key: ValueKey('$label-$value-${items.length}-$enabled'),
+      key: ValueKey('$label-$value-${items.length}-$enabled-$isDark'),
       initialValue: _hasSelection ? value : null,
       isExpanded: true,
       isDense: true,
       borderRadius: AppRadius.brMd,
       menuMaxHeight: 280,
-      dropdownColor: AppColors.surface,
+      dropdownColor: isDark ? AppColors.darkSurface : AppColors.surface,
       elevation: 3,
       icon: Icon(
         Icons.keyboard_arrow_down_rounded,
         size: 22,
-        color: enabled ? AppColors.slate500 : AppColors.slate300,
+        color: arrowColor,
       ),
       hint: placeholder,
       disabledHint: placeholder,
       decoration: AppFieldDecoration.dropdown(
+        context: context,
         labelText: _label,
         errorText: errorText,
         helperText: helperText,
@@ -153,7 +177,7 @@ class AppDropdown<T> extends StatelessWidget {
                       labelBuilder(item),
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.slate800,
+                        color: textColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -163,7 +187,7 @@ class AppDropdown<T> extends StatelessWidget {
       onChanged: enabled && !isLoading ? onChanged : null,
       validator: validator,
       style: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.slate800,
+        color: textColor,
         fontWeight: FontWeight.w600,
       ),
     );

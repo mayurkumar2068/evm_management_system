@@ -19,6 +19,7 @@ export 'widgets/app_error_state.dart';
 export 'widgets/app_gradient_button.dart';
 export 'widgets/app_gradient_header.dart';
 export 'widgets/app_loader.dart';
+export 'widgets/network_status_dot.dart';
 export 'widgets/app_selection_sheet.dart';
 export 'widgets/app_section_header.dart';
 export 'widgets/app_square_icon_button.dart';

@@ -11,6 +11,7 @@ class EnvironmentConfig {
     required this.olinApiBaseUrl,
     required this.surveyApiBaseUrl,
     required this.surveyWebBaseUrl,
+    required this.grievanceApiBaseUrl,
     required this.voterSearchEngineUrl,
     required this.voterSearchApiBaseUrl,
     required this.voterSearchPassKey,
@@ -88,6 +89,7 @@ class EnvironmentConfig {
         ?.trim();
     final String? emsRaw = env['EMS_URL']?.trim();
     final String? privacyPolicyRaw = env['PRIVACY_POLICY_URL']?.trim();
+    final String? grievanceApiRaw = env['GRIEVANCE_API_BASE_URL']?.trim();
 
     final String poElectionApiBaseUrl =
         (poElectionRaw != null && poElectionRaw.isNotEmpty)
@@ -117,6 +119,17 @@ class EnvironmentConfig {
               flavor,
               'SURVEY_WEB_BASE_URL',
               'http://localhost:4200/',
+            ),
+      // Local mcc-backend used for the citizen grievance module during dev
+      // testing; other flavors keep pointing at the PO election API until a
+      // real deployment URL is configured.
+      grievanceApiBaseUrl: (grievanceApiRaw != null && grievanceApiRaw.isNotEmpty)
+          ? grievanceApiRaw
+          : _localServiceDefault(
+              flavor,
+              'GRIEVANCE_API_BASE_URL',
+              'http://localhost:8000',
+              nonDevFallback: poElectionApiBaseUrl,
             ),
       voterSearchEngineUrl:
           (voterSearchRaw != null && voterSearchRaw.isNotEmpty)
@@ -189,6 +202,8 @@ class EnvironmentConfig {
   final String surveyApiBaseUrl;
 
   final String surveyWebBaseUrl;
+
+  final String grievanceApiBaseUrl;
 
   final String voterSearchEngineUrl;
 

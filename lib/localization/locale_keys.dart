@@ -235,6 +235,8 @@ abstract final class LocaleKeys {
   static const String profileSettings = 'profile.settings';
   static const String profileNotifications = 'profile.notifications';
   static const String profileNotificationsSub = 'profile.notifications_sub';
+  static const String profileGrievance = 'profile.grievance';
+  static const String profileGrievanceSub = 'profile.grievance_sub';
   static const String profileSignOut = 'profile.sign_out';
   static const String profileSignOutTitle = 'profile.sign_out_title';
   static const String profileSignOutMessage = 'profile.sign_out_message';
@@ -364,6 +366,7 @@ abstract final class LocaleKeys {
   static const String serviceBoothTitle = 'services.booth.title';
   static const String servicePresidingTitle = 'services.presiding.title';
   static const String servicePresidingDesc = 'services.presiding.desc';
+  static const String serviceGrievanceTitle = 'services.grievance.title';
   static const String serviceOnlineNominationTitle =
       'services.online_nomination.title';
   static const String serviceOnlineNominationDesc =
@@ -980,4 +983,74 @@ abstract final class LocaleKeys {
   static const String menuAbout = 'menu.about';
 
   static const String splashLoading = 'splash.loading';
+
+  static const String grievanceTitle = 'grievance.title';
+  static const String grievanceOtpSubtitle = 'grievance.otp_subtitle';
+  static const String grievanceMobileNo = 'grievance.mobile_no';
+  static const String grievanceMobileNoHint = 'grievance.mobile_no_hint';
+  static const String grievanceOtp = 'grievance.otp';
+  static const String grievanceOtpHint = 'grievance.otp_hint';
+  static const String grievanceSendOtpButton = 'grievance.send_otp_button';
+  static const String grievanceVerifyOtpButton = 'grievance.verify_otp_button';
+  static const String grievanceChangeMobile = 'grievance.change_mobile';
+  static const String grievanceResendOtpIn = 'grievance.resend_otp_in';
+  static const String grievanceResendOtpButton = 'grievance.resend_otp_button';
+  static const String grievanceOtpSentHint = 'grievance.otp_sent_hint';
+  static const String grievanceHintStrip = 'grievance.hint_strip';
+  static const String grievanceMobileInvalid = 'grievance.mobile_invalid';
+  static const String grievanceOtpRequired = 'grievance.otp_required';
+  static const String grievanceGenericError = 'grievance.generic_error';
+
+  static const String grievanceFormTitle = 'grievance.form_title';
+  static const String grievanceFullName = 'grievance.full_name';
+  static const String grievanceFullNameHint = 'grievance.full_name_hint';
+  static const String grievanceCategory = 'grievance.category';
+  static const String grievanceCategoryHint = 'grievance.category_hint';
+  static const String grievanceSubject = 'grievance.subject';
+  static const String grievanceSubjectHint = 'grievance.subject_hint';
+  static const String grievanceDescription = 'grievance.description';
+  static const String grievanceDescriptionHint = 'grievance.description_hint';
+  static const String grievanceSubmitButton = 'grievance.submit_button';
+  static const String grievanceNameRequired = 'grievance.name_required';
+  static const String grievanceSubjectRequired = 'grievance.subject_required';
+  static const String grievanceDescriptionRequired =
+      'grievance.description_required';
+  static const String grievanceSubmitSuccessTitle =
+      'grievance.submit_success_title';
+  static const String grievanceSubmitSuccessMessage =
+      'grievance.submit_success_message';
+  static const String grievanceSubmitSuccessMessageWithRef =
+      'grievance.submit_success_message_with_ref';
+  static const String grievanceDoneButton = 'grievance.done_button';
+
+  static const String grievanceCategoryVoterList =
+      'grievance.category_voter_list';
+  static const String grievanceCategoryEvmBooth =
+      'grievance.category_evm_booth';
+  static const String grievanceCategoryOfficerConduct =
+      'grievance.category_officer_conduct';
+  static const String grievanceCategoryOther = 'grievance.category_other';
+
+  static const String grievanceYourDetailsSection =
+      'grievance.your_details_section';
+  static const String grievanceDetailsSection = 'grievance.details_section';
+  static const String grievancePhotoSection = 'grievance.photo_section';
+  static const String grievancePhotoHint = 'grievance.photo_hint';
+  static const String grievanceAddPhoto = 'grievance.add_photo';
+  static const String grievanceChangePhoto = 'grievance.change_photo';
+  static const String grievanceRemovePhoto = 'grievance.remove_photo';
+  static const String grievancePhotoRequired = 'grievance.photo_required';
+  static const String grievancePhotoPickFailed = 'grievance.photo_pick_failed';
+  static const String grievancePickFromCamera = 'grievance.pick_from_camera';
+  static const String grievancePickFromGallery = 'grievance.pick_from_gallery';
+  static const String grievanceLocationTagged = 'grievance.location_tagged';
+  static const String grievancePhotoRequiredBadge =
+      'grievance.photo_required_badge';
+  static const String grievancePhotoPlaceholderSubtitle =
+      'grievance.photo_placeholder_subtitle';
+  static const String grievanceOtpVerifiedBadge =
+      'grievance.otp_verified_badge';
+  static const String grievanceFooterBranding = 'grievance.footer_branding';
+  static const String grievancePhotoSizeInfo = 'grievance.photo_size_info';
+  static const String grievanceGpsCoordinates = 'grievance.gps_coordinates';
 }

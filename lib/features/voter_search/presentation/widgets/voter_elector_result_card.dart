@@ -120,39 +120,41 @@ class _VoterElectorResultCardState extends State<VoterElectorResultCard> {
                   ),
                   _BoothBox(line: e.boothLine),
                 ],
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: _generating ? null : _generateSlip,
-                    icon: _generating
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.onPrimary,
-                            ),
-                          )
-                        : const Icon(Icons.image_outlined, size: 20),
-                    label: Text(
-                      _generating
-                          ? LocaleKeys.voterSearchSlipGenerating.tr()
-                          : LocaleKeys.voterSearchGenerateSlip.tr(),
-                      style: AppTextStyles.button.copyWith(
-                        color: AppColors.onPrimary,
+                if (controller.canGenerateVoterSlip) ...<Widget>[
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: _generating ? null : _generateSlip,
+                      icon: _generating
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.onPrimary,
+                              ),
+                            )
+                          : const Icon(Icons.image_outlined, size: 20),
+                      label: Text(
+                        _generating
+                            ? LocaleKeys.voterSearchSlipGenerating.tr()
+                            : LocaleKeys.voterSearchGenerateSlip.tr(),
+                        style: AppTextStyles.button.copyWith(
+                          color: AppColors.onPrimary,
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 46,
@@ -161,8 +163,14 @@ class _VoterElectorResultCardState extends State<VoterElectorResultCard> {
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),
                     label: Text(LocaleKeys.voterSearchBackToSearch.tr()),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryDark,
-                      side: const BorderSide(color: AppColors.primary),
+                      foregroundColor: context.isAppDark
+                          ? AppColors.primaryBright
+                          : AppColors.primaryDark,
+                      side: BorderSide(
+                        color: context.isAppDark
+                            ? AppColors.primaryBright
+                            : AppColors.primary,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -199,16 +207,22 @@ class _CardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: <Color>[Color(0xFFEFF6FF), Color(0xFFF0FDFA)],
+          colors: isDark
+              ? <Color>[
+                  AppColors.primary.withValues(alpha: 0.2),
+                  AppColors.secondary.withValues(alpha: 0.08),
+                ]
+              : const <Color>[Color(0xFFEFF6FF), Color(0xFFF0FDFA)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +235,7 @@ class _CardHeader extends StatelessWidget {
                   style: AppTextStyles.variant(
                     AppTextStyles.bodyMedium,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.slate500,
+                    color: context.appMuted,
                     height: 1.35,
                   ),
                 ),
@@ -230,7 +244,7 @@ class _CardHeader extends StatelessWidget {
                   style: AppTextStyles.variant(
                     AppTextStyles.bodyMedium,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.slate800,
+                    color: context.appOnSurface,
                     height: 1.35,
                   ),
                 ),
@@ -246,22 +260,28 @@ class _CardHeader extends StatelessWidget {
                 label: isUrban
                     ? LocaleKeys.voterSearchUrban.tr()
                     : LocaleKeys.voterSearchRural.tr(),
-                color: isUrban ? AppColors.primary : AppColors.greenDark,
+                color: isUrban
+                    ? (isDark ? AppColors.primaryBright : AppColors.primary)
+                    : (isDark ? AppColors.secondary : AppColors.greenDark),
                 bg: isUrban
-                    ? AppColors.primaryLight
-                    : AppColors.greenExtraLight,
+                    ? (isDark
+                        ? AppColors.primary.withValues(alpha: 0.25)
+                        : AppColors.primaryLight)
+                    : (isDark
+                        ? AppColors.secondary.withValues(alpha: 0.25)
+                        : AppColors.greenExtraLight),
               ),
               if (gender.trim().isNotEmpty)
                 _Chip(
                   label: gender,
-                  color: AppColors.slate700,
-                  bg: AppColors.slate100,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.slate700,
+                  bg: isDark ? AppColors.darkSurface : AppColors.slate100,
                 ),
               if (age.trim().isNotEmpty)
                 _Chip(
                   label: '${LocaleKeys.voterSearchAge.tr()}: $age',
-                  color: AppColors.slate700,
-                  bg: AppColors.slate100,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.slate700,
+                  bg: isDark ? AppColors.darkSurface : AppColors.slate100,
                 ),
             ],
           ),
@@ -285,6 +305,9 @@ class _Chip extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
+        border: context.isAppDark
+            ? Border.all(color: AppColors.darkOutline, width: 0.8)
+            : null,
       ),
       child: Text(
         label,
@@ -306,17 +329,19 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color color = isDark ? AppColors.primaryBright : AppColors.primaryDark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: <Widget>[
-          Icon(icon, size: 16, color: AppColors.primaryDark),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               title,
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.primaryDark,
+                color: color,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.1,
               ),
@@ -335,18 +360,20 @@ class _FieldBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color borderColor = isDark ? AppColors.darkOutline : AppColors.slate200;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.slate50,
+        color: isDark ? AppColors.darkSurface : AppColors.slate50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.slate200),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         children: <Widget>[
           for (int i = 0; i < fields.length; i++) ...<Widget>[
             _DetailRow(label: fields[i].label, value: fields[i].value),
             if (i != fields.length - 1)
-              const Divider(height: 1, thickness: 1, color: AppColors.slate200),
+              Divider(height: 1, thickness: 1, color: borderColor),
           ],
         ],
       ),
@@ -362,6 +389,7 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
@@ -372,7 +400,7 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.slate500,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.slate500,
                 height: 1.35,
               ),
             ),
@@ -384,7 +412,7 @@ class _DetailRow extends StatelessWidget {
               value,
               textAlign: TextAlign.end,
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.slate800,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.slate800,
                 fontWeight: FontWeight.w700,
                 height: 1.35,
               ),
@@ -403,18 +431,25 @@ class _BoothBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.45),
+        color: isDark
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : AppColors.primaryLight.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+        border: Border.all(
+          color: isDark
+              ? AppColors.primary.withValues(alpha: 0.35)
+              : AppColors.primary.withValues(alpha: 0.25),
+        ),
       ),
       child: Text(
         line,
         style: AppTextStyles.caption.copyWith(
-          color: AppColors.slate800,
+          color: isDark ? AppColors.darkTextPrimary : AppColors.slate800,
           fontWeight: FontWeight.w700,
           height: 1.4,
         ),

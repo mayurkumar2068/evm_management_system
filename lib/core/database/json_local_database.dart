@@ -106,7 +106,7 @@ class JsonLocalDatabase implements LocalDatabase {
   void _emit(String collection) {
     // ignore: close_sinks
     final StreamController<List<Map<String, dynamic>>>? controller =
-        _watchers[collection];
+    _watchers[collection];
     if (controller != null && !controller.isClosed) {
       controller.add(
         (_cache[collection] ?? <String, Map<String, dynamic>>{}).values.toList(

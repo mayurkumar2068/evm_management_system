@@ -47,14 +47,14 @@ class _VoterSearchScreenState extends State<VoterSearchScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.appBackground,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           AppGradientHeader(
             leading: AppCircleBackButton(onTap: () => Get.back<void>()),
             title: LocaleKeys.voterSearchTitle.tr(),
-            trailing: HeaderIconButton(
+            trailing: AppCircleActionButton(
               icon: Icons.refresh_rounded,
               onTap: _controller.refreshAll,
             ),
@@ -88,6 +88,7 @@ class _SearchFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     return Column(
       children: <Widget>[
         const Padding(
@@ -99,21 +100,27 @@ class _SearchFormView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.slate50,
+              color: isDark ? AppColors.darkSurface : AppColors.slate50,
               borderRadius: AppRadius.brLg,
-              border: Border.all(color: AppColors.slate200),
+              border: Border.all(
+                color: isDark ? AppColors.darkOutline : AppColors.slate200,
+              ),
             ),
             clipBehavior: Clip.antiAlias,
             child: TabBar(
               controller: tabController,
               dividerColor: Colors.transparent,
               indicatorSize: TabBarIndicatorSize.tab,
-              indicator: const BoxDecoration(
-                color: AppColors.primaryLight,
+              indicator: BoxDecoration(
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.25)
+                    : AppColors.primaryLight,
                 borderRadius: AppRadius.brLg,
               ),
-              labelColor: AppColors.primaryDeep,
-              unselectedLabelColor: AppColors.slate500,
+              labelColor:
+                  isDark ? AppColors.primaryBright : AppColors.primaryDeep,
+              unselectedLabelColor:
+                  isDark ? AppColors.darkTextSecondary : AppColors.slate500,
               labelStyle: AppTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.1,
@@ -400,10 +407,14 @@ class _ResultsView extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.55),
+                color: context.isAppDark
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.primaryLight.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: context.isAppDark
+                      ? AppColors.primary.withValues(alpha: 0.35)
+                      : AppColors.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -412,13 +423,20 @@ class _ResultsView extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: context.appSurface,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: context.isAppDark
+                            ? AppColors.darkOutline
+                            : AppColors.slate200,
+                      ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.fact_check_outlined,
                       size: 20,
-                      color: AppColors.primaryDark,
+                      color: context.isAppDark
+                          ? AppColors.primaryBright
+                          : AppColors.primaryDark,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -430,6 +448,7 @@ class _ResultsView extends StatelessWidget {
                           LocaleKeys.voterSearchResultsTitle.tr(),
                           style: AppTextStyles.titleSmall.copyWith(
                             fontWeight: FontWeight.w800,
+                            color: context.appOnSurface,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -440,7 +459,7 @@ class _ResultsView extends StatelessWidget {
                                   args: <String>['$total'],
                                 ),
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.slate600,
+                            color: context.appMuted,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -448,7 +467,11 @@ class _ResultsView extends StatelessWidget {
                     ),
                   ),
                   Material(
-                    color: filtered ? AppColors.primary : AppColors.surface,
+                    color: filtered
+                        ? AppColors.primary
+                        : (context.isAppDark
+                            ? AppColors.darkSurface
+                            : AppColors.surface),
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       onTap: () => showVoterResultsFilterSheet(
@@ -456,10 +479,20 @@ class _ResultsView extends StatelessWidget {
                         controller: controller,
                       ),
                       borderRadius: BorderRadius.circular(10),
-                      child: Padding(
+                      child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: filtered
+                                ? Colors.transparent
+                                : (context.isAppDark
+                                    ? AppColors.darkOutline
+                                    : AppColors.slate200),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -469,7 +502,9 @@ class _ResultsView extends StatelessWidget {
                               size: 18,
                               color: filtered
                                   ? AppColors.onPrimary
-                                  : AppColors.primaryDark,
+                                  : (context.isAppDark
+                                      ? AppColors.primaryBright
+                                      : AppColors.primaryDark),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -477,7 +512,9 @@ class _ResultsView extends StatelessWidget {
                               style: AppTextStyles.caption.copyWith(
                                 color: filtered
                                     ? AppColors.onPrimary
-                                    : AppColors.primaryDark,
+                                    : (context.isAppDark
+                                        ? AppColors.primaryBright
+                                        : AppColors.primaryDark),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),

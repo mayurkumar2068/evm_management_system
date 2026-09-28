@@ -107,6 +107,7 @@ class VoterUrbanBody {
     required this.nameEn,
     required this.ubType,
     required this.ubNo,
+    this.showVoterSlip = true,
   });
 
   factory VoterUrbanBody.fromJson(Map<String, dynamic> json) {
@@ -116,6 +117,9 @@ class VoterUrbanBody {
       nameEn: (json['UBNameEn'] ?? '').toString().trim(),
       ubType: (json['UBType'] ?? '').toString(),
       ubNo: (json['UBNo'] ?? '').toString(),
+      showVoterSlip: json['ShowVoterSlip'] == null
+          ? true
+          : json['ShowVoterSlip'] == true,
     );
   }
 
@@ -124,6 +128,7 @@ class VoterUrbanBody {
   final String nameEn;
   final String ubType;
   final String ubNo;
+  final bool showVoterSlip;
 
   String displayName(bool preferHindi) => preferHindi && name.isNotEmpty
       ? name

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:evm_management_system/core/network/curl_formatter.dart';
 
 final class PoApiLoggingInterceptor extends Interceptor {
   PoApiLoggingInterceptor({this.maxBodyChars = 8000});
@@ -33,6 +34,9 @@ final class PoApiLoggingInterceptor extends Interceptor {
     AppLogger.w(
       '[PO API #$id] → ${options.method} ${_redactedUri(options.uri)}$query$body',
     );
+    try {
+      AppLogger.w('[PO API #$id cURL]\n${CurlFormatter.toCurl(options)}');
+    } catch (_) {}
     handler.next(options);
   }
 

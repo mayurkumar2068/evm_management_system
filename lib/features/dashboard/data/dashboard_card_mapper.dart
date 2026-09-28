@@ -123,6 +123,9 @@ abstract final class DashboardCardMapper {
           requiredLoginKind: ServiceLoginKind.presiding,
           registrationAllowed: card.isRegistrationAllowed,
         );
+      case _NativeKind.grievance:
+        // Complaint/grievance request is hidden for this build.
+        return null;
       case _NativeKind.claimsObjections:
         final String url = (card.url != null && card.url!.isNotEmpty)
             ? card.url!
@@ -185,6 +188,9 @@ abstract final class DashboardCardMapper {
     }
 
     final String key = card.matchKey;
+    if (key.contains('grievance') || key.contains('complaint')) {
+      return _NativeKind.grievance;
+    }
     if (key.contains('claim') || key.contains('objection')) {
       return _NativeKind.claimsObjections;
     }
@@ -211,4 +217,5 @@ enum _NativeKind {
   voterSearch,
   boothSurvey,
   presiding,
+  grievance,
 }

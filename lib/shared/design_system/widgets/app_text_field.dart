@@ -1,5 +1,6 @@
 import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
 import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
+import 'package:evm_management_system/shared/design_system/tokens/app_theme_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -63,6 +64,10 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color textColor = isDark ? AppColors.darkTextPrimary : AppColors.slate800;
+    final Color iconColor = isDark ? AppColors.darkTextSecondary : AppColors.slate500;
+
     return Material(
       type: MaterialType.transparency,
       child: TextFormField(
@@ -84,7 +89,7 @@ class AppTextField extends StatelessWidget {
         autofillHints: autofillHints,
         textCapitalization: textCapitalization,
         style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.slate800,
+          color: textColor,
           fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
@@ -95,7 +100,7 @@ class AppTextField extends StatelessWidget {
           counterText: maxLength == null ? null : '',
           prefixIcon: prefixIcon == null
               ? null
-              : Icon(prefixIcon, size: 20, color: AppColors.slate500),
+              : Icon(prefixIcon, size: 20, color: iconColor),
           prefixIconConstraints: const BoxConstraints(
             minWidth: 40,
             minHeight: 40,
@@ -104,7 +109,7 @@ class AppTextField extends StatelessWidget {
               suffix ??
               (suffixIcon == null
                   ? null
-                  : Icon(suffixIcon, size: 20, color: AppColors.slate500)),
+                  : Icon(suffixIcon, size: 20, color: iconColor)),
         ),
       ),
     );

@@ -33,11 +33,15 @@ class AppGradientHeader extends StatelessWidget {
     final double topInset = MediaQuery.of(context).padding.top;
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: gradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(20),
+        ),
       ),
       child: Stack(
+        clipBehavior: Clip.antiAlias,
         children: <Widget>[
           Positioned(
             top: -40,
@@ -145,9 +149,8 @@ class AppGradientHeader extends StatelessWidget {
                           ],
                         ),
                 if (bottom != null) ...<Widget>[
-                  if (title != null) const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   bottom!,
-                  const SizedBox(height: 4),
                 ],
               ],
             ),
@@ -158,8 +161,8 @@ class AppGradientHeader extends StatelessWidget {
   }
 }
 
-class HeaderIconButton extends StatelessWidget {
-  const HeaderIconButton({
+class AppCircleActionButton extends StatelessWidget {
+  const AppCircleActionButton({
     required this.icon,
     required this.onTap,
     this.badgeCount,
@@ -228,15 +231,26 @@ class AppCircleBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool useLightStyle = light || isDark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: light ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+          color: useLightStyle
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white,
           shape: BoxShape.circle,
-          boxShadow: light
+          border: useLightStyle
+              ? Border.all(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  width: 1,
+                )
+              : null,
+          boxShadow: useLightStyle
               ? null
               : const <BoxShadow>[
                   BoxShadow(
@@ -248,7 +262,7 @@ class AppCircleBackButton extends StatelessWidget {
         ),
         child: Icon(
           Icons.chevron_left_rounded,
-          color: light ? Colors.white : AppColors.slate700,
+          color: useLightStyle ? Colors.white : AppColors.slate700,
           size: 22,
         ),
       ),

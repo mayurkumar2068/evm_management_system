@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:evm_management_system/core/network/interceptors/client_metadata_interceptor.dart';
 import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
 import 'package:evm_management_system/core/offline/web_form_submission.dart';
 
@@ -20,6 +21,7 @@ class SurveyApiUploadService {
                responseType: ResponseType.json,
              ),
            ) {
+    _dio.interceptors.add(const ClientMetadataInterceptor());
     _dio.interceptors.add(LoggingInterceptor(enabled: enableLogging));
   }
 

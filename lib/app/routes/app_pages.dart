@@ -4,6 +4,7 @@ import 'package:evm_management_system/app/router/app_shell.dart';
 import 'package:evm_management_system/app/routes/auth_middleware.dart';
 import 'package:evm_management_system/features/auth/presentation/screens/login_screen.dart';
 import 'package:evm_management_system/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:evm_management_system/features/grievance/presentation/screens/grievance_otp_screen.dart';
 import 'package:evm_management_system/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:evm_management_system/features/offline/presentation/screens/offline_screen.dart';
 import 'package:evm_management_system/features/presiding_concern/presentation/screens/presiding_dashboard_screen.dart';
@@ -106,6 +107,11 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoute.voterSearch.path,
       page: () => const VoterSearchScreen(),
+      middlewares: <GetMiddleware>[AuthMiddleware()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoute.grievance.path,
+      page: () => const GrievanceOtpScreen(),
       middlewares: <GetMiddleware>[AuthMiddleware()],
     ),
     GetPage<dynamic>(

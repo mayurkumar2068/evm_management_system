@@ -40,6 +40,7 @@ class _EvmAppState extends State<EvmApp> {
       unawaited(Get.find<WebViewWarmer>().warm());
       AppServices.syncManager.start();
       AppServices.offlineSync.start();
+      AppServices.networkQuality.start();
       AppServices.sessionBus.events.listen((SessionEvent event) {
         AppServices.auth.onSessionExpired();
       });
@@ -126,7 +127,16 @@ class _EvmAppState extends State<EvmApp> {
               data: mq.copyWith(
                 textScaler: TextScaler.linear(AppResponsive.fontScale),
               ),
-              child: child ?? const SizedBox.shrink(),
+              child: Stack(
+                children: <Widget>[
+                  Positioned.fill(child: child ?? const SizedBox.shrink()),
+                  Positioned(
+                    top: mq.padding.top + 8,
+                    right: 12,
+                    child: const IgnorePointer(child: NetworkStatusDot()),
+                  ),
+                ],
+              ),
             ),
           );
         },

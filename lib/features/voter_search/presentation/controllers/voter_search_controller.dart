@@ -276,6 +276,11 @@ class VoterSearchController extends GetxController {
     selectedGender.value = gender;
   }
 
+  bool get canGenerateVoterSlip {
+    if (areaType.value != VoterAreaType.urban) return true;
+    return selectedUrbanBody.value?.showVoterSlip ?? true;
+  }
+
   void backToSearch() {
     showingResults.value = false;
     results.clear();

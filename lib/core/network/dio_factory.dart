@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:evm_management_system/config/environment_config.dart';
+import 'package:evm_management_system/core/network/interceptors/client_metadata_interceptor.dart';
 import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
 
 abstract final class DioFactory {
@@ -22,6 +23,7 @@ abstract final class DioFactory {
       ),
     );
 
+    dio.interceptors.add(const ClientMetadataInterceptor());
     dio.interceptors.addAll(interceptors);
     dio.interceptors.add(LoggingInterceptor(enabled: config.enableLogging));
     return dio;

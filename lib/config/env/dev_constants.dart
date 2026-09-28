@@ -19,6 +19,8 @@ const Map<String, String> devConstants = <String, String>{
   'ELECTION_ID': '1',
   'DEV_PO_AREA_TYPE': 'U',
   'PO_ELECTION_API_BASE_URL': 'http://10.115.197.192/POElectionAPI',
+  // Local mcc-backend (complaints_backend/mcc-backend) for grievance module testing.
+  'GRIEVANCE_API_BASE_URL': 'http://localhost:8000',
   'OLIN_API_BASE_URL': 'http://10.115.197.192/OLINAPI',
   'SURVEY_API_BASE_URL': 'http://10.115.197.192/POElectionAPI/api',
   'SURVEY_WEB_BASE_URL': 'https://mplocalelection.mp.gov.in/pssurvey/',

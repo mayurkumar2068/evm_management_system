@@ -11,6 +11,7 @@ import 'package:evm_management_system/core/network/interceptors/connectivity_int
 import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
 import 'package:evm_management_system/core/network/interceptors/network_interceptor.dart';
 import 'package:evm_management_system/core/network/interceptors/retry_interceptor.dart';
+import 'package:evm_management_system/core/network/network_quality_service.dart';
 import 'package:evm_management_system/core/network/token_refresher.dart';
 import 'package:evm_management_system/core/notifications/notification_service.dart';
 import 'package:evm_management_system/core/offline/offline_sync_service.dart';
@@ -56,10 +57,8 @@ abstract final class AppServices {
     Get.put<EnvironmentConfig>(config, permanent: true);
     Get.put<LocalDatabase>(database, permanent: true);
     Get.put<SecureStorageService>(secureStorage, permanent: true);
-
     final OnboardingStore onboarding = OnboardingStore()..seen = onboardingSeen;
     Get.put<OnboardingStore>(onboarding, permanent: true);
-
     Get.put<AppSettingsService>(settingsService, permanent: true);
     Get.put<SettingsController>(
       SettingsController(settingsService, initialLocale, initialThemeMode),
@@ -71,6 +70,11 @@ abstract final class AppServices {
 
     final ConnectivityService connectivity = ConnectivityService();
     Get.put<ConnectivityService>(connectivity, permanent: true);
+
+    Get.put<NetworkQualityService>(
+      NetworkQualityService(connectivity),
+      permanent: true,
+    );
 
     Get.put<BiometricAuthenticator>(BiometricAuthenticator(), permanent: true);
     Get.put<ScreenSecurityService>(
@@ -183,6 +187,8 @@ abstract final class AppServices {
   static TokenVault get tokenVault => Get.find<TokenVault>();
   static ConnectivityService get connectivity =>
       Get.find<ConnectivityService>();
+  static NetworkQualityService get networkQuality =>
+      Get.find<NetworkQualityService>();
   static SyncManager get syncManager => Get.find<SyncManager>();
   static SyncQueue get syncQueue => Get.find<SyncQueue>();
   static SessionEventBus get sessionBus => Get.find<SessionEventBus>();
@@ -190,6 +196,7 @@ abstract final class AppServices {
   static WebSubmissionRepository get webSubmissionRepository =>
       Get.find<WebSubmissionRepository>();
   static AuthController get auth => Get.find<AuthController>();
+  static DashboardController get dashboard => Get.find<DashboardController>();
   static SettingsController get settings => Get.find<SettingsController>();
   static ActivityLogController get activityLog =>
       Get.find<ActivityLogController>();
@@ -206,7 +213,6 @@ class SettingsController extends GetxController {
   final AppSettingsService _settings;
   final Rx<Locale> locale;
   final Rx<ThemeMode> themeMode;
-
   Future<void> setLocale(Locale value) async {
     if (locale.value == value) return;
     locale.value = value;

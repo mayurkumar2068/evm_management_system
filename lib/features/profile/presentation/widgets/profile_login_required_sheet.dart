@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:evm_management_system/app/router/app_routes.dart';
 import 'package:evm_management_system/core/di/app_services.dart';
 import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
+import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
 import 'package:evm_management_system/features/dashboard/presentation/utils/dashboard_webview_launcher.dart';
 import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
 import 'package:evm_management_system/features/service_auth/presentation/models/service_login_args.dart';
@@ -13,6 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
 Future<void> showProfileLoginRequiredSheet(BuildContext context) {
+  // Ensure the dashboard's API-driven service list (and its
+  // registrationAllowed flags) is loaded/fresh before the sheet reads it.
+  AppServices.dashboard.rebuildDashboard();
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -72,6 +76,20 @@ class _LoginServiceOption {
 class _ProfileLoginSheet extends StatelessWidget {
   const _ProfileLoginSheet();
 
+  // registrationAllowed mirrors the API-driven flag (`IsRegistrationAllowed`
+  // from /api/Masters/card-list) already computed for the dashboard grid,
+  // so this sheet never hardcodes a fixed true/false.
+  bool _registrationAllowedFor(ServiceLoginKind kind) {
+    final List<DashboardService> services =
+        AppServices.dashboard.state.value.services;
+    for (final DashboardService service in services) {
+      if (service.requiredLoginKind == kind) {
+        return service.registrationAllowed ?? true;
+      }
+    }
+    return true;
+  }
+
   List<_LoginServiceOption> get _options {
     final String electionTab = LocaleKeys.dashboardAboutElections.tr();
     final List<_LoginServiceOption> items = <_LoginServiceOption>[
@@ -83,7 +101,7 @@ class _ProfileLoginSheet extends StatelessWidget {
         kind: ServiceLoginKind.survey,
         tabLabel: electionTab,
         url: AppServices.config.surveyWebBaseUrl,
-        registrationAllowed: true,
+        registrationAllowed: _registrationAllowedFor(ServiceLoginKind.survey),
       ),
       _LoginServiceOption(
         title: LocaleKeys.servicePresidingTitle.tr(),
@@ -93,7 +111,9 @@ class _ProfileLoginSheet extends StatelessWidget {
         kind: ServiceLoginKind.presiding,
         tabLabel: electionTab,
         routeName: AppRoute.presidingDashboard.path,
-        registrationAllowed: true,
+        registrationAllowed: _registrationAllowedFor(
+          ServiceLoginKind.presiding,
+        ),
       ),
     ];
     return items;
@@ -152,8 +172,6 @@ class _ProfileLoginSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<_LoginServiceOption> options = _options;
-
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: BackdropFilter(
@@ -216,13 +234,22 @@ class _ProfileLoginSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    for (int i = 0; i < options.length; i++) ...<Widget>[
-                      if (i > 0) const SizedBox(height: 10),
-                      _LoginServiceCard(
-                        option: options[i],
-                        onTap: () => _open(options[i]),
-                      ),
-                    ],
+                    Obx(() {
+                      final List<_LoginServiceOption> options = _options;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          for (int i = 0; i < options.length; i++) ...<Widget>[
+                            if (i > 0) const SizedBox(height: 10),
+                            _LoginServiceCard(
+                              option: options[i],
+                              onTap: () => _open(options[i]),
+                            ),
+                          ],
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),

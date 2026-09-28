@@ -14,7 +14,8 @@ enum AppRoute {
   presidingPartyOtp('/presiding-party-otp', 'presidingPartyOtp'),
   presidingTurnout('/presiding-turnout', 'presidingTurnout'),
   presidingLivePoll('/presiding-live', 'presidingLivePoll'),
-  voterSearch('/voter-search', 'voterSearch');
+  voterSearch('/voter-search', 'voterSearch'),
+  grievance('/grievance', 'grievance');
 
   const AppRoute(this.path, this.name);
 

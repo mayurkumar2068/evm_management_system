@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:evm_management_system/core/network/curl_formatter.dart';
 
 abstract final class ApiLogFormatter {
   static const int _maxBodyChars = 2048;
@@ -34,6 +35,10 @@ abstract final class ApiLogFormatter {
     if (query.isNotEmpty) {
       buffer.writeln('query: ${_encode(_redactMap(query))}');
     }
+
+    try {
+      buffer.writeln('curl:\n${CurlFormatter.toCurl(options)}');
+    } catch (_) {}
 
     return buffer.toString().trimRight();
   }

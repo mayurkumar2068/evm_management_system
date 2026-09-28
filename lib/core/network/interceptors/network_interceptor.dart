@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:evm_management_system/core/app_build_info.dart';
+import 'package:evm_management_system/core/network/curl_formatter.dart';
 import 'package:uuid/uuid.dart';
 
 class NetworkInterceptor extends Interceptor {
@@ -14,6 +16,8 @@ class NetworkInterceptor extends Interceptor {
     options.headers.putIfAbsent('Content-Type', () => 'application/json');
     options.headers['Accept-Language'] = localeCode();
     options.headers['X-Request-Id'] = _uuid.v4();
+    options.headers.putIfAbsent('Client-Version', () => AppBuildInfo.versionName);
+    options.headers.putIfAbsent('DeviceType', () => CurlFormatter.currentDeviceType);
     handler.next(options);
   }
 }

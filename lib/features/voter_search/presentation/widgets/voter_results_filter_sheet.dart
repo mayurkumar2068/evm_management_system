@@ -26,7 +26,7 @@ Future<void> showVoterResultsFilterSheet({
             height: sheetHeight,
             width: double.infinity,
             child: Material(
-              color: AppColors.surface,
+              color: ctx.appSurface,
               clipBehavior: Clip.antiAlias,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
@@ -61,29 +61,6 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
 
   bool get _isUrban => c.areaType.value == VoterAreaType.urban;
 
-  TextStyle get _titleStyle => AppTextStyles.variant(
-    AppTextStyles.titleMedium,
-    fontWeight: FontWeight.w600,
-    color: AppColors.slate800,
-  );
-
-  TextStyle get _hintStyle => AppTextStyles.variant(
-    AppTextStyles.caption,
-    fontWeight: FontWeight.w400,
-    color: AppColors.slate500,
-  );
-
-  TextStyle get _fieldTextStyle => AppTextStyles.variant(
-    AppTextStyles.bodyMedium,
-    fontWeight: FontWeight.w500,
-    color: AppColors.slate800,
-  );
-
-  TextStyle get _buttonStyle => AppTextStyles.variant(
-    AppTextStyles.bodyMedium,
-    fontWeight: FontWeight.w600,
-  );
-
   @override
   void initState() {
     super.initState();
@@ -99,10 +76,34 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
     final List<VoterFilterWardOption> wards = c.availableFilterWards;
     final String wardSectionTitle = _isUrban
         ? LocaleKeys.voterSearchWardName.tr()
         : LocaleKeys.voterSearchRuralWardNo.tr();
+
+    final TextStyle titleStyle = AppTextStyles.variant(
+      AppTextStyles.titleMedium,
+      fontWeight: FontWeight.w600,
+      color: context.appOnSurface,
+    );
+
+    final TextStyle hintStyle = AppTextStyles.variant(
+      AppTextStyles.caption,
+      fontWeight: FontWeight.w400,
+      color: context.appMuted,
+    );
+
+    final TextStyle fieldTextStyle = AppTextStyles.variant(
+      AppTextStyles.bodyMedium,
+      fontWeight: FontWeight.w500,
+      color: isDark ? AppColors.darkTextPrimary : AppColors.slate800,
+    );
+
+    final TextStyle buttonStyle = AppTextStyles.variant(
+      AppTextStyles.bodyMedium,
+      fontWeight: FontWeight.w600,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,7 +114,7 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.slate200,
+              color: isDark ? AppColors.darkOutline : AppColors.slate200,
               borderRadius: BorderRadius.circular(99),
             ),
           ),
@@ -123,18 +124,18 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(LocaleKeys.voterSearchFilterTitle.tr(), style: _titleStyle),
+              Text(LocaleKeys.voterSearchFilterTitle.tr(), style: titleStyle),
               const SizedBox(height: 4),
               Text(
                 _isUrban
                     ? LocaleKeys.voterSearchFilterUrbanHint.tr()
                     : LocaleKeys.voterSearchFilterRuralHint.tr(),
-                style: _hintStyle,
+                style: hintStyle,
               ),
               const SizedBox(height: 14),
               TextField(
                 controller: _ageController,
-                style: _fieldTextStyle,
+                style: fieldTextStyle,
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly,
@@ -143,13 +144,13 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                 decoration: InputDecoration(
                   labelText: LocaleKeys.voterSearchAge.tr(),
                   hintText: LocaleKeys.voterSearchAgeHint.tr(),
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.cake_outlined,
                     size: 20,
-                    color: AppColors.slate500,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.slate500,
                   ),
                   filled: true,
-                  fillColor: AppColors.slate50,
+                  fillColor: isDark ? AppColors.darkSurface : AppColors.slate50,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -158,25 +159,29 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                   labelStyle: AppTextStyles.variant(
                     AppTextStyles.caption,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.slate500,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.slate500,
                   ),
                   hintStyle: AppTextStyles.variant(
                     AppTextStyles.bodyMedium,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.slate400,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.slate400,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.slate200),
+                    borderSide: BorderSide(
+                      color: isDark ? AppColors.darkOutline : AppColors.slate200,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.slate200),
+                    borderSide: BorderSide(
+                      color: isDark ? AppColors.darkOutline : AppColors.slate200,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: isDark ? AppColors.primaryBright : AppColors.primary,
                       width: 1.4,
                     ),
                   ),
@@ -188,7 +193,7 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                 style: AppTextStyles.variant(
                   AppTextStyles.caption,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.slate600,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.slate600,
                 ),
               ),
             ],
@@ -219,9 +224,13 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            border: Border(top: BorderSide(color: AppColors.slate200)),
+          decoration: BoxDecoration(
+            color: context.appSurface,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? AppColors.darkOutline : AppColors.slate200,
+              ),
+            ),
           ),
           child: Row(
             children: <Widget>[
@@ -232,8 +241,10 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                     Navigator.of(context).pop();
                   },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primaryDark,
-                    side: const BorderSide(color: AppColors.primary),
+                    foregroundColor: isDark ? AppColors.primaryBright : AppColors.primaryDark,
+                    side: BorderSide(
+                      color: isDark ? AppColors.primaryBright : AppColors.primary,
+                    ),
                     minimumSize: const Size.fromHeight(46),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -241,7 +252,9 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                   ),
                   child: Text(
                     LocaleKeys.voterSearchFilterClear.tr(),
-                    style: _buttonStyle.copyWith(color: AppColors.primaryDark),
+                    style: buttonStyle.copyWith(
+                      color: isDark ? AppColors.primaryBright : AppColors.primaryDark,
+                    ),
                   ),
                 ),
               ),
@@ -266,7 +279,7 @@ class _VoterResultsFilterBodyState extends State<_VoterResultsFilterBody> {
                   ),
                   child: Text(
                     LocaleKeys.voterSearchFilterApply.tr(),
-                    style: _buttonStyle.copyWith(color: AppColors.onPrimary),
+                    style: buttonStyle.copyWith(color: AppColors.onPrimary),
                   ),
                 ),
               ),
@@ -291,10 +304,23 @@ class _WardOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = context.isAppDark;
+    final Color selectedBg = isDark
+        ? AppColors.primary.withValues(alpha: 0.22)
+        : AppColors.primaryLight.withValues(alpha: 0.65);
+    final Color unselectedBg = isDark ? AppColors.darkSurface : AppColors.slate50;
+    final Color borderColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkOutline : AppColors.slate200);
+    final Color textColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkTextPrimary : AppColors.slate800);
+    final Color iconColor = selected
+        ? (isDark ? AppColors.primaryBright : AppColors.primary)
+        : (isDark ? AppColors.darkOutline : AppColors.slate300);
+
     return Material(
-      color: selected
-          ? AppColors.primaryLight.withValues(alpha: 0.65)
-          : AppColors.slate50,
+      color: selected ? selectedBg : unselectedBg,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -305,7 +331,7 @@ class _WardOptionTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.slate200,
+              color: borderColor,
               width: selected ? 1.4 : 1,
             ),
           ),
@@ -319,7 +345,7 @@ class _WardOptionTile extends StatelessWidget {
                   style: AppTextStyles.variant(
                     AppTextStyles.bodyMedium,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.slate800,
+                    color: textColor,
                   ),
                 ),
               ),
@@ -327,7 +353,7 @@ class _WardOptionTile extends StatelessWidget {
               Icon(
                 selected ? Icons.check_circle_rounded : Icons.circle_outlined,
                 size: 20,
-                color: selected ? AppColors.primary : AppColors.slate300,
+                color: iconColor,
               ),
             ],
           ),
