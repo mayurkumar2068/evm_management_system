@@ -1,7 +1,7 @@
-import 'package:evm_management_system/core/webview/config/webview_config.dart';
-import 'package:evm_management_system/core/webview/url/webview_url_utils.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/features/web_portal/presentation/screens/web_view_screen.dart';
+import 'package:MPSECNET/core/webview/config/webview_config.dart';
+import 'package:MPSECNET/core/webview/url/webview_url_utils.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/features/web_portal/presentation/screens/web_view_screen.dart';
 
 abstract final class DashboardWebViewLauncher {
   static const Map<String, String> _externalPortalHeaders = <String, String>{

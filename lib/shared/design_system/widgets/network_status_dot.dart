@@ -1,6 +1,6 @@
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/network/network_quality_service.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/network/network_quality_service.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

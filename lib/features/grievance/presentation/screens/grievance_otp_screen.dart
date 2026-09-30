@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/utils/string_extensions.dart';
-import 'package:evm_management_system/features/grievance/di/grievance_module.dart';
-import 'package:evm_management_system/features/grievance/presentation/controllers/grievance_controller.dart';
-import 'package:evm_management_system/features/grievance/presentation/screens/grievance_form_screen.dart';
-import 'package:evm_management_system/features/service_auth/presentation/widgets/service_auth_chrome.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/utils/string_extensions.dart';
+import 'package:MPSECNET/features/grievance/di/grievance_module.dart';
+import 'package:MPSECNET/features/grievance/presentation/controllers/grievance_controller.dart';
+import 'package:MPSECNET/features/grievance/presentation/screens/grievance_form_screen.dart';
+import 'package:MPSECNET/features/service_auth/presentation/widgets/service_auth_chrome.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;

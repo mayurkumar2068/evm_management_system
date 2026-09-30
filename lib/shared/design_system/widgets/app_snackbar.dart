@@ -1,6 +1,6 @@
-import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_icons.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_spacing.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_colors.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_icons.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 enum AppSnackbarType { success, error, info, warning }

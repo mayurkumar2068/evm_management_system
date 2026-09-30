@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/turnout_count_validator.dart';
 
 String formatTurnoutValidationMessage(TurnoutCountValidationResult result) {
   final String? key = result.messageKey;

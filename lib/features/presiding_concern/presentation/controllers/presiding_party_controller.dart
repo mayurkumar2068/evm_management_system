@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
-import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/po_api_exception.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/po_party_remote_datasource.dart';
+import 'package:MPSECNET/features/presiding_concern/data/models/po_party_details.dart';
 import 'package:get/get.dart';
 
 final class PresidingPartyController extends GetxController {

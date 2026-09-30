@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/features/presiding_concern/data/models/po_officer_details.dart';
 
 final class PoOfficerDetailsStore {
   const PoOfficerDetailsStore(this._secureStorage);

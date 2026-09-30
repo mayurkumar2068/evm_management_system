@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:evm_management_system/core/time/app_time_zone.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/time/app_time_zone.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;

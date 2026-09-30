@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/curl_formatter.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/curl_formatter.dart';
 
 final class PoApiLoggingInterceptor extends Interceptor {
   PoApiLoggingInterceptor({this.maxBodyChars = 8000});

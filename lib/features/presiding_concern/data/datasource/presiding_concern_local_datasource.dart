@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/database/local_database.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
 
 final class PresidingConcernLocalDatasource {
   const PresidingConcernLocalDatasource(this._db);

@@ -1,5 +1,5 @@
-import 'package:evm_management_system/core/error/failure.dart';
-import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
+import 'package:MPSECNET/core/error/failure.dart';
+import 'package:MPSECNET/features/auth/domain/entities/auth_user.dart';
 
 enum AuthStatus { unknown, authenticating, authenticated, unauthenticated }
 

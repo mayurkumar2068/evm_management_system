@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/utils/app_locale_holder.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

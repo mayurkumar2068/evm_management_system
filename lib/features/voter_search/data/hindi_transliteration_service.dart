@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 
 class HindiTransliterationService {
   HindiTransliterationService({Dio? dio})

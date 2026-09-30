@@ -1,11 +1,11 @@
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/config/flavor.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/features/auth/data/datasource/auth_local_datasource.dart';
-import 'package:evm_management_system/features/auth/data/models/user_model.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
-import 'package:evm_management_system/features/presiding_concern/data/models/presiding_election_context_factory.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/config/flavor.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/features/auth/data/datasource/auth_local_datasource.dart';
+import 'package:MPSECNET/features/auth/data/models/user_model.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
+import 'package:MPSECNET/features/presiding_concern/data/models/presiding_election_context_factory.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
 
 final class PresidingElectionContextBootstrap {
   const PresidingElectionContextBootstrap({

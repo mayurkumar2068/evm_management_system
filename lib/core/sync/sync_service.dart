@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/network/api_client.dart';
-import 'package:evm_management_system/core/sync/sync_models.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
+import 'package:MPSECNET/core/network/api_client.dart';
+import 'package:MPSECNET/core/sync/sync_models.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
 
 sealed class SyncOutcome {
   const SyncOutcome();

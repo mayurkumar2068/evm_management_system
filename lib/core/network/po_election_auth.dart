@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/features/service_auth/presentation/controllers/service_auth_controller.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/features/service_auth/presentation/controllers/service_auth_controller.dart';
 import 'package:get/get.dart';
 
 abstract final class PoElectionAuth {

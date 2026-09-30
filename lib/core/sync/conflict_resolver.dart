@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/sync/sync_models.dart';
+import 'package:MPSECNET/core/sync/sync_models.dart';
 
 class ConflictResolver {
   const ConflictResolver({this.strategy = ConflictStrategy.lastWriteWins});

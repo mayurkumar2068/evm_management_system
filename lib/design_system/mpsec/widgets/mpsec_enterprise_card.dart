@@ -1,5 +1,5 @@
-import 'package:evm_management_system/design_system/mpsec/tokens/mpsec_tokens.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/design_system/mpsec/tokens/mpsec_tokens.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 class MpSecEnterpriseCard extends StatelessWidget {

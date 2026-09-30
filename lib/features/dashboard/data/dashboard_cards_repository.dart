@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/core/network/dio_factory.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
-import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/core/network/dio_factory.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
+import 'package:MPSECNET/features/dashboard/data/models/dashboard_card_model.dart';
 
 class DashboardCardsRepository {
   DashboardCardsRepository({required EnvironmentConfig config, Dio? dio})

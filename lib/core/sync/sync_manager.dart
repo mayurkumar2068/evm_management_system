@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/connectivity_service.dart';
-import 'package:evm_management_system/core/sync/conflict_resolver.dart';
-import 'package:evm_management_system/core/sync/retry_policy.dart';
-import 'package:evm_management_system/core/sync/sync_models.dart';
-import 'package:evm_management_system/core/sync/sync_queue.dart';
-import 'package:evm_management_system/core/sync/sync_service.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/connectivity_service.dart';
+import 'package:MPSECNET/core/sync/conflict_resolver.dart';
+import 'package:MPSECNET/core/sync/retry_policy.dart';
+import 'package:MPSECNET/core/sync/sync_models.dart';
+import 'package:MPSECNET/core/sync/sync_queue.dart';
+import 'package:MPSECNET/core/sync/sync_service.dart';
 
 class SyncManager {
   SyncManager({

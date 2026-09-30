@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_ids.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_ids.dart';
 
 final class TurnoutRecord {
   const TurnoutRecord({

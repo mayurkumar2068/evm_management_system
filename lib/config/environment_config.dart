@@ -1,7 +1,7 @@
-import 'package:evm_management_system/config/flavor.dart';
-import 'package:evm_management_system/core/legal/privacy_urls.dart';
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
+import 'package:MPSECNET/config/flavor.dart';
+import 'package:MPSECNET/core/legal/privacy_urls.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
 
 class EnvironmentConfig {
   const EnvironmentConfig({

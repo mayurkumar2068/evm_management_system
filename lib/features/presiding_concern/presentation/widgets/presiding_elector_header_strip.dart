@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_colors.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_colors.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

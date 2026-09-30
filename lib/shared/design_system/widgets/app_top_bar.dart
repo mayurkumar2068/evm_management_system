@@ -1,5 +1,5 @@
-import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
-import 'package:evm_management_system/shared/design_system/widgets/app_gradient_header.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_text_styles.dart';
+import 'package:MPSECNET/shared/design_system/widgets/app_gradient_header.dart';
 import 'package:flutter/material.dart';
 
 class AppTopBar extends StatelessWidget {

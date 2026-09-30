@@ -1,7 +1,7 @@
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_icons.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/features/auth/domain/entities/user_role.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_icons.dart';
 import 'package:flutter/widgets.dart';
 
 class AppDestination {

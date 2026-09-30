@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 
 extension DateTimeExtensions on DateTime {
   String get relativeTime {

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/error/app_exception.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/error/app_exception.dart';
 import 'package:path_provider/path_provider.dart';
 
 class JsonLocalDatabase implements LocalDatabase {

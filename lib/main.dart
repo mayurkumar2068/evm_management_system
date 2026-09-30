@@ -1,7 +1,7 @@
-import 'package:evm_management_system/bootstrap/bootstrap.dart';
-import 'package:evm_management_system/config/app_config.dart';
-import 'package:evm_management_system/config/app_constants.dart';
-import 'package:evm_management_system/config/flavor.dart';
+import 'package:MPSECNET/bootstrap/bootstrap.dart';
+import 'package:MPSECNET/config/app_config.dart';
+import 'package:MPSECNET/config/app_constants.dart';
+import 'package:MPSECNET/config/flavor.dart';
 
 Future<void> main() async {
   final Flavor flavor = AppConfig.environment;

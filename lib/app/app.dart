@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/routes/app_pages.dart';
-import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/providers/session_event_bus.dart';
-import 'package:evm_management_system/core/security/screen_security_service.dart';
-import 'package:evm_management_system/core/webview/service/webview_warmer.dart';
-import 'package:evm_management_system/core/security/session_timeout_manager.dart';
-import 'package:evm_management_system/core/utils/app_locale_holder.dart';
-import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/app/routes/app_pages.dart';
+import 'package:MPSECNET/app/routes/auth_navigation_guard.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/providers/session_event_bus.dart';
+import 'package:MPSECNET/core/security/screen_security_service.dart';
+import 'package:MPSECNET/core/webview/service/webview_warmer.dart';
+import 'package:MPSECNET/core/security/session_timeout_manager.dart';
+import 'package:MPSECNET/core/utils/app_locale_holder.dart';
+import 'package:MPSECNET/features/auth/presentation/states/auth_state.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

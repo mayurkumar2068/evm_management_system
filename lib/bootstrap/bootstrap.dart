@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/config/flavor.dart';
-import 'package:evm_management_system/core/cache/app_startup_cache.dart';
-import 'package:evm_management_system/core/database/json_local_database.dart';
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/app/app.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/media/configure_app_image_picker.dart';
-import 'package:evm_management_system/core/settings/settings_service.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/core/time/app_time_zone.dart';
-import 'package:evm_management_system/core/utils/app_locale_holder.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/config/flavor.dart';
+import 'package:MPSECNET/core/cache/app_startup_cache.dart';
+import 'package:MPSECNET/core/database/json_local_database.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/app/app.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/media/configure_app_image_picker.dart';
+import 'package:MPSECNET/core/settings/settings_service.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/core/time/app_time_zone.dart';
+import 'package:MPSECNET/core/utils/app_locale_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/media/app_image_picker_service.dart';
-import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/security/sensitive_clipboard.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/media/app_image_picker_service.dart';
+import 'package:MPSECNET/core/navigation/external_url_launcher.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/security/sensitive_clipboard.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:image_picker/image_picker.dart';

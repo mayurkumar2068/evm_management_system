@@ -1,11 +1,11 @@
 import 'dart:io' show Platform;
 
-import 'package:evm_management_system/config/app_config.dart';
-import 'package:evm_management_system/core/app_build_info.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/core/time/app_time_zone.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/config/app_config.dart';
+import 'package:MPSECNET/core/app_build_info.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/core/time/app_time_zone.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/web_session_context.dart';

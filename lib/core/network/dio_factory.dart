@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/network/interceptors/client_metadata_interceptor.dart';
-import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/core/network/interceptors/client_metadata_interceptor.dart';
+import 'package:MPSECNET/core/network/interceptors/logging_interceptor.dart';
 
 abstract final class DioFactory {
   static Dio create({

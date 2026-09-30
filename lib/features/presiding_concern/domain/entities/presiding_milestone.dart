@@ -1,5 +1,5 @@
-import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_ids.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/constants/presiding_area_type.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_ids.dart';
 
 enum PresidingMilestoneState { pending, completed }
 

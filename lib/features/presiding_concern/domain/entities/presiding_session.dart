@@ -1,7 +1,7 @@
-import 'package:evm_management_system/core/time/app_time_zone.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_ids.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_milestone.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/turnout_record.dart';
+import 'package:MPSECNET/core/time/app_time_zone.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_ids.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_milestone.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/turnout_record.dart';
 
 final class PresidingSession {
   const PresidingSession({

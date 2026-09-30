@@ -1,4 +1,4 @@
-import 'package:evm_management_system/shared/design_system/responsive/app_responsive.dart';
+import 'package:MPSECNET/shared/design_system/responsive/app_responsive.dart';
 import 'package:flutter/widgets.dart';
 
 abstract final class AppSpacing {

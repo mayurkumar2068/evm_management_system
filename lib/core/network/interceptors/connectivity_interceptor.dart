@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/network/connectivity_service.dart';
+import 'package:MPSECNET/core/network/connectivity_service.dart';
 
 class ConnectivityInterceptor extends Interceptor {
   ConnectivityInterceptor(this._connectivity);

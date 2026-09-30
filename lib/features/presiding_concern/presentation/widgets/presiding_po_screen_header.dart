@@ -1,6 +1,6 @@
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
-import 'package:evm_management_system/shared/design_system/widgets/app_gradient_header.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_elector_header_strip.dart';
+import 'package:MPSECNET/shared/design_system/widgets/app_gradient_header.dart';
 import 'package:flutter/material.dart';
 
 class PresidingPoScreenHeader extends StatelessWidget {

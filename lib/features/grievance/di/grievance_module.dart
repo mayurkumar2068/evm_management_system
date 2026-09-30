@@ -1,7 +1,7 @@
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/network/po_election_api_client.dart';
-import 'package:evm_management_system/features/grievance/data/datasources/grievance_remote_datasource.dart';
-import 'package:evm_management_system/features/grievance/presentation/controllers/grievance_controller.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/network/po_election_api_client.dart';
+import 'package:MPSECNET/features/grievance/data/datasources/grievance_remote_datasource.dart';
+import 'package:MPSECNET/features/grievance/presentation/controllers/grievance_controller.dart';
 import 'package:get/get.dart';
 
 abstract final class GrievanceModule {

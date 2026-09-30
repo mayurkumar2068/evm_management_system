@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/api_log_formatter.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/api_log_formatter.dart';
 
 class LoggingInterceptor extends Interceptor {
   LoggingInterceptor({required this.enabled});

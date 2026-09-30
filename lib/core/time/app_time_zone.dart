@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;

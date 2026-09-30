@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
+import 'package:MPSECNET/features/auth/domain/entities/user_role.dart';
 
 class AuthUser {
   const AuthUser({

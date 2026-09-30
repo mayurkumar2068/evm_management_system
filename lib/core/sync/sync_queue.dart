@@ -1,5 +1,5 @@
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/sync/sync_models.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/sync/sync_models.dart';
 
 class SyncQueue {
   SyncQueue(this._db);

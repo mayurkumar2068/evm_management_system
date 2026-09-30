@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/navigation/external_url_launcher.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart' hide Trans;

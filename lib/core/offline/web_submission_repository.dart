@@ -1,5 +1,5 @@
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/offline/web_form_submission.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/offline/web_form_submission.dart';
 
 class WebSubmissionRepository {
   WebSubmissionRepository(this._db);

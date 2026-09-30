@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:evm_management_system/core/cache/app_startup_cache.dart';
-import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
-import 'package:evm_management_system/features/voter_search/presentation/widgets/voter_slip_view.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/cache/app_startup_cache.dart';
+import 'package:MPSECNET/features/voter_search/data/models/voter_search_models.dart';
+import 'package:MPSECNET/features/voter_search/presentation/widgets/voter_slip_view.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

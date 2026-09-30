@@ -1,6 +1,6 @@
-import 'package:evm_management_system/bootstrap/bootstrap.dart';
-import 'package:evm_management_system/config/env/prod_constants.dart';
-import 'package:evm_management_system/config/flavor.dart';
+import 'package:MPSECNET/bootstrap/bootstrap.dart';
+import 'package:MPSECNET/config/env/prod_constants.dart';
+import 'package:MPSECNET/config/flavor.dart';
 
 
 Future<void> main() async {

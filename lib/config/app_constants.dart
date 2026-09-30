@@ -1,7 +1,7 @@
-import 'package:evm_management_system/config/env/dev_constants.dart';
-import 'package:evm_management_system/config/env/prod_constants.dart';
-import 'package:evm_management_system/config/env/uat_constants.dart';
-import 'package:evm_management_system/config/flavor.dart';
+import 'package:MPSECNET/config/env/dev_constants.dart';
+import 'package:MPSECNET/config/env/prod_constants.dart';
+import 'package:MPSECNET/config/env/uat_constants.dart';
+import 'package:MPSECNET/config/flavor.dart';
 
 /// Convenience aggregator over the three per-flavor constant files.
 ///

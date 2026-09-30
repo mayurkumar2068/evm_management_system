@@ -1,5 +1,5 @@
-import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

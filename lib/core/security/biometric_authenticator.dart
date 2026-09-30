@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 import 'package:local_auth/local_auth.dart';
 
 class BiometricAuthenticator {

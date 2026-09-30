@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/time/app_time_zone.dart';
-import 'package:evm_management_system/features/presiding_concern/data/config/turnout_slot_registry.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/time/app_time_zone.dart';
+import 'package:MPSECNET/features/presiding_concern/data/config/turnout_slot_registry.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/constants/presiding_area_type.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 class PresidingTurnoutReportView extends StatelessWidget {

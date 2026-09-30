@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/navigation/external_navigation_urls.dart';
+import 'package:MPSECNET/core/navigation/external_navigation_urls.dart';
 
 enum WebNavDecision { allow, external, block }
 

@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 class PresidingGenderStatColumn extends StatelessWidget {

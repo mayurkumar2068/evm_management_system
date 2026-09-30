@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/auth/data/models/user_model.dart';
+import 'package:MPSECNET/features/auth/data/models/user_model.dart';
 
 class AuthResponseModel {
   const AuthResponseModel({

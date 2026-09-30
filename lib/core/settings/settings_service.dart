@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 
 final class AppSettingsService {

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:evm_management_system/core/database/local_database.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/shared/models/activity_event.dart';
+import 'package:MPSECNET/core/database/local_database.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/shared/models/activity_event.dart';
 import 'package:get/get.dart' hide Trans;
 
 class ActivityLogController extends GetxController {

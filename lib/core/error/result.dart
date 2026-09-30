@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/error/failure.dart';
+import 'package:MPSECNET/core/error/failure.dart';
 
 sealed class Result<T> {
   const Result();

@@ -1,7 +1,7 @@
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/features/presiding_concern/data/constants/po_election_api_fields.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/constants/presiding_area_type.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
 
 final class TurnoutStatusFields {
   const TurnoutStatusFields({

@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/core/network/api_envelope.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/po_election_base_datasource.dart';
-import 'package:evm_management_system/features/presiding_concern/data/models/po_officer_details.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/core/network/api_envelope.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/po_api_exception.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/po_election_base_datasource.dart';
+import 'package:MPSECNET/features/presiding_concern/data/models/po_officer_details.dart';
 
 class PoOfficerDetailsDatasource extends PoElectionBaseDatasource {
   PoOfficerDetailsDatasource(super.config);

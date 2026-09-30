@@ -1,4 +1,4 @@
-import 'package:evm_management_system/config/flavor.dart';
+import 'package:MPSECNET/config/flavor.dart';
 import 'package:flutter/services.dart' show appFlavor;
 
 class AppConfig {

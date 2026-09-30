@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/features/dashboard/presentation/controllers/dashboard_controller.dart';
-import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
-import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_widgets.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'package:MPSECNET/features/dashboard/presentation/models/dashboard_models.dart';
+import 'package:MPSECNET/features/dashboard/presentation/widgets/dashboard_widgets.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

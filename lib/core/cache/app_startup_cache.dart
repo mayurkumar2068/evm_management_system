@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';

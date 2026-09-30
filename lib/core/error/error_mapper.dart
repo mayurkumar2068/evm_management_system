@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/error/app_exception.dart';
-import 'package:evm_management_system/core/error/failure.dart';
+import 'package:MPSECNET/core/error/app_exception.dart';
+import 'package:MPSECNET/core/error/failure.dart';
 
 abstract final class ErrorMapper {
   static Failure map(Object error, [StackTrace? stackTrace]) {

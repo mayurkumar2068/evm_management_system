@@ -1,14 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/error/failure.dart';
-import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
-import 'package:evm_management_system/features/offline/presentation/widgets/offline_status_card.dart';
-import 'package:evm_management_system/features/offline/presentation/widgets/offline_sync_progress_card.dart';
-import 'package:evm_management_system/features/offline/presentation/widgets/offline_tips_card.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/error/failure.dart';
+import 'package:MPSECNET/design_system/mpsec/mpsec_design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:MPSECNET/features/offline/presentation/widgets/offline_status_card.dart';
+import 'package:MPSECNET/features/offline/presentation/widgets/offline_sync_progress_card.dart';
+import 'package:MPSECNET/features/offline/presentation/widgets/offline_tips_card.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

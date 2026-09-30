@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:evm_management_system/core/network/connectivity_service.dart';
+import 'package:MPSECNET/core/network/connectivity_service.dart';
 import 'package:get/get.dart' hide Trans;
 
 enum NetworkQuality { offline, poor, good }

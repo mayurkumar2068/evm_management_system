@@ -1,6 +1,6 @@
-import 'package:evm_management_system/core/error/result.dart';
-import 'package:evm_management_system/core/usecase/usecase.dart';
-import 'package:evm_management_system/features/auth/domain/repository/auth_repository.dart';
+import 'package:MPSECNET/core/error/result.dart';
+import 'package:MPSECNET/core/usecase/usecase.dart';
+import 'package:MPSECNET/features/auth/domain/repository/auth_repository.dart';
 
 class LogoutUseCase implements UseCase<void, NoParams> {
   const LogoutUseCase(this._repository);

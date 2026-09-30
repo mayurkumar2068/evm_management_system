@@ -1,9 +1,9 @@
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
-import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/design_system/mpsec/mpsec_design_system.dart';
+import 'package:MPSECNET/features/dashboard/data/models/dashboard_card_model.dart';
+import 'package:MPSECNET/features/dashboard/presentation/models/dashboard_models.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 abstract final class DashboardCardMapper {

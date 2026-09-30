@@ -1,18 +1,18 @@
 import 'dart:async';
 
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/network/connectivity_service.dart';
-import 'package:evm_management_system/core/network/po_election_api_client.dart';
-import 'package:evm_management_system/core/network/po_election_auth.dart';
-import 'package:evm_management_system/features/auth/di/auth_module.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_concern_local_datasource.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_concern_remote_datasource.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_bootstrap.dart';
-import 'package:evm_management_system/features/presiding_concern/data/repository_impl/presiding_concern_repository_impl.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/repository/presiding_concern_repository.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/network/connectivity_service.dart';
+import 'package:MPSECNET/core/network/po_election_api_client.dart';
+import 'package:MPSECNET/core/network/po_election_auth.dart';
+import 'package:MPSECNET/features/auth/di/auth_module.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_concern_local_datasource.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_concern_remote_datasource.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_election_context_bootstrap.dart';
+import 'package:MPSECNET/features/presiding_concern/data/repository_impl/presiding_concern_repository_impl.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/repository/presiding_concern_repository.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' hide Trans;
 

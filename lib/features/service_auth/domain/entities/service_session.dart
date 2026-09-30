@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/utils/json_map.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
 
 enum ServiceLoginKind { survey, presiding }
 

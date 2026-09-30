@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:evm_management_system/core/security/token_vault.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/features/auth/data/models/user_model.dart';
+import 'package:MPSECNET/core/security/token_vault.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/features/auth/data/models/user_model.dart';
 
 abstract interface class AuthLocalDataSource {
   Future<void> saveSession({

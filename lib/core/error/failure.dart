@@ -1,4 +1,4 @@
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 
 sealed class Failure implements Exception {
   const Failure({required this.localizationKey, this.debugMessage});

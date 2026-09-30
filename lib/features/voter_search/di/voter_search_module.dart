@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/network/dio_factory.dart';
-import 'package:evm_management_system/features/voter_search/data/datasources/voter_search_remote_datasource.dart';
-import 'package:evm_management_system/features/voter_search/data/repositories/voter_search_repository.dart';
-import 'package:evm_management_system/features/voter_search/data/voter_search_crypto.dart';
-import 'package:evm_management_system/features/voter_search/presentation/controllers/voter_search_controller.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/network/dio_factory.dart';
+import 'package:MPSECNET/features/voter_search/data/datasources/voter_search_remote_datasource.dart';
+import 'package:MPSECNET/features/voter_search/data/repositories/voter_search_repository.dart';
+import 'package:MPSECNET/features/voter_search/data/voter_search_crypto.dart';
+import 'package:MPSECNET/features/voter_search/presentation/controllers/voter_search_controller.dart';
 import 'package:get/get.dart';
 
 abstract final class VoterSearchModule {

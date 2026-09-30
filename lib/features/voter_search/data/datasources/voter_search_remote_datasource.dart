@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
-import 'package:evm_management_system/features/voter_search/data/voter_search_crypto.dart';
-import 'package:evm_management_system/features/voter_search/data/voter_search_endpoints.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/features/voter_search/data/models/voter_search_models.dart';
+import 'package:MPSECNET/features/voter_search/data/voter_search_crypto.dart';
+import 'package:MPSECNET/features/voter_search/data/voter_search_endpoints.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 
 class VoterSearchRemoteDatasource {

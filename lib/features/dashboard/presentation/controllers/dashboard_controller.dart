@@ -1,22 +1,22 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/feature_flags/app_feature_flags_controller.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
-import 'package:evm_management_system/core/offline/web_form_submission.dart';
-import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
-import 'package:evm_management_system/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:evm_management_system/features/dashboard/data/dashboard_card_mapper.dart';
-import 'package:evm_management_system/features/dashboard/data/dashboard_cards_repository.dart';
-import 'package:evm_management_system/features/dashboard/data/models/dashboard_card_model.dart';
-import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/shared/models/activity_event.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/feature_flags/app_feature_flags_controller.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
+import 'package:MPSECNET/core/offline/web_form_submission.dart';
+import 'package:MPSECNET/design_system/mpsec/mpsec_design_system.dart';
+import 'package:MPSECNET/features/auth/domain/entities/auth_user.dart';
+import 'package:MPSECNET/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:MPSECNET/features/dashboard/data/dashboard_card_mapper.dart';
+import 'package:MPSECNET/features/dashboard/data/dashboard_cards_repository.dart';
+import 'package:MPSECNET/features/dashboard/data/models/dashboard_card_model.dart';
+import 'package:MPSECNET/features/dashboard/presentation/models/dashboard_models.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
+import 'package:MPSECNET/shared/models/activity_event.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

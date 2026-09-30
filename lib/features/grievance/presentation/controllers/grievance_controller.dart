@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/location/location_service.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/media/app_image_picker_service.dart';
-import 'package:evm_management_system/features/grievance/data/datasources/grievance_remote_datasource.dart';
-import 'package:evm_management_system/features/grievance/data/models/grievance_models.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/core/location/location_service.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/media/app_image_picker_service.dart';
+import 'package:MPSECNET/features/grievance/data/datasources/grievance_remote_datasource.dart';
+import 'package:MPSECNET/features/grievance/data/models/grievance_models.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;

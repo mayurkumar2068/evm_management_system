@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/config/environment_config.dart';
+import 'package:MPSECNET/config/environment_config.dart';
 
 class ApiClient {
   ApiClient({required this.dio, required EnvironmentConfig config}) {

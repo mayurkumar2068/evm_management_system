@@ -1,14 +1,14 @@
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/security/biometric_authenticator.dart';
-import 'package:evm_management_system/features/auth/data/datasource/auth_local_datasource.dart';
-import 'package:evm_management_system/features/auth/data/datasource/auth_remote_datasource.dart';
-import 'package:evm_management_system/features/auth/data/repository_impl/auth_repository_impl.dart';
-import 'package:evm_management_system/features/auth/domain/repository/auth_repository.dart';
-import 'package:evm_management_system/features/auth/domain/usecases/biometric_login_usecase.dart';
-import 'package:evm_management_system/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:evm_management_system/features/auth/domain/usecases/login_usecase.dart';
-import 'package:evm_management_system/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/security/biometric_authenticator.dart';
+import 'package:MPSECNET/features/auth/data/datasource/auth_local_datasource.dart';
+import 'package:MPSECNET/features/auth/data/datasource/auth_remote_datasource.dart';
+import 'package:MPSECNET/features/auth/data/repository_impl/auth_repository_impl.dart';
+import 'package:MPSECNET/features/auth/domain/repository/auth_repository.dart';
+import 'package:MPSECNET/features/auth/domain/usecases/biometric_login_usecase.dart';
+import 'package:MPSECNET/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:MPSECNET/features/auth/domain/usecases/login_usecase.dart';
+import 'package:MPSECNET/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/presiding_election_context_store.dart';
 import 'package:get/get.dart';
 
 abstract final class AuthModule {

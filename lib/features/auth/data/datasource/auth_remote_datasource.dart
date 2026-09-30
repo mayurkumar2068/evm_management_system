@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/network/api_client.dart';
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/features/auth/data/models/auth_response_model.dart';
-import 'package:evm_management_system/features/auth/data/models/user_model.dart';
-import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
-import 'package:evm_management_system/core/notifications/notification_service.dart';
+import 'package:MPSECNET/core/network/api_client.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/features/auth/data/models/auth_response_model.dart';
+import 'package:MPSECNET/features/auth/data/models/user_model.dart';
+import 'package:MPSECNET/features/auth/domain/entities/login_credentials.dart';
+import 'package:MPSECNET/core/notifications/notification_service.dart';
 
 abstract interface class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginCredentials credentials);

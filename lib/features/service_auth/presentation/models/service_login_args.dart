@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
 
 class ServiceLoginArgs {
   const ServiceLoginArgs({

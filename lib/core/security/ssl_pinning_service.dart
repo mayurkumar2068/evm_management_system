@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/io.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 
 class SslPinningService {
   const SslPinningService(this._config);

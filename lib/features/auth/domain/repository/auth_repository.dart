@@ -1,6 +1,6 @@
-import 'package:evm_management_system/core/error/result.dart';
-import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
-import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
+import 'package:MPSECNET/core/error/result.dart';
+import 'package:MPSECNET/features/auth/domain/entities/auth_user.dart';
+import 'package:MPSECNET/features/auth/domain/entities/login_credentials.dart';
 
 abstract interface class AuthRepository {
   Future<Result<AuthUser>> login(LoginCredentials credentials);

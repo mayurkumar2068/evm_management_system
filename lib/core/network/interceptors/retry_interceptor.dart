@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
 
 class RetryInterceptor extends Interceptor {
   RetryInterceptor({

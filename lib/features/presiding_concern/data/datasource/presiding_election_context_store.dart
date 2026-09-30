@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
 
 final class PresidingElectionContextStore {
   const PresidingElectionContextStore(this._secureStorage);

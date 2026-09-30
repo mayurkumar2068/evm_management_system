@@ -1,16 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/app_build_info.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/legal/privacy_policy.dart';
-import 'package:evm_management_system/core/settings/app_preferences_actions.dart';
-import 'package:evm_management_system/core/utils/string_extensions.dart';
-import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/features/profile/presentation/widgets/profile_login_required_sheet.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/shared/widgets/language_picker_sheet.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/core/app_build_info.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/legal/privacy_policy.dart';
+import 'package:MPSECNET/core/settings/app_preferences_actions.dart';
+import 'package:MPSECNET/core/utils/string_extensions.dart';
+import 'package:MPSECNET/features/auth/domain/entities/auth_user.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/features/profile/presentation/widgets/profile_login_required_sheet.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
+import 'package:MPSECNET/shared/widgets/language_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

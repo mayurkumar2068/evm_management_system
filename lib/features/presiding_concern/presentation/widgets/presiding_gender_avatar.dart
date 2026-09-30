@@ -1,5 +1,5 @@
-import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 
 enum PresidingGenderType { male, female, other }

@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/features/presiding_concern/data/datasource/po_api_exception.dart';
-import 'package:evm_management_system/features/presiding_concern/data/models/po_party_details.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
-import 'package:evm_management_system/features/service_auth/domain/entities/service_session.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/features/presiding_concern/data/datasource/po_api_exception.dart';
+import 'package:MPSECNET/features/presiding_concern/data/models/po_party_details.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/controllers/presiding_party_controller.dart';
+import 'package:MPSECNET/features/service_auth/domain/entities/service_session.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;

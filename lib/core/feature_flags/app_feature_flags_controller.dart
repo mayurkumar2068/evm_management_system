@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/utils/json_map.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/utils/json_map.dart';
 import 'package:get/get.dart' hide Response, FormData, MultipartFile;
 
 class AppFeatureFlagsController extends GetxController {

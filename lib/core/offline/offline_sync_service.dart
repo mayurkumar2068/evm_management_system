@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/app_build_info.dart';
-import 'package:evm_management_system/core/logging/app_logger.dart';
-import 'package:evm_management_system/core/network/connectivity_service.dart';
-import 'package:evm_management_system/core/network/po_election_auth.dart';
-import 'package:evm_management_system/core/offline/survey_api_upload_service.dart';
-import 'package:evm_management_system/core/offline/web_form_submission.dart';
-import 'package:evm_management_system/core/offline/web_submission_repository.dart';
-import 'package:evm_management_system/core/sync/retry_policy.dart';
+import 'package:MPSECNET/core/app_build_info.dart';
+import 'package:MPSECNET/core/logging/app_logger.dart';
+import 'package:MPSECNET/core/network/connectivity_service.dart';
+import 'package:MPSECNET/core/network/po_election_auth.dart';
+import 'package:MPSECNET/core/offline/survey_api_upload_service.dart';
+import 'package:MPSECNET/core/offline/web_form_submission.dart';
+import 'package:MPSECNET/core/offline/web_submission_repository.dart';
+import 'package:MPSECNET/core/sync/retry_policy.dart';
 import 'package:uuid/uuid.dart';
 
 class OfflineSyncService {

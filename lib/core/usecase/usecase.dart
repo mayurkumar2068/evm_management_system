@@ -1,4 +1,4 @@
-import 'package:evm_management_system/core/error/result.dart';
+import 'package:MPSECNET/core/error/result.dart';
 
 class NoParams {
   const NoParams();

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:evm_management_system/core/storage/secure_storage_service.dart';
+import 'package:MPSECNET/core/storage/secure_storage_service.dart';
 
 class AuthTokens {
   const AuthTokens({

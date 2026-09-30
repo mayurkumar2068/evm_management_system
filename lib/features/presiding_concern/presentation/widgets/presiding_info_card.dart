@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
 import 'package:flutter/material.dart';
 
 class PresidingInfoCard extends StatelessWidget {

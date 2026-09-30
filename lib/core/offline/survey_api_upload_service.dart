@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/network/interceptors/client_metadata_interceptor.dart';
-import 'package:evm_management_system/core/network/interceptors/logging_interceptor.dart';
-import 'package:evm_management_system/core/offline/web_form_submission.dart';
+import 'package:MPSECNET/core/network/interceptors/client_metadata_interceptor.dart';
+import 'package:MPSECNET/core/network/interceptors/logging_interceptor.dart';
+import 'package:MPSECNET/core/offline/web_form_submission.dart';
 
 class SurveyApiUploadService {
   SurveyApiUploadService({

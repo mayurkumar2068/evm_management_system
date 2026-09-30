@@ -1,14 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_po_screen_header.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_po_screen_header.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_session_scaffold.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_turnout_card.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 

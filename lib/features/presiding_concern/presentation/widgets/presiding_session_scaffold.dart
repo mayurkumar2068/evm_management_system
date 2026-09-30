@@ -1,8 +1,8 @@
-import 'package:evm_management_system/core/error/failure.dart';
-import 'package:evm_management_system/design_system/mpsec/mpsec_design_system.dart';
-import 'package:evm_management_system/features/presiding_concern/di/presiding_concern_module.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/core/error/failure.dart';
+import 'package:MPSECNET/design_system/mpsec/mpsec_design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/di/presiding_concern_module.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 class PresidingSessionScaffold extends StatefulWidget {

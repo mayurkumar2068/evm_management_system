@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/app_build_info.dart';
-import 'package:evm_management_system/core/network/curl_formatter.dart';
+import 'package:MPSECNET/core/app_build_info.dart';
+import 'package:MPSECNET/core/network/curl_formatter.dart';
 
 final class ClientMetadataInterceptor extends Interceptor {
   const ClientMetadataInterceptor({

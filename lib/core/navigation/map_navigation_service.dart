@@ -1,8 +1,8 @@
 import 'dart:io' show Platform;
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/core/navigation/external_url_launcher.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/core/navigation/external_url_launcher.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 
 class MapNavigationService {
   MapNavigationService({ExternalUrlLauncher? launcher})

@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/app/routes/auth_navigation_guard.dart';
-import 'package:evm_management_system/config/app_config.dart';
-import 'package:evm_management_system/config/flavor.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/usecase/usecase.dart';
-import 'package:evm_management_system/core/webview/service/webview_cookie_service.dart';
-import 'package:evm_management_system/features/auth/di/auth_module.dart';
-import 'package:evm_management_system/features/auth/domain/entities/auth_user.dart';
-import 'package:evm_management_system/features/auth/domain/entities/login_credentials.dart';
-import 'package:evm_management_system/features/auth/domain/entities/user_role.dart';
-import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/app/routes/auth_navigation_guard.dart';
+import 'package:MPSECNET/config/app_config.dart';
+import 'package:MPSECNET/config/flavor.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/usecase/usecase.dart';
+import 'package:MPSECNET/core/webview/service/webview_cookie_service.dart';
+import 'package:MPSECNET/features/auth/di/auth_module.dart';
+import 'package:MPSECNET/features/auth/domain/entities/auth_user.dart';
+import 'package:MPSECNET/features/auth/domain/entities/login_credentials.dart';
+import 'package:MPSECNET/features/auth/domain/entities/user_role.dart';
+import 'package:MPSECNET/features/auth/presentation/states/auth_state.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 import 'package:get/get.dart' hide Trans;
 
 class AuthController extends GetxController {

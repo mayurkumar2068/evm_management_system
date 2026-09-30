@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:evm_management_system/features/voter_search/data/models/voter_search_models.dart';
-import 'package:evm_management_system/shared/design_system/tokens/app_text_styles.dart';
+import 'package:MPSECNET/features/voter_search/data/models/voter_search_models.dart';
+import 'package:MPSECNET/shared/design_system/tokens/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class VoterSlipView extends StatelessWidget {

@@ -1,6 +1,6 @@
-import 'package:evm_management_system/config/app_config.dart';
-import 'package:evm_management_system/config/environment_config.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
+import 'package:MPSECNET/config/app_config.dart';
+import 'package:MPSECNET/config/environment_config.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
 import 'package:get/get.dart';
 
 abstract final class AppBuildInfo {

@@ -1,8 +1,8 @@
-import 'package:evm_management_system/core/network/api_endpoints.dart';
-import 'package:evm_management_system/features/presiding_concern/data/config/turnout_slot_registry.dart';
-import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/core/network/api_endpoints.dart';
+import 'package:MPSECNET/features/presiding_concern/data/config/turnout_slot_registry.dart';
+import 'package:MPSECNET/features/presiding_concern/data/constants/po_election_api_fields.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
 
 abstract final class PoElectionApiMapper {
   static Map<String, dynamic>? milestoneBody({

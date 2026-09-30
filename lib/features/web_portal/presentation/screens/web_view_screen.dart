@@ -1,6 +1,6 @@
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/core/webview/config/webview_config.dart';
-import 'package:evm_management_system/core/webview/widget/app_webview.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/core/webview/config/webview_config.dart';
+import 'package:MPSECNET/core/webview/widget/app_webview.dart';
 import 'package:flutter/material.dart';
 
 class WebViewArgs {

@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
 
 abstract final class TurnoutLiveSync {
   static const Set<String> _mirrorSlotIds = <String>{

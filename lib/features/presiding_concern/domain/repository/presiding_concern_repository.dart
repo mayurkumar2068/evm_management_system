@@ -1,6 +1,6 @@
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_election_context.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_action_outcome.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_election_context.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
 
 abstract interface class PresidingConcernRepository {
   Future<PresidingSession> loadSession();

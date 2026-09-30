@@ -1,6 +1,6 @@
-import 'package:evm_management_system/features/presiding_concern/data/config/turnout_slot_registry.dart';
-import 'package:evm_management_system/features/presiding_concern/data/constants/po_election_api_fields.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/data/config/turnout_slot_registry.dart';
+import 'package:MPSECNET/features/presiding_concern/data/constants/po_election_api_fields.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
 
 abstract final class PoElectionStatusMapper {
   static Map<String, TurnoutRecord> turnoutRecordsFromStatus(

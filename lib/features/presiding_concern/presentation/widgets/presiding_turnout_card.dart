@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/entities/presiding_entities.dart';
-import 'package:evm_management_system/features/presiding_concern/domain/turnout_count_validator.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_collapsed_summary.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_count_box.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_gender_stat_column.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_save_status_badge.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_step_button.dart';
-import 'package:evm_management_system/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/entities/presiding_entities.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/turnout_count_validator.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/theme/presiding_ui_tokens.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/utils/turnout_validation_message.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_collapsed_summary.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_count_box.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_gender_avatar.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_gender_stat_column.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_save_status_badge.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_step_button.dart';
+import 'package:MPSECNET/features/presiding_concern/presentation/widgets/presiding_theme_button.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

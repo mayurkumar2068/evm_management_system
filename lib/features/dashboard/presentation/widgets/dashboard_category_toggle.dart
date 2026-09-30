@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:evm_management_system/features/dashboard/presentation/models/dashboard_models.dart';
-import 'package:evm_management_system/features/dashboard/presentation/widgets/dashboard_brand.dart';
-import 'package:evm_management_system/localization/locale_keys.dart';
-import 'package:evm_management_system/shared/design_system/design_system.dart';
+import 'package:MPSECNET/features/dashboard/presentation/models/dashboard_models.dart';
+import 'package:MPSECNET/features/dashboard/presentation/widgets/dashboard_brand.dart';
+import 'package:MPSECNET/localization/locale_keys.dart';
+import 'package:MPSECNET/shared/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 class DashboardCategoryToggle extends StatelessWidget {

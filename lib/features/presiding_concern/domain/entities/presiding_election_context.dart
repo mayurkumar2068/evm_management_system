@@ -1,4 +1,4 @@
-import 'package:evm_management_system/features/presiding_concern/domain/constants/presiding_area_type.dart';
+import 'package:MPSECNET/features/presiding_concern/domain/constants/presiding_area_type.dart';
 
 final class PresidingElectionContext {
   const PresidingElectionContext({

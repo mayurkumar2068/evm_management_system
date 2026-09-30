@@ -1,4 +1,4 @@
-import 'package:evm_management_system/config/environment_config.dart';
+import 'package:MPSECNET/config/environment_config.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../models/web_session_context.dart';

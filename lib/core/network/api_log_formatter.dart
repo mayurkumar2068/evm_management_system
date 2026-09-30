@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:evm_management_system/core/network/curl_formatter.dart';
+import 'package:MPSECNET/core/network/curl_formatter.dart';
 
 abstract final class ApiLogFormatter {
   static const int _maxBodyChars = 2048;

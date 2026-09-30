@@ -1,7 +1,7 @@
-import 'package:evm_management_system/app/router/app_destinations.dart';
-import 'package:evm_management_system/app/router/app_routes.dart';
-import 'package:evm_management_system/core/di/app_services.dart';
-import 'package:evm_management_system/features/auth/presentation/states/auth_state.dart';
+import 'package:MPSECNET/app/router/app_destinations.dart';
+import 'package:MPSECNET/app/router/app_routes.dart';
+import 'package:MPSECNET/core/di/app_services.dart';
+import 'package:MPSECNET/features/auth/presentation/states/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 
